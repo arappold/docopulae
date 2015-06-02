@@ -8,8 +8,10 @@ buildf(margins, copula, alphaIdcs = NULL)
 }
 \arguments{
 \item{margins}{either \itemize{
-\item \code{function(y, theta, ...)}, where \code{theta} is a list of parameters. It shall return a matrix with densities in the first column and cumulative densities in the second.
-\item list of expressions each of which contains the PDF and CDF accessible by \code{$pdf} and \code{$cdf}. See examples below.
+\item \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
+It shall return a matrix with densities in the first column and cumulative densities in the second.
+\item list of expressions each of which contains the PDF and CDF accessible by \code{$pdf} and \code{$cdf}.
+See examples below.
 }}
 
 \item{copula}{a copula object from package \pkg{copula}.}
@@ -54,7 +56,7 @@ contour(y1, y2, z)
 ## add theoretical density
 C@parameters = theta$alpha
 zz = outer(y1, y2, function(y1, y2) dmvnorm(cbind(y1 - theta$mu1, y2 - theta$mu2), sigma=getSigma(C)))
-contour(y1, y2, zz, col='red', add=T)
+contour(y1, y2, zz, col='red', add=TRUE)
 
 ## build bivariate pdf with normal margins and clayton copula
 margins = list(alist(pdf=dnorm(y1, mu1, 1),
@@ -82,7 +84,7 @@ z = outer(y1, y2, function(y1, y2) {
 contour(y1, y2, z)
 
 zz = outer(y1, y2, function(y1, y2) apply(cbind(y1, y2), 1, f2, theta))
-contour(y1, y2, zz, col='red', add=T)
+contour(y1, y2, zz, col='red', add=TRUE)
 }
 \seealso{
 \pkg{copula}, \code{\link{expr2f}}, \code{\link{fisherI}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}

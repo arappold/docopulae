@@ -8,6 +8,9 @@ integrateA(f, lower, upper, ..., subdivisions = 100L,
   rel.tol = .Machine$double.eps^0.25, abs.tol = rel.tol,
   stop.on.error = TRUE, keep.xy = FALSE, aux = NULL)
 }
+\arguments{
+\item{f,lower,upper,...,subdivisions,rel.tol,abs.tol,stop.on.error,keep.xy,aux}{see \code{stats::integrate}.}
+}
 \description{
 A tolerance wrapper for \code{stats::integrate}. It allows \code{integrate} to reach the maximum number of subdivisions.
 }

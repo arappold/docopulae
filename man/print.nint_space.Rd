@@ -4,7 +4,12 @@
 \alias{print.nint_space}
 \title{Print Space}
 \usage{
-\method{print}{nint_space}(x)
+\method{print}{nint_space}(x, ...)
+}
+\arguments{
+\item{x}{some space.}
+
+\item{...}{ignored.}
 }
 \description{
 Prints object of type \code{nint_space} in a convenient way.

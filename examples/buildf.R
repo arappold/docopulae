@@ -21,7 +21,7 @@ contour(y1, y2, z)
 ## add theoretical density
 C@parameters = theta$alpha
 zz = outer(y1, y2, function(y1, y2) dmvnorm(cbind(y1 - theta$mu1, y2 - theta$mu2), sigma=getSigma(C)))
-contour(y1, y2, zz, col='red', add=T)
+contour(y1, y2, zz, col='red', add=TRUE)
 
 ## build bivariate pdf with normal margins and clayton copula
 margins = list(alist(pdf=dnorm(y1, mu1, 1),
@@ -49,4 +49,4 @@ z = outer(y1, y2, function(y1, y2) {
 contour(y1, y2, z)
 
 zz = outer(y1, y2, function(y1, y2) apply(cbind(y1, y2), 1, f2, theta))
-contour(y1, y2, zz, col='red', add=T)
+contour(y1, y2, zz, col='red', add=TRUE)

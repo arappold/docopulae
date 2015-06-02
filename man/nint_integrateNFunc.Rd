@@ -54,7 +54,7 @@ unlockBinding('nint_integrateNFunc', environment(nint_integrate))
 assign('nint_integrateNFunc', f, envir=environment(nint_integrate))
 
 ## integrate with replacement
-nint_integrate(function(x) 1, s)
+try(nint_integrate(function(x) 1, s))
 }
 \seealso{
 \code{\link{nint_integrate}}

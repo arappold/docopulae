@@ -62,7 +62,7 @@ nint_integrate(sin, s) # 0
 ## e) infinite, transform
 s = nint_space(nint_intvDim(-Inf, Inf),
                nint_intvDim(-Inf, Inf))
-nint_integrate(function(x) prod(dnorm(x)), s, transformInf=T) # 1
+nint_integrate(function(x) prod(dnorm(x)), s, transformInf=TRUE) # 1
 
 
 ## functionally dependent

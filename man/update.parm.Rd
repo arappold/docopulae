@@ -7,7 +7,7 @@
 \method{update}{parm}(mod, x)
 }
 \arguments{
-\item{mod}{an object of class \code{"parm"}}
+\item{mod}{an object of class \code{"parm"}.}
 
 \item{x}{a row matrix of points to evaluate the Fisher information at.
 The number of columns shall be equal to \code{mod$dDim}.}

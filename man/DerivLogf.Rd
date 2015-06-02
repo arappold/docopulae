@@ -14,7 +14,8 @@ Deriv2Logf(f, names, map = NULL, yMap = NULL, thetaMap = NULL)
 
 \item{names}{a character vector of variable names.}
 
-\item{map}{a named list of names defining left assignments (\code{a="b"} := \code{a <- b}). See details below.}
+\item{map}{a named list of names defining left assignments (\code{a="b"} := \code{a <- b}).
+See details below.}
 
 \item{yMap}{like \code{map} but items \code{a=1} resolve to \code{a <- y[1]}.}
 

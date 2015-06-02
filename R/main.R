@@ -5,19 +5,18 @@
 #' \code{parm} creates an initial model object.
 #' Unlike other model statements this function does not perform any computation.
 #'
-#' @param fisherIf \code{function(x, ...)}, where \code{x} is a numeric vector, usually a point from the design space. It shall evaluate to the Fisher information.
+#' @param fisherIf \code{function(x, ...)}, where \code{x} is a numeric vector, usually a point from the design space.
+#' It shall evaluate to the Fisher information.
 #' @param dDim length of \code{x}, usually the dimensionality of the design space.
 #'
 #' @return \code{parm} returns an object of \code{class} \code{"parm"}.
 #' An object of class \code{"parm"} is a list containing the following components:
-#'
-#' fisherIf: argument
-#'
-#' dDim: argument
-#'
-#' x: row matrix of points where \code{fisherIf} has already been evaluated.
-#'
-#' fisherI: list of Fisher information matrices for each row of \code{x} respectively.
+#' \itemize{
+#' \item fisherIf: argument
+#' \item dDim: argument
+#' \item x: row matrix of points where \code{fisherIf} has already been evaluated.
+#' \item fisherI: list of Fisher information matrices for each row of \code{x} respectively.
+#' }
 #'
 #' @seealso \code{\link{update.parm}}
 #'
@@ -33,7 +32,7 @@ parm = function(fisherIf, dDim) {
 #'
 #' \code{update.parm} evaluates the Fisher information if necessary and returns the updated model object.
 #'
-#' @param mod an object of class \code{"parm"}
+#' @param mod an object of class \code{"parm"}.
 #' @param x a row matrix of points to evaluate the Fisher information at.
 #' The number of columns shall be equal to \code{mod$dDim}.
 #' @return \code{update.parm} returns an object of \code{class} \code{"parm"}.
@@ -74,8 +73,10 @@ substitute_q <- function(x, env) {
 #' \code{buildf} builds an object that evaluates to the density of a random vector given the marginal distributions and some copula.
 #'
 #' @param margins either \itemize{
-#' \item \code{function(y, theta, ...)}, where \code{theta} is a list of parameters. It shall return a matrix with densities in the first column and cumulative densities in the second.
-#' \item list of expressions each of which contains the PDF and CDF accessible by \code{$pdf} and \code{$cdf}. See examples below.
+#' \item \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
+#' It shall return a matrix with densities in the first column and cumulative densities in the second.
+#' \item list of expressions each of which contains the PDF and CDF accessible by \code{$pdf} and \code{$cdf}.
+#' See examples below.
 #' }
 #' @param copula a copula object from package \pkg{copula}.
 #' @param alphaIdcs an integer vector specifying the positions of copula parameters in \code{theta}.
@@ -151,7 +152,8 @@ withQuotes = function(x) {
 #' @param yMap like \code{map} but items \code{a=1} resolve to \code{a <- y[1]}.
 #' @param thetaMap like \code{yMap} for \code{theta} with single element access \code{[[}.
 #'
-#' @return \code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters. It evaluates expression \code{x}.
+#' @return \code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
+#' It evaluates expression \code{x}.
 #'
 #' @seealso \code{\link{buildf}}, \code{\link{fisherI}}
 #'
@@ -183,7 +185,8 @@ expr2f = function(x, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' @param f \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
 #' A joint PDF.
-#' @param logZero the value \code{log(f)} should return if \code{f} evaluates to 0. See details below.
+#' @param logZero the value \code{log(f)} should return if \code{f} evaluates to 0.
+#' See details below.
 #' @param logInf the value \code{log(f)} should return if \code{f} evaluates to \code{Inf}.
 #' @param method see \pkg{numDeriv}
 #' @param method.args see \pkg{numDeriv}
@@ -276,7 +279,8 @@ numDeriv2Logf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double
 #'
 #' @param f a joint PDF as an expression.
 #' @param names a character vector of variable names.
-#' @param map a named list of names defining left assignments (\code{a="b"} := \code{a <- b}). See details below.
+#' @param map a named list of names defining left assignments (\code{a="b"} := \code{a <- b}).
+#' See details below.
 #' @param yMap like \code{map} but items \code{a=1} resolve to \code{a <- y[1]}.
 #' @param thetaMap like \code{yMap} for \code{theta} with single element access \code{[[}.
 #'
@@ -337,7 +341,8 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' @param names a vector of names or indices, the subset of parameters.
 #' @param dlogf \code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f)} with respect to \code{theta[[i]]}.
 #' @param d2logf \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
-#' @param yspace the support of \code{y}. See \code{\link{nint_space}}.
+#' @param yspace the support of \code{y}.
+#' See \code{\link{nint_space}}.
 #' @param ... other arguments passed to \code{d2logf}.
 #' @param yispaces see \code{\link{nint_integrate}}.
 #' @param transformInf see \code{\link{nint_integrate}}.
@@ -346,7 +351,7 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_integrate}}
 #'
-#' @examples TODO
+#' @examples #TODO
 #'
 #' @export
 fisherI = function(f, theta, names, dlogf=NULL, d2logf=NULL, yspace=NULL, ..., yispaces=NULL, transformInf=F) {
@@ -379,7 +384,7 @@ fisherI = function(f, theta, names, dlogf=NULL, d2logf=NULL, yspace=NULL, ..., y
     for (k in 1:ncol(combs)) {
         i = combs[1, k]
         j = combs[2, k]
-        
+
         r[i, j] = nint_integrate(g, NULL, ..., ispaces=yispaces, transformInf=transformInf_)
         #print(j / ncol(combs))
         #print(rr)
@@ -404,3 +409,225 @@ fisherI = function(f, theta, names, dlogf=NULL, d2logf=NULL, yspace=NULL, ..., y
         r = -r
     return(r)
 }
+
+
+
+design = function(mod, x, w, sens, args=list(), adds=list()) {
+    r = list(model=mod, x=x, w=w, sens=sens, args=args, adds=adds)
+    class(r) = 'design'
+    return(r)
+}
+
+getM = function(m, w) {
+    return(apply(sweep(m, 3, w, '*'), c(1, 2), sum))
+}
+
+sensD = function(m, Mi, ...) {
+    return(apply(m, 3, function(m, Mi) sum(diag(Mi %*% m)), Mi))
+}
+
+checkDsA = function(A) {
+    if (ncol(A) < nrow(A))
+        stop('\'A\' shall at least have the same number of columns as rows')
+    if (!identical(A[, seqi(1, nrow(A)), drop=F], diag(nrow(A)) ))
+        stop('the left part of \'A\' shall be the identity matrix')
+    if (any(A[, seqi(nrow(A) + 1, ncol(A))] != 0))
+        stop('the right part of \'A\' shall be zero')
+}
+
+sensDs = function(m, Mi, A, ...) {
+    t1 = Mi %*% A %*% solve(t(A) %*% Mi %*% A) %*% t(A) %*% Mi
+    return(apply(m, 3, function(m, t1) t1 %*% m, t1))
+}
+
+#' Fedorov Wynn Algorithm
+#'
+#' Computes a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
+#'
+#' TODO shortly describe what is done and why (reference to paper).
+#'
+#' @param mod an object of \code{class} \code{"parm"}.
+#' @param A either \code{NULL} for D-optimality or an appropriate matrix for Ds-optimality.
+#' @param tolAbs the absolute tolerance for the upper bound of the sensitivity.
+#' @param tolRel the relative tolerance with respect to the number of parameters.
+#' @param maxIter the maximum number of iterations.
+#'
+#' @return \code{FedorovWynn} returns an object of \code{class} \code{"design"}.
+#' An object of class \code{"design"} is a list containing the following components:
+#' \itemize{
+#' \item mod: argument
+#' \item x: row matrix of design points, in this case \code{mod$x}.
+#' \item w: a numeric vector of weights for each design point.
+#' \item sens: a numeric vector of sensitivity for each design point.
+#' \item args: a list of arguments.
+#' \item adds: a list of additional (runtime) information.
+#' }
+#'
+#' @examples #TODO
+#'
+#' @seealso \code{\link{parm}}, \code{\link{reduce}}
+#'
+#' @export
+FedorovWynn = function(mod, A=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
+    args = list(FedorovWynn=list(A=A, tolAbs=tolAbs, tolRel=tolRel, maxIter=maxIter))
+
+    if (nrow(mod$x) == 0)
+        return(design(mod, mod$x, numeric(0), numeric(0), args=args))
+
+    if (is.null(A) || identical(A, diag(nrow(A)))) {
+        sensF = sensD
+    } else {
+        sensF = sensDs
+        checkDsA(A)
+    }
+
+    target = dim(m)[1]
+    tolAbs_ = min(tolAbs, tolRel * target)
+
+    m = simplify2array(mod$fisherI)
+    n = dim(m)[3]
+    w = rep(1/n, n)
+
+    for (iIter in seqi(1, maxIter)) {
+        M = getM(m, w)
+        Mi = solve(M) # TODO might break
+
+        sens = sensF(m, Mi, A)
+
+        maxIdx = which.max(sens)
+        d = sens[maxIdx] - target
+        if (d < tolAbs_)
+            break
+
+        dw = 1 / (iIter + 1)
+        w = w * (1 - dw)
+        w[maxIdx] = 0
+        w[maxIdx] = 1 - sum(w) # equal to 'w[maxIdx] + dw'
+    }
+
+    names(sens) = NULL
+    adds = list(FedorovWynn=list(tolBreak=d < tolAbs_, nIter=iIter))
+    return(design(mod, mod$x, w, sens, args=args, adds=adds))
+}
+
+
+wPoint = function(x, w) {
+    # x = row matrix
+    # w = vector
+    # nrow(x) == length(w)
+    return( apply(sweep(x, 1, w, '*'), 2, sum) / sum(w) )
+}
+
+
+#' Reduce Design
+#'
+#' Drops insignificant design points and merges design points in a certain neighbourhood.
+#'
+#' @param des an object of \code{class} \code{"design"}.
+#' @param distMax maximum euclidean distance between points to be merged.
+#' @param wMin minimum weight a significant design point shall have.
+#'
+#' @return \code{reduce} returns an object of \code{class} \code{"design"}.
+#' See \code{FedorovWynn} for its structural definition.
+#' The sensitivity is \code{NA} for every design point.
+#'
+#' @seealso \code{\link{FedorovWynn}}
+#'
+#' @examples #TODO
+#'
+#' @export
+reduce = function(des, distMax, wMin=1e-6) {
+    x = des$x
+    w = des$w
+
+    m = wMin <= w
+    x = x[m,, drop=F]
+    w = w[m]
+    cl = clusterPeak(x, w, distMax)
+
+    wg = split(w, cl)
+    rx = do.call(rbind, mapply(function(x, w) wPoint(x, w), split(as.data.frame(x), cl), wg, SIMPLIFY=F))
+    if (is.null(rx))
+        rx = matrix(nrow=0, ncol=ncol(x))
+    dimnames(rx) = NULL
+    rw = vapply(wg, sum, 0)
+    rw = rw / sum(rw)
+    names(rw) = NULL
+
+    ord = orderMatrix(rx)
+    rx = rx[ord,, drop=F]
+    rw = rw[ord]
+    rargs = des$args
+    rargs$reduce = list(des=des, distMax=distMax, wMin=wMin)
+    return(design(des$model, rx, rw, rep(NA, nrow(rx)), rargs, des$adds))
+}
+
+
+# TODO docu
+plot_design = function(des, ..., margins=NULL, wDes=NULL, circles=NA, border=rep(0.1, 4)) {
+    if (is.null(margins))
+        margins = 1
+        #margins = 1:(des$model$dDim)
+    if (is.null(wDes))
+        wDes = des
+
+    if (1 < length(margins))
+        stop('not yet implemented')
+
+    x = des$x
+    sens = des$sens
+    idcs = split(seqi(1, nrow(x)), as.list(x[, margins, drop=F]), drop=T)
+    x = do.call(rbind, lapply(idcs, function(idcs) x[idcs[1],]))
+    sens = sapply(idcs, function(idcs) max(sens[idcs]))
+
+    ord = orderMatrix(x)
+    x = x[ord,, drop=F]
+    sens = sens[ord]
+
+    wx = wDes$x
+    ww = wDes$w
+    idcs = split(seqi(1, nrow(wx)), as.list(wx[, margins, drop=F]), drop=T)
+    wx = do.call(rbind, lapply(idcs, function(idcs) wx[idcs[1],]))
+    ww = sapply(idcs, function(idcs) sum(ww[idcs]))
+
+    args = list(...)
+    if (length(margins) == 1) {
+        xlim = range(x)
+        if (isTRUE(circles)) {
+            d = diff(xlim)
+            xlim = xlim + c(1, -1)*d*border[c(2, 4)]
+        }
+        if (is.null(args$ylim)) {
+            ymax = max(sens)
+            ylim = c(0, ymax)
+            if (isTRUE(circles)) {
+                d = diff(ylim)
+                ylim = ylim + c(1, -1)*d*border[c(1, 3)]
+            }
+        } else {
+            ymax = args$ylim[2]
+            ylim = NULL
+        }
+        xlab = colnames(x)
+        if (is.null(xlab))
+            xlab = paste('x[, c(', toString(margins), ')]', sep='')
+        ylab = 'sensitivity'
+        args = modifyList(list(NA, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab), args)
+
+        par(mar=c(5, 4, 4, 4) + 0.1)
+        do.call(plot, args)
+        lines(x[,1], sens)
+        if (isTRUE(circles)) {
+            symbols(wx, rep(0, nrow(wx)), ww, inch=1/2, add=T)
+            abline(v=wx, col=rgb(0, 0, 0, ww/max(ww)), lty=3)
+            #points(wx, rep(0, nrow(wx)), cex=1/2)
+        } else {
+            lim = par('usr')
+            par(new=T)
+            plot(wx, ww * ymax, type='h', xlim=lim[1:2], ylim=c(0, 1), axes=F, xlab='', ylab='')
+            axis(4)
+            mtext('w', side=4)
+        }
+    }
+}
+

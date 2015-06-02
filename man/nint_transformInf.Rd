@@ -83,7 +83,7 @@ nint_integrate(f2, s)
 
 ## plot
 curve(f2, -16, 16, col='red', ylab='f(x)', sub='x times cauchy density in black')
-curve(f1, -16, 16, add=T)
+curve(f1, -16, 16, add=TRUE)
 
 ## transform
 tt1 = nint_transformInf(f1, nint_ispace(s))
@@ -97,7 +97,7 @@ nint_integrate(tt2$f, ispaces=list(tt2$ispace))
 g1 = Vectorize(tt1$f, 'x')
 g2 = Vectorize(tt2$f, 'x')
 curve(g2, -1, 1, col='red', ylab='g(x)', sub='x times cauchy density in black')
-curve(g1, -1, 1, add=T)
+curve(g1, -1, 1, add=TRUE)
 
 # here we see the reason:
 # the transformation returns 0 close to -1 and 1 (-Inf and Inf).

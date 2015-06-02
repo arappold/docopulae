@@ -19,7 +19,8 @@ numDeriv2Logf(f, logZero = .Machine$double.xmin,
 \item{f}{\code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
 A joint PDF.}
 
-\item{logZero}{the value \code{log(f)} should return if \code{f} evaluates to 0. See details below.}
+\item{logZero}{the value \code{log(f)} should return if \code{f} evaluates to 0.
+See details below.}
 
 \item{logInf}{the value \code{log(f)} should return if \code{f} evaluates to \code{Inf}.}
 

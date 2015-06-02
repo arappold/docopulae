@@ -16,7 +16,8 @@ expr2f(x, map = NULL, yMap = NULL, thetaMap = NULL)
 \item{thetaMap}{like \code{yMap} for \code{theta} with single element access \code{[[}.}
 }
 \value{
-\code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters. It evaluates expression \code{x}.
+\code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
+It evaluates expression \code{x}.
 }
 \description{
 Turns an expression into \code{function(y, theta, ...)}.

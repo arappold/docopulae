@@ -18,7 +18,8 @@ fisherI(f, theta, names, dlogf = NULL, d2logf = NULL, yspace = NULL, ...,
 
 \item{d2logf}{\code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.}
 
-\item{yspace}{the support of \code{y}. See \code{\link{nint_space}}.}
+\item{yspace}{the support of \code{y}.
+See \code{\link{nint_space}}.}
 
 \item{...}{other arguments passed to \code{d2logf}.}
 
@@ -36,7 +37,7 @@ fisherI(f, theta, names, dlogf = NULL, d2logf = NULL, yspace = NULL, ...,
 Either \code{dlogf} xor \code{d2logf} shall be given.
 }
 \examples{
-TODO
+#TODO
 }
 \seealso{
 \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_integrate}}

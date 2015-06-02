@@ -42,14 +42,17 @@ Deriv2f = function(f, names) {
     r = replicate(length(names), list())
     base::names(r) = names
 
+    print(f)
     for (i in seq(names)) {
         a = names[[i]]
         print(a)
         d = Deriv::Deriv(f, a)
+        print(d)
         for (j in i:length(names)) {
             b = names[[j]]
-            print(c(a, b))
+            print(b)
             d2 = Deriv::Deriv(d, b)
+            print(d2)
             r[[a]][[b]] = d2
             r[[b]][[a]] = d2
         }
@@ -97,6 +100,8 @@ lproduct = function(x) {
 #'
 #' See \code{stats::integrate}.
 #'
+#' @param f,lower,upper,...,subdivisions,rel.tol,abs.tol,stop.on.error,keep.xy,aux see \code{stats::integrate}.
+#'
 #' @seealso \code{\link[stats]{integrate}} in \pkg{stats}
 integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$double.eps^0.25, abs.tol=rel.tol, stop.on.error=TRUE, keep.xy=FALSE, aux=NULL) {
     r = stats::integrate(f, lower, upper, ..., subdivisions=subdivisions, rel.tol=rel.tol, abs.tol=abs.tol, stop.on.error=F, keep.xy=keep.xy, aux=aux)
@@ -107,3 +112,43 @@ integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$
     }
     return(r)
 }
+
+
+clusterPeak = function(x, y, maxDist) {
+    # x = row matrix of points
+    # y = corresponding vector of values (of length nrow(x))
+    #
+    # iteratively assigns points to the nearest cluster
+    # in reverse order of magnitude of y
+
+    r = rep(0, length(y))
+
+    dists = as.matrix(dist(x))
+    idcs = seqi(1, length(y))
+
+    rr = 1
+
+    while (length(idcs) != 0) {
+        i = which.max(y[idcs])
+        idx = idcs[i] # idx of max y
+        ds = dists[,idx] # distances to all other points
+
+        cIdcs = which(ds <= maxDist) # candidates
+        cIdcs = cIdcs[order(ds[cIdcs])] # sort by distance
+        cSub = match(T, r[cIdcs] != 0) # first already matched
+        if (is.na(cSub)) { # none matched
+            r[idx] = rr
+            rr = rr + 1
+            next
+        }
+
+        r[idx] = r[cIdcs[cSub]] # match
+        idcs = idcs[-i]
+    }
+
+    return(r)
+}
+
+
+orderMatrix = function(x) do.call(order, lapply(seqi(1, ncol(x)), function(i) x[,i]))
+

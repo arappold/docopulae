@@ -14,23 +14,30 @@
 #' @name nint_TYPE
 NULL
 
-#' @usage nint_TYPE_SCAT_DIM = 1
 #' @rdname nint_TYPE
+#'
+#' @usage nint_TYPE_SCAT_DIM = 1
 #'
 #' @export
 nint_TYPE_SCAT_DIM = 1
-#' @usage nint_TYPE_GRID_DIM = 2
+
 #' @rdname nint_TYPE
+#'
+#' @usage nint_TYPE_GRID_DIM = 2
 #'
 #' @export
 nint_TYPE_GRID_DIM = 2
-#' @usage nint_TYPE_INTV_DIM = 3
+
 #' @rdname nint_TYPE
+#'
+#' @usage nint_TYPE_INTV_DIM = 3
 #'
 #' @export
 nint_TYPE_INTV_DIM = 3
-#' @usage nint_TYPE_FUNC_DIM = 4
+
 #' @rdname nint_TYPE
+#'
+#' @usage nint_TYPE_FUNC_DIM = 4
 #'
 #' @export
 nint_TYPE_FUNC_DIM = 4
@@ -160,21 +167,32 @@ nint_print_spaceDims = function(x) {
 #' @name nint_ERROR
 NULL
 
+#' @rdname nint_ERROR
+#'
 #' @usage nint_ERROR_DIM_TYPE = -1001
+#'
 #' @details \code{nint_ERROR_DIM_TYPE}: dimension type attribute does not exist or is not valid.
-#' @rdname nint_ERROR
 nint_ERROR_DIM_TYPE = -1001
+
+#' @rdname nint_ERROR
+#'
 #' @usage nint_ERROR_SCATTER_LENGTH = -1002
+#'
 #' @details \code{nint_ERROR_SCATTER_LENGTH}: scatter dimensions of different lengths.
-#' @rdname nint_ERROR
 nint_ERROR_SCATTER_LENGTH = -1002
+
+#' @rdname nint_ERROR
+#'
 #' @usage nint_ERROR_SPACE_TYPE = -1003
+#'
 #' @details \code{nint_ERROR_SPACE_TYPE}: object not of type \code{"nint_space"}.
-#' @rdname nint_ERROR
 nint_ERROR_SPACE_TYPE = -1003
-#' @usage nint_ERROR_SPACE_DIM = -1004
-#' @details \code{nint_ERROR_SPACE_DIM}: subspaces with different number of dimensions.
+
 #' @rdname nint_ERROR
+#'
+#' @usage nint_ERROR_SPACE_DIM = -1004
+#'
+#' @details \code{nint_ERROR_SPACE_DIM}: subspaces with different number of dimensions.
 nint_ERROR_SPACE_DIM = -1004
 
 
@@ -227,10 +245,13 @@ nint_space = function(...) {
 #' Each dimension has its own representation which should be easy to understand.
 #' \code{nint_scatDim} representations are marked by \code{"s()"}.
 #'
+#' @param x some space.
+#' @param ... ignored.
+#'
 #' @seealso \code{\link{nint_space}}
 #'
 #' @export
-print.nint_space = function(x) {
+print.nint_space = function(x, ...) {
     for (i in seqi(1, length(x))) {
         cat(i, ': ', sep='')
         nint_print_spaceDims(x[[i]])
@@ -587,7 +608,6 @@ nint_integrateNCube_integrate = function(integrate) {
 nint_integrateNCube_cubature = function(adaptIntegrate) {
     tt = adaptIntegrate
     r = function(f, lowerLimit, upperLimit, ...) {
-        require(cubature)
         return(adaptIntegrate(f, lowerLimit, upperLimit, ...)$integral)
     }
     return(r)

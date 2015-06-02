@@ -7,21 +7,20 @@
 parm(fisherIf, dDim)
 }
 \arguments{
-\item{fisherIf}{\code{function(x, ...)}, where \code{x} is a numeric vector, usually a point from the design space. It shall evaluate to the Fisher information.}
+\item{fisherIf}{\code{function(x, ...)}, where \code{x} is a numeric vector, usually a point from the design space.
+It shall evaluate to the Fisher information.}
 
 \item{dDim}{length of \code{x}, usually the dimensionality of the design space.}
 }
 \value{
 \code{parm} returns an object of \code{class} \code{"parm"}.
 An object of class \code{"parm"} is a list containing the following components:
-
-fisherIf: argument
-
-dDim: argument
-
-x: row matrix of points where \code{fisherIf} has already been evaluated.
-
-fisherI: list of Fisher information matrices for each row of \code{x} respectively.
+\itemize{
+\item fisherIf: argument
+\item dDim: argument
+\item x: row matrix of points where \code{fisherIf} has already been evaluated.
+\item fisherI: list of Fisher information matrices for each row of \code{x} respectively.
+}
 }
 \description{
 \code{parm} creates an initial model object.
