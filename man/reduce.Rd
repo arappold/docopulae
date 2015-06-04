@@ -19,7 +19,7 @@ See \code{FedorovWynn} for its structural definition.
 The sensitivity is \code{NA} for every design point.
 }
 \description{
-Drops insignificant design points and merges design points in a certain neighbourhood.
+\code{reduce} drops insignificant design points and merges design points in a certain neighbourhood.
 }
 \examples{
 #TODO

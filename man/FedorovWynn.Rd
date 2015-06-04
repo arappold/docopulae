@@ -31,7 +31,7 @@ An object of class \code{"design"} is a list containing the following components
 }
 }
 \description{
-Computes a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
+\code{FedorovWynn} computes a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
 }
 \details{
 TODO shortly describe what is done and why (reference to paper).

@@ -27,6 +27,6 @@ An object of class \code{"parm"} is a list containing the following components:
 Unlike other model statements this function does not perform any computation.
 }
 \seealso{
-\code{\link{update.parm}}
+\code{\link{update.parm}}, \code{\link{FedorovWynn}}
 }
 

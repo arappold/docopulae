@@ -18,7 +18,7 @@
 #' \item fisherI: list of Fisher information matrices for each row of \code{x} respectively.
 #' }
 #'
-#' @seealso \code{\link{update.parm}}
+#' @seealso \code{\link{update.parm}}, \code{\link{FedorovWynn}}
 #'
 #' @export
 parm = function(fisherIf, dDim) {
@@ -145,7 +145,7 @@ withQuotes = function(x) {
 
 #' Expression To Function
 #'
-#' Turns an expression into \code{function(y, theta, ...)}.
+#' \code{expr2f} turns an expression into \code{function(y, theta, ...)}.
 #'
 #' @param x an expression.
 #' @param map a named list of names defining left assignments (\code{a="b"} := \code{a <- b}).
@@ -442,7 +442,7 @@ sensDs = function(m, Mi, A, ...) {
 
 #' Fedorov Wynn Algorithm
 #'
-#' Computes a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
+#' \code{FedorovWynn} computes a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
 #'
 #' TODO shortly describe what is done and why (reference to paper).
 #'
@@ -481,10 +481,9 @@ FedorovWynn = function(mod, A=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
         checkDsA(A)
     }
 
+    m = simplify2array(mod$fisherI)
     target = dim(m)[1]
     tolAbs_ = min(tolAbs, tolRel * target)
-
-    m = simplify2array(mod$fisherI)
     n = dim(m)[3]
     w = rep(1/n, n)
 
@@ -521,7 +520,7 @@ wPoint = function(x, w) {
 
 #' Reduce Design
 #'
-#' Drops insignificant design points and merges design points in a certain neighbourhood.
+#' \code{reduce} drops insignificant design points and merges design points in a certain neighbourhood.
 #'
 #' @param des an object of \code{class} \code{"design"}.
 #' @param distMax maximum euclidean distance between points to be merged.
@@ -563,8 +562,30 @@ reduce = function(des, distMax, wMin=1e-6) {
 }
 
 
-# TODO docu
-plot_design = function(des, ..., margins=NULL, wDes=NULL, circles=NA, border=rep(0.1, 4)) {
+#' Plot Design
+#'
+#' \code{plot_design} visualizes the weights and sensitivities of some design.
+#' Designs with more than one dimension are projected to a specified margin.
+#'
+#' The diameter of each circle is proportional to its weight.
+#'
+#' @param des some design.
+#' @param ... other arguments passed to plot.
+#' @param margins a vector of indices.
+#' Defaults to \code{1}.
+#' @param wDes a design from which to take the weights.
+#' Defaults to argument \code{des}.
+#' See \code{reduce}.
+#' @param plus add plus symbols to the sensitivity curve.
+#' @param circles draw weights as circles instead of as bars.
+#' @param border \code{c(bottom, left, top, right)}, relative margins to add if drawing circles.
+#'
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{reduce}}
+#'
+#' @examples #TODO
+#'
+#' @export
+plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1)) {
     if (is.null(margins))
         margins = 1
         #margins = 1:(des$model$dDim)
@@ -574,10 +595,11 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, circles=NA, border=rep
     if (1 < length(margins))
         stop('not yet implemented')
 
+    # marginal projections
     x = des$x
     sens = des$sens
-    idcs = split(seqi(1, nrow(x)), as.list(x[, margins, drop=F]), drop=T)
-    x = do.call(rbind, lapply(idcs, function(idcs) x[idcs[1],]))
+    idcs = split(seqi(1, nrow(x)), lapply(margins, function(margin) x[, margin]), drop=T)
+    x = x[sapply(idcs, function(idcs) idcs[1]), margins, drop=F]
     sens = sapply(idcs, function(idcs) max(sens[idcs]))
 
     ord = orderMatrix(x)
@@ -586,8 +608,8 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, circles=NA, border=rep
 
     wx = wDes$x
     ww = wDes$w
-    idcs = split(seqi(1, nrow(wx)), as.list(wx[, margins, drop=F]), drop=T)
-    wx = do.call(rbind, lapply(idcs, function(idcs) wx[idcs[1],]))
+    idcs = split(seqi(1, nrow(wx)), lapply(margins, function(margin) wx[, margin]), drop=T)
+    wx = wx[sapply(idcs, function(idcs) idcs[1]), margins, drop=F]
     ww = sapply(idcs, function(idcs) sum(ww[idcs]))
 
     args = list(...)
@@ -595,14 +617,14 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, circles=NA, border=rep
         xlim = range(x)
         if (isTRUE(circles)) {
             d = diff(xlim)
-            xlim = xlim + c(1, -1)*d*border[c(2, 4)]
+            xlim = xlim + c(-1, 1)*d*border[c(2, 4)]
         }
         if (is.null(args$ylim)) {
             ymax = max(sens)
             ylim = c(0, ymax)
             if (isTRUE(circles)) {
                 d = diff(ylim)
-                ylim = ylim + c(1, -1)*d*border[c(1, 3)]
+                ylim = ylim + c(-1, 1)*d*border[c(1, 3)]
             }
         } else {
             ymax = args$ylim[2]
@@ -616,17 +638,23 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, circles=NA, border=rep
 
         par(mar=c(5, 4, 4, 4) + 0.1)
         do.call(plot, args)
-        lines(x[,1], sens)
+        lines(x, sens)
         if (isTRUE(circles)) {
             symbols(wx, rep(0, nrow(wx)), ww, inch=1/2, add=T)
-            abline(v=wx, col=rgb(0, 0, 0, ww/max(ww)), lty=3)
+            alpha = ww/max(ww)
+            idcs = which(1/256 < alpha)
+            abline(v=wx[idcs], col=rgb(0, 0, 0, alpha[idcs]), lty=3)
             #points(wx, rep(0, nrow(wx)), cex=1/2)
         } else {
-            lim = par('usr')
+            if (plus) {
+                alpha = ww/max(ww)
+                idcs = which(1/256 < alpha)
+                points(wx[idcs], approx(x, sens, wx[idcs])$y, pch='+', col=rgb(0, 0, 0, alpha[idcs]))
+            }
             par(new=T)
-            plot(wx, ww * ymax, type='h', xlim=lim[1:2], ylim=c(0, 1), axes=F, xlab='', ylab='')
+            plot(wx, ww, type='h', xlim=args$xlim, ylim=c(0, 1), axes=F, xlab='', ylab='')
             axis(4)
-            mtext('w', side=4)
+            mtext('weight', side=4, line=3)
         }
     }
 }

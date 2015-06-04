@@ -20,7 +20,7 @@ expr2f(x, map = NULL, yMap = NULL, thetaMap = NULL)
 It evaluates expression \code{x}.
 }
 \description{
-Turns an expression into \code{function(y, theta, ...)}.
+\code{expr2f} turns an expression into \code{function(y, theta, ...)}.
 }
 \examples{
 library(docopulae)
