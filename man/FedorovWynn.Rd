@@ -4,13 +4,13 @@
 \alias{FedorovWynn}
 \title{Fedorov Wynn Algorithm}
 \usage{
-FedorovWynn(mod, A = NULL, tolAbs = Inf, tolRel = 1e-04,
+FedorovWynn(mod, names = NULL, tolAbs = Inf, tolRel = 1e-04,
   maxIter = 10000)
 }
 \arguments{
 \item{mod}{an object of \code{class} \code{"parm"}.}
 
-\item{A}{either \code{NULL} for D-optimality or an appropriate matrix for Ds-optimality.}
+\item{names}{a vector of names or indices, the subset of parameters to optimize for.}
 
 \item{tolAbs}{the absolute tolerance for the upper bound of the sensitivity.}
 

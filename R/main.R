@@ -426,18 +426,18 @@ sensD = function(m, Mi, ...) {
     return(apply(m, 3, function(m, Mi) sum(diag(Mi %*% m)), Mi))
 }
 
-checkDsA = function(A) {
-    if (ncol(A) < nrow(A))
-        stop('\'A\' shall at least have the same number of columns as rows')
-    if (!identical(A[, seqi(1, nrow(A)), drop=F], diag(nrow(A)) ))
-        stop('the left part of \'A\' shall be the identity matrix')
-    if (any(A[, seqi(nrow(A) + 1, ncol(A))] != 0))
-        stop('the right part of \'A\' shall be zero')
-}
+#checkDsA = function(A) {
+    #if (ncol(A) < nrow(A))
+        #stop('\'A\' shall at least have the same number of columns as rows')
+    #if (!identical(A[, seqi(1, nrow(A)), drop=F], diag(nrow(A)) ))
+        #stop('the left part of \'A\' shall be the identity matrix')
+    #if (any(A[, seqi(nrow(A) + 1, ncol(A))] != 0))
+        #stop('the right part of \'A\' shall be zero')
+#}
 
 sensDs = function(m, Mi, A, ...) {
-    t1 = Mi %*% A %*% solve(t(A) %*% Mi %*% A) %*% t(A) %*% Mi
-    return(apply(m, 3, function(m, t1) t1 %*% m, t1))
+    t1 = Mi %*% t(A) %*% solve(A %*% Mi %*% t(A)) %*% A %*% Mi
+    return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1))
 }
 
 #' Fedorov Wynn Algorithm
@@ -447,7 +447,7 @@ sensDs = function(m, Mi, A, ...) {
 #' TODO shortly describe what is done and why (reference to paper).
 #'
 #' @param mod an object of \code{class} \code{"parm"}.
-#' @param A either \code{NULL} for D-optimality or an appropriate matrix for Ds-optimality.
+#' @param names a vector of names or indices, the subset of parameters to optimize for.
 #' @param tolAbs the absolute tolerance for the upper bound of the sensitivity.
 #' @param tolRel the relative tolerance with respect to the number of parameters.
 #' @param maxIter the maximum number of iterations.
@@ -468,21 +468,43 @@ sensDs = function(m, Mi, A, ...) {
 #' @seealso \code{\link{parm}}, \code{\link{reduce}}
 #'
 #' @export
-FedorovWynn = function(mod, A=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
-    args = list(FedorovWynn=list(A=A, tolAbs=tolAbs, tolRel=tolRel, maxIter=maxIter))
+FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
+    args = list(FedorovWynn=list(names=names, tolAbs=tolAbs, tolRel=tolRel, maxIter=maxIter))
 
     if (nrow(mod$x) == 0)
         return(design(mod, mod$x, numeric(0), numeric(0), args=args))
 
-    if (is.null(A) || identical(A, diag(nrow(A)))) {
+    m = simplify2array(mod$fisherI)
+    n = dim(m)[1]
+
+    if (is.null(names))
+        idcs = 1:n
+    else if (is.character(names)) {
+        tt = mod$fisherI[[1]]
+        nn = rownames(tt)
+        if (is.null(nn)) {
+            nn = colnames(tt)
+            if (is.null(nn)) {
+                stop('first Fisher information matrix shall contain row or column names')
+            }
+        }
+
+        idcs = unique(match(names, nn))
+    } else
+        idcs = unique(names)
+
+    if (identical(idcs, 1:n)) {
         sensF = sensD
+        A = NULL
+        target = n
     } else {
         sensF = sensDs
-        checkDsA(A)
+        s = length(idcs)
+        A = matrix(0, nrow=s, ncol=n)
+        A[(idcs - 1)*s + 1:s] = 1
+        target = s
     }
 
-    m = simplify2array(mod$fisherI)
-    target = dim(m)[1]
     tolAbs_ = min(tolAbs, tolRel * target)
     n = dim(m)[3]
     w = rep(1/n, n)
@@ -504,7 +526,7 @@ FedorovWynn = function(mod, A=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
         w[maxIdx] = 1 - sum(w) # equal to 'w[maxIdx] + dw'
     }
 
-    names(sens) = NULL
+    base::names(sens) = NULL
     adds = list(FedorovWynn=list(tolBreak=d < tolAbs_, nIter=iIter))
     return(design(mod, mod$x, w, sens, args=args, adds=adds))
 }
@@ -562,6 +584,15 @@ reduce = function(des, distMax, wMin=1e-6) {
 }
 
 
+# from http://www.magesblog.com/2013/04/how-to-change-alpha-value-of-colours-in.html
+## Add an alpha value to a colour
+add.alpha <- function(col, alpha=1){
+    if (missing(col))
+        stop("Please provide a vector of colours.")
+    apply(sapply(col, col2rgb)/255, 2, function(x) rgb(x[1], x[2], x[3], alpha=alpha))
+}
+
+
 #' Plot Design
 #'
 #' \code{plot_design} visualizes the weights and sensitivities of some design.
@@ -579,13 +610,15 @@ reduce = function(des, distMax, wMin=1e-6) {
 #' @param plus add plus symbols to the sensitivity curve.
 #' @param circles draw weights as circles instead of as bars.
 #' @param border \code{c(bottom, left, top, right)}, relative margins to add if drawing circles.
+#' @param sensArgs a list of arguments for drawing the sensitivity.
+#' @param wArgs a list of arguments for drawing the weights.
 #'
 #' @seealso \code{\link{FedorovWynn}}, \code{\link{reduce}}
 #'
 #' @examples #TODO
 #'
 #' @export
-plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1)) {
+plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
     if (is.null(margins))
         margins = 1
         #margins = 1:(des$model$dDim)
@@ -634,27 +667,31 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
         if (is.null(xlab))
             xlab = paste('x[, c(', toString(margins), ')]', sep='')
         ylab = 'sensitivity'
-        args = modifyList(list(NA, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab), args)
+        args = modifyList(list(xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab), args)
+
+        sensArgs = modifyList(list(col='black'), sensArgs)
+        wArgs = modifyList(list(col='black'), wArgs)
 
         par(mar=c(5, 4, 4, 4) + 0.1)
-        do.call(plot, args)
-        lines(x, sens)
+        do.call(plot, modifyList(list(NA), args))
+        do.call(lines, modifyList(list(x, sens), sensArgs))
+
         if (isTRUE(circles)) {
-            symbols(wx, rep(0, nrow(wx)), ww, inch=1/2, add=T)
+            do.call(symbols, modifyList(list(wx, rep(0, nrow(wx)), ww, inches=1/2, add=T), wArgs))
             alpha = ww/max(ww)
             idcs = which(1/256 < alpha)
-            abline(v=wx[idcs], col=rgb(0, 0, 0, alpha[idcs]), lty=3)
+            do.call(abline, modifyList(modifyList(list(v=wx[idcs], lty=3), sensArgs), list(col=add.alpha(sensArgs$col, alpha[idcs])) ))
             #points(wx, rep(0, nrow(wx)), cex=1/2)
         } else {
             if (plus) {
                 alpha = ww/max(ww)
                 idcs = which(1/256 < alpha)
-                points(wx[idcs], approx(x, sens, wx[idcs])$y, pch='+', col=rgb(0, 0, 0, alpha[idcs]))
+                do.call(points, modifyList(modifyList(list(wx[idcs], approx(x, sens, wx[idcs])$y, pch='+'), sensArgs), list(col=add.alpha(sensArgs$col, alpha[idcs])) ))
             }
             par(new=T)
-            plot(wx, ww, type='h', xlim=args$xlim, ylim=c(0, 1), axes=F, xlab='', ylab='')
-            axis(4)
-            mtext('weight', side=4, line=3)
+            do.call(plot, modifyList(list(wx, ww, type='h', xlim=args$xlim, ylim=c(0, 1), axes=F, xlab='', ylab=''), wArgs))
+            do.call(axis, modifyList(list(4, col.axis=wArgs$col), wArgs))
+            do.call(mtext, modifyList(list('weight', side=4, line=3), wArgs))
         }
     }
 }

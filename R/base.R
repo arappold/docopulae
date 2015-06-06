@@ -45,14 +45,10 @@ Deriv2f = function(f, names) {
     print(f)
     for (i in seq(names)) {
         a = names[[i]]
-        print(a)
         d = Deriv::Deriv(f, a)
-        print(d)
         for (j in i:length(names)) {
             b = names[[j]]
-            print(b)
             d2 = Deriv::Deriv(d, b)
-            print(d2)
             r[[a]][[b]] = d2
             r[[b]][[a]] = d2
         }

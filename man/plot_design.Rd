@@ -5,7 +5,8 @@
 \title{Plot Design}
 \usage{
 plot_design(des, ..., margins = NULL, wDes = NULL, plus = T,
-  circles = F, border = c(0.1, 0.1, 0, 0.1))
+  circles = F, border = c(0.1, 0.1, 0, 0.1), sensArgs = list(),
+  wArgs = list())
 }
 \arguments{
 \item{des}{some design.}
@@ -24,6 +25,10 @@ See \code{reduce}.}
 \item{circles}{draw weights as circles instead of as bars.}
 
 \item{border}{\code{c(bottom, left, top, right)}, relative margins to add if drawing circles.}
+
+\item{sensArgs}{a list of arguments for drawing the sensitivity.}
+
+\item{wArgs}{a list of arguments for drawing the weights.}
 }
 \description{
 \code{plot_design} visualizes the weights and sensitivities of some design.
