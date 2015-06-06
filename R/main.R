@@ -44,19 +44,19 @@ update.parm = function(mod, x) {
     if (ncol(x) != mod$dDim)
         stop(paste('x shall have exactly', mod$dDim, 'columns'))
 
+    r = mod
     x = unique(rbind(mod$x, x)) # merge x
     idcs = seqi(nrow(mod$x) + 1, nrow(x))
 
     if (length(idcs) != 0) {
-        xx = x[idcs,,drop=F]
+        xx = x[idcs,, drop=F]
         r = lapply(split(xx, row(xx)), mod$fisherIf)
         fisherI = c(mod$fisherI, r)
         names(fisherI) = NULL
+        mod$fisherI = fisherI
     }
 
     mod$x = x
-    mod$fisherI = fisherI
-
     return(mod)
 }
 
@@ -620,22 +620,23 @@ getm = function(des) {
 #'
 #' @export
 update.design = function(des) {
-    mod = update(des$model, des$x)
+    r = des
 
-    m = getm(des)
+    mod = update(des$model, des$x)
+    r$model = mod
+
+    m = getm(r)
     n = dim(m)[1]
     Mi = solve(getM(m, des$w))
 
     idcs = getIdcs(des$args$FedorovWynn$names, mod)
     if (identical(idcs, seqi(1, n)))
-        sens = apply(m, 3, sensD, Mi)
+        sens = sensD(m, Mi)
     else {
         A = getA(idcs, n)
-        sens = apply(m, 3, sensDs, Mi, A)
+        sens = sensDs(m, Mi, A)
     }
 
-    r = des
-    r$model = mod
     r$sens = sens
     return(r)
 }
@@ -698,9 +699,11 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
 
     wx = wDes$x
     ww = wDes$w
+    wsens = wDes$sens
     idcs = split(seqi(1, nrow(wx)), lapply(margins, function(margin) wx[, margin]), drop=T)
     wx = wx[sapply(idcs, function(idcs) idcs[1]), margins, drop=F]
     ww = sapply(idcs, function(idcs) sum(ww[idcs]))
+    wsens = sapply(idcs, function(idcs) max(wsens[idcs]))
 
     args = list(...)
     if (length(margins) == 1) {
@@ -743,7 +746,17 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
             if (plus) {
                 alpha = ww/max(ww)
                 idcs = which(1/256 < alpha)
-                do.call(points, modifyList(modifyList(list(wx[idcs], approx(x, sens, wx[idcs])$y, pch='+'), sensArgs), list(col=add.alpha(sensArgs$col, alpha[idcs])) ))
+                wx_ = wx[idcs]
+                wsens_ = wsens[idcs]
+                if (anyNA(wsens_)) {
+                    if (nrow(x) < 2)
+                        warning('need at least two design points to interpolate sensitivity')
+                    else {
+                        nas = is.na(wsens_)
+                        wsens_[nas] = approx(x, sens, wx_[nas])$y
+                    }
+                }
+                do.call(points, modifyList(modifyList(list(wx_, wsens_, pch='+'), sensArgs), list(col=add.alpha(sensArgs$col, alpha[idcs])) ))
             }
             par(new=T)
             do.call(plot, modifyList(list(wx, ww, type='h', xlim=args$xlim, ylim=c(0, 1), axes=F, xlab='', ylab=''), wArgs))
