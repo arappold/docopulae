@@ -25,6 +25,6 @@ The sensitivity is \code{NA} for every design point.
 #TODO
 }
 \seealso{
-\code{\link{FedorovWynn}}
+\code{\link{FedorovWynn}}, \code{\link{update.design}}
 }
 

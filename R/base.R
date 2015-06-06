@@ -148,3 +148,11 @@ clusterPeak = function(x, y, maxDist) {
 
 orderMatrix = function(x) do.call(order, lapply(seqi(1, ncol(x)), function(i) x[,i]))
 
+indexMatrix = function(x, y) {
+    ordx = orderMatrix(x)
+    ordy = orderMatrix(y)
+    r = which(duplicated(rbind(y[ordy,, drop=F], x[ordx,, drop=F]))) - nrow(y)
+    # r contains now indices of matching rows in sorted x
+    return(ordx[r][order(ordy)])
+}
+

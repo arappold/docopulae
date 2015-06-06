@@ -116,7 +116,7 @@ buildf = function(margins, copula, alphaIdcs=NULL) {
             stop('copula does not have closed form distribution expressions')
 
         margins = lapply(margins, function(margin) lapply(margin, function(e)  substitute((e), list(e=e)) )) # wrap expressions in ()
-        names_ = paste('u', 1:length(margins), sep='')
+        names_ = paste('u', seqi(1, length(margins)), sep='')
         p = lapply(margins, function(margin) margin$cdf)
         names(p) = names_
         d = lapply(margins, function(margin) margin$pdf)
@@ -381,7 +381,7 @@ fisherI = function(f, theta, names, dlogf=NULL, d2logf=NULL, yspace=NULL, ..., y
     }
 
     # do off diagonal
-    for (k in 1:ncol(combs)) {
+    for (k in seqi(1, ncol(combs))) {
         i = combs[1, k]
         j = combs[2, k]
 
@@ -440,6 +440,35 @@ sensDs = function(m, Mi, A, ...) {
     return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1))
 }
 
+getIdcs = function(names, mod) {
+    if (is.numeric(names))
+        return(unique(names))
+
+    if (length(mod$fisherI) == 0)
+        stop('model shall contain at least one Fisher information matrix')
+    tt = mod$fisherI[[1]]
+
+    if (is.null(names))
+        return( seqi(1, nrow(tt)) )
+
+    nn = rownames(tt)
+    if (is.null(nn)) {
+        nn = colnames(tt)
+        if (is.null(nn)) {
+            stop('first Fisher information matrix shall contain row or column names')
+        }
+    }
+
+    return( unique(match(names, nn)) )
+}
+
+getA = function(idcs, n) {
+    s = length(idcs)
+    r = matrix(0, nrow=s, ncol=n)
+    r[(idcs - 1)*s + seqi(1, s)] = 1
+    return(r)
+}
+
 #' Fedorov Wynn Algorithm
 #'
 #' \code{FedorovWynn} computes a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
@@ -475,33 +504,17 @@ FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
         return(design(mod, mod$x, numeric(0), numeric(0), args=args))
 
     m = simplify2array(mod$fisherI)
+
     n = dim(m)[1]
-
-    if (is.null(names))
-        idcs = 1:n
-    else if (is.character(names)) {
-        tt = mod$fisherI[[1]]
-        nn = rownames(tt)
-        if (is.null(nn)) {
-            nn = colnames(tt)
-            if (is.null(nn)) {
-                stop('first Fisher information matrix shall contain row or column names')
-            }
-        }
-
-        idcs = unique(match(names, nn))
-    } else
-        idcs = unique(names)
-
-    if (identical(idcs, 1:n)) {
+    idcs = getIdcs(names, mod)
+    if ( identical(idcs, seqi(1, n)) ) {
         sensF = sensD
         A = NULL
         target = n
     } else {
         sensF = sensDs
         s = length(idcs)
-        A = matrix(0, nrow=s, ncol=n)
-        A[(idcs - 1)*s + 1:s] = 1
+        A = getA(idcs, n)
         target = s
     }
 
@@ -552,7 +565,7 @@ wPoint = function(x, w) {
 #' See \code{FedorovWynn} for its structural definition.
 #' The sensitivity is \code{NA} for every design point.
 #'
-#' @seealso \code{\link{FedorovWynn}}
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{update.design}}
 #'
 #' @examples #TODO
 #'
@@ -581,6 +594,50 @@ reduce = function(des, distMax, wMin=1e-6) {
     rargs = des$args
     rargs$reduce = list(des=des, distMax=distMax, wMin=wMin)
     return(design(des$model, rx, rw, rep(NA, nrow(rx)), rargs, des$adds))
+}
+
+
+getm = function(des) {
+    idcs = indexMatrix(des$model$x, des$x)
+    if (anyNA(idcs))
+        stop('model shall contain Fisher information matrices for each point in the design')
+    return(simplify2array(des$model$fisherI[idcs]))
+}
+
+
+#' Update Design
+#'
+#' \code{update.design} updates the underlying model to ensure the existence of Fisher information matrices for each point in the design.
+#' It also updates the corresponding sensitivities.
+#'
+#' @param des some design.
+#'
+#' @return \code{update.design} returns an object of \code{class} \code{"design"}. See \code{FedorovWynn} for its structural definition.
+#'
+#' @seealso \code{\link{reduce}}, \code{\link{update.parm}}, \code{\link{FedorovWynn}}
+#'
+#' @examples #TODO
+#'
+#' @export
+update.design = function(des) {
+    mod = update(des$model, des$x)
+
+    m = getm(des)
+    n = dim(m)[1]
+    Mi = solve(getM(m, des$w))
+
+    idcs = getIdcs(des$args$FedorovWynn$names, mod)
+    if (identical(idcs, seqi(1, n)))
+        sens = apply(m, 3, sensD, Mi)
+    else {
+        A = getA(idcs, n)
+        sens = apply(m, 3, sensDs, Mi, A)
+    }
+
+    r = des
+    r$model = mod
+    r$sens = sens
+    return(r)
 }
 
 
@@ -694,5 +751,48 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
             do.call(mtext, modifyList(list('weight', side=4, line=3), wArgs))
         }
     }
+}
+
+
+#' D Efficiency
+#'
+#' \code{Defficiency} computes the D or Ds efficiency measure for some design with respect to some reference design.
+#'
+#' D efficiency is defined as
+#' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}
+#' and Ds efficiency as
+#' \deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}
+#'
+#' @param des some design.
+#' @param ref some other design to use as reference.
+#'
+#' @return \code{Defficiency} returns a single numeric.
+#'
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{update.design}}
+#'
+#' @examples #TODO
+#'
+#' @export
+Defficiency = function(des, ref) {
+    # TODO check if designs are compatible
+    m = getm(des)
+    M = getM(m, des$w)
+
+    m = getm(ref)
+    n = dim(m)[1]
+    Mref = getM(m, ref$w)
+
+    idcs = getIdcs(ref$args$FedorovWynn$names, ref$model)
+    if ( identical(idcs, seqi(1, n)) ) {
+        print('D')
+        return((det(M) / det(Mref)) ** (1/n))
+    }
+
+    s = length(idcs)
+    M12 = M[idcs, -idcs]
+    Mref12 = Mref[idcs, -idcs]
+
+    print('Ds')
+    return(( det(M[idcs, idcs] - M12 %*% solve(M[-idcs, -idcs]) %*% t(M12)) / det(Mref[idcs, idcs] - Mref12 %*% solve(Mref[-idcs, -idcs]) %*% t(Mref12)) ) ** (1/s))
 }
 
