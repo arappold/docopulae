@@ -17,8 +17,8 @@ nint_integrate(sin, nint_space(nint_intvDim(0, 2*pi))) # no difference here
 
 ## replace nint_integrateNCube
 f = function(f, lowerLimit, upperLimit, ...) {
-    require(cubature)
-    cubature::adaptIntegrate(f, lowerLimit, upperLimit, ..., maxEval=1e3)$integral
+    r = cubature::adaptIntegrate(f, lowerLimit, upperLimit, ..., maxEval=1e3)
+    return(r$integral)
 }
 
 unlockBinding('nint_integrateNCube', environment(nint_integrate))
@@ -30,7 +30,6 @@ nint_integrate(sin, nint_space(nint_intvDim(0, 2*pi)))
 
 ## replace nint_integrateNCube
 f = function(dimension) {
-    require(SparseGrid)
     SparseGrid::createIntegrationGrid('GQU', dimension, 7)
 }
 f = nint_integrateNCube_SparseGrid(f)

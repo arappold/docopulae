@@ -70,7 +70,8 @@ d2logf = numDeriv2Logf(f)
 d2logf
 
 d2logf(y, theta, 'alpha', 'mu1')
-m = outer(n, n, function(a, b) apply(cbind(a, b), 1, function(x) d2logf(y, theta, x[1], x[2])))
+m = outer(n, n, function(a, b) apply(cbind(a, b), 1,
+    function(x) d2logf(y, theta, x[1], x[2])))
 dimnames(m) = list(n, n)
 m
 }

@@ -15,13 +15,15 @@ theta = list(alpha=2, beta10=1, beta11=2, beta20=3, beta21=4, x=5)
 ## build first derivative
 n = c('alpha', 'beta10', 'beta11', 'beta20', 'beta21')
 yMap = list(y1=1, y2=2)
-thetaMap = list(alpha='alpha', beta10='beta10', beta11='beta11', beta20='beta20', beta21='beta21', x='x')
+thetaMap = list(alpha='alpha', beta10='beta10', beta11='beta11',
+                               beta20='beta20', beta21='beta21', x='x')
 dlogf = DerivLogf(f, n, yMap=yMap, thetaMap=thetaMap)
 str(dlogf)
 
 ## build reference
 margins = function(y, theta) {
-    mu = c(theta$beta10 + theta$beta11*theta$x, theta$beta20 + theta$beta21*theta$x)
+    mu = c(theta$beta10 + theta$beta11*theta$x,
+           theta$beta20 + theta$beta21*theta$x)
     cbind(dnorm(y, mu, 1), pnorm(y, mu, 1))
 }
 f2 = buildf(margins, C, 'alpha')
@@ -47,8 +49,10 @@ str(d2logf)
 d2logf2 = numDeriv2Logf(f2)
 
 ## evaluate
-m1 = quote( outer(n, n, function(a, b) apply(cbind(a, b), 1, function(x) d2logf(y, theta, x[1], x[2]))) )
-m2 = quote( outer(n, n, function(a, b) apply(cbind(a, b), 1, function(x) d2logf2(y, theta, x[1], x[2]))) )
+m1 = quote( outer(n,n, function(a, b) apply(cbind(a, b), 1,
+    function(x) d2logf(y, theta, x[1], x[2]))) )
+m2 = quote( outer(n, n, function(a, b) apply(cbind(a, b), 1,
+    function(x) d2logf2(y, theta, x[1], x[2]))) )
 eval(m1)
 eval(m2)
 

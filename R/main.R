@@ -436,7 +436,7 @@ sensD = function(m, Mi, ...) {
 #}
 
 sensDs = function(m, Mi, A, ...) {
-    t1 = Mi %*% t(A) %*% solve(A %*% Mi %*% t(A)) %*% A %*% Mi
+    t1 = Mi %*% A %*% solve(t(A) %*% Mi %*% A) %*% t(A) %*% Mi
     return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1))
 }
 
@@ -464,8 +464,8 @@ getIdcs = function(names, mod) {
 
 getA = function(idcs, n) {
     s = length(idcs)
-    r = matrix(0, nrow=s, ncol=n)
-    r[(idcs - 1)*s + seqi(1, s)] = 1
+    r = matrix(0, nrow=n, ncol=s)
+    r[(seqi(1, s) - 1)*n + idcs] = 1
     return(r)
 }
 
@@ -772,9 +772,9 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
 #' \code{Defficiency} computes the D or Ds efficiency measure for some design with respect to some reference design.
 #'
 #' D efficiency is defined as
-#' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}
+#' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( abs(M(\xi, \theta))  /  abs(M(\xi*, \theta)) )**(1/n)}
 #' and Ds efficiency as
-#' \deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}
+#' \deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}{( abs(M11(\xi, \theta) - M12(\xi, \theta) \%*\% solve(M22(\xi, \theta)) \%*\% t(M12(\xi, \theta)))  /  abs(M11(\xi*, \theta) - M12(\xi*, \theta) \%*\% solve(M22(\xi*, \theta)) \%*\% t(M12(\xi*, \theta))) )**(1/s)}
 #'
 #' @param des some design.
 #' @param ref some other design to use as reference.

@@ -1,6 +1,6 @@
 Package: docopulae
 Title: Design of Experiments with Copulas
-Version: 0.1.0.1000
+Version: 0.1.1
 Authors@R: person("Andreas", "Rappold", email = "arappold@gmx.at", role = c("aut", "cre"))
 Author: Andreas Rappold [aut, cre]
 Maintainer: Andreas Rappold <arappold@gmx.at>

@@ -68,19 +68,23 @@ nint_integrate(function(x) prod(dnorm(x)), s, transformInf=TRUE) # 1
 ## functionally dependent
 ## f) area of triangle
 s = nint_space(nint_intvDim(0, 1),
-               nint_funcDim(function(x) nint_intvDim(x[1]/2, 1 - x[1]/2)))
+               nint_funcDim(function(x) nint_intvDim(x[1]/2, 1 - x[1]/2)) )
 s
 nint_integrate(function(x) 1, s) # 0.5
 
 ## g) area of circle
-s = nint_space(nint_intvDim(-1, 1),
-               nint_funcDim(function(x) nint_intvDim(c(-1, 1) * sin(acos(x[1])) )) )
+s = nint_space(
+    nint_intvDim(-1, 1),
+    nint_funcDim(function(x) nint_intvDim( c(-1, 1) * sin(acos(x[1])) )) )
 nint_integrate(function(x) 1, s) # pi
 
 ## h) volume of sphere
 s = nint_space(s[[1]],
                s[[2]],
-               nint_funcDim(function(x) { r = sin(acos(x[1])); nint_intvDim(c(-1, 1) * r*cos(asin(x[2] / r))) }))
+               nint_funcDim(function(x) {
+                   r = sin(acos(x[1]))
+                   nint_intvDim(c(-1, 1) * r*cos(asin(x[2] / r)))
+               }))
 nint_integrate(function(x) 1, s) # 4*pi/3
 }
 \seealso{

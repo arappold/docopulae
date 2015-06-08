@@ -82,7 +82,8 @@ nint_integrate(f2, s)
 # obviously does not detect divergence
 
 ## plot
-curve(f2, -16, 16, col='red', ylab='f(x)', sub='x times cauchy density in black')
+curve(f2, -16, 16, col='red', ylab='f(x)',
+      sub='x times cauchy density in black')
 curve(f1, -16, 16, add=TRUE)
 
 ## transform
@@ -101,9 +102,11 @@ curve(g1, -1, 1, add=TRUE)
 
 # here we see the reason:
 # the transformation returns 0 close to -1 and 1 (-Inf and Inf).
-# in some neighborhood of those points the jacobi is infinity and numerical operations fail.
-# (what is almost zero times almost infinity)
-# the transformation assumes that f approaches 0 faster than 1/x**2 at (negative) infinity.
+# in some neighborhood of those points the jacobi is approximately (negative)
+#  infinity and subsequent numerical operations fail.
+# (what is almost zero times almost infinity?)
+# therefore the transformation assumes that f approaches 0 faster than 1/x**2
+#  at (negative) infinity.
 }
 \seealso{
 \code{\link{nint_integrate}}, \code{\link{nint_ispace}}

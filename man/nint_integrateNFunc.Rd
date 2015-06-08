@@ -38,9 +38,13 @@ See examples below on how to replace it with a different function.
 library(docopulae)
 
 ## volume of sphere
-s = nint_space(nint_intvDim(-1, 1),
-               nint_funcDim(function(x) nint_intvDim(c(-1, 1) * sin(acos(x[1])) )),
-               nint_funcDim(function(x) { r = sin(acos(x[1])); nint_intvDim(c(-1, 1) * r*cos(asin(x[2] / r))) }))
+s = nint_space(
+    nint_intvDim(-1, 1),
+    nint_funcDim(function(x) nint_intvDim(c(-1, 1) * sin(acos(x[1])) )),
+    nint_funcDim(function(x) {
+        r = sin(acos(x[1]))
+        nint_intvDim(c(-1, 1) * r*cos(asin(x[2] / r)))
+    }))
 nint_integrate(function(x) 1, s) # 4*pi/3
 
 ## replace nint_integrateNFunc

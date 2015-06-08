@@ -19,9 +19,9 @@ Defficiency(des, ref)
 }
 \details{
 D efficiency is defined as
-\deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}
+\deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( abs(M(\xi, \theta))  /  abs(M(\xi*, \theta)) )**(1/n)}
 and Ds efficiency as
-\deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}
+\deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}{( abs(M11(\xi, \theta) - M12(\xi, \theta) \%*\% solve(M22(\xi, \theta)) \%*\% t(M12(\xi, \theta)))  /  abs(M11(\xi*, \theta) - M12(\xi*, \theta) \%*\% solve(M22(\xi*, \theta)) \%*\% t(M12(\xi*, \theta))) )**(1/s)}
 }
 \examples{
 #TODO
