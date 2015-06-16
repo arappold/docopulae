@@ -50,7 +50,7 @@ update.parm = function(mod, x) {
 
     if (length(idcs) != 0) {
         xx = x[idcs,, drop=F]
-        r = lapply(split(xx, row(xx)), mod$fisherIf)
+        r = lapply(split(xx, seq_len(nrow(xx))), mod$fisherIf)
         fisherI = c(mod$fisherI, r)
         names(fisherI) = NULL
         mod$fisherI = fisherI

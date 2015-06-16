@@ -19,6 +19,6 @@ nint_intvDim(x, b = NULL)
 The limits may be (negative) \code{Inf}.
 }
 \seealso{
-\code{\link{nint_TYPE}}, \code{\link{nint_space}}
+\code{\link{nint_TYPE}}, \code{\link{nint_space}}, \code{\link{nint_transform}}
 }
 

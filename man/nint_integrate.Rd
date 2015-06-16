@@ -4,7 +4,7 @@
 \alias{nint_integrate}
 \title{Integrate}
 \usage{
-nint_integrate(f, space = NULL, ..., ispaces = NULL, transformInf = F)
+nint_integrate(f, space, ...)
 }
 \arguments{
 \item{f}{the scalar-valued function (integrand) to be integrated.}
@@ -12,10 +12,6 @@ nint_integrate(f, space = NULL, ..., ispaces = NULL, transformInf = F)
 \item{space}{some space.}
 
 \item{...}{other arguments passed to \code{f}.}
-
-\item{ispaces}{a list of integration spaces.}
-
-\item{transformInf}{transform infinite intervals to finite intervals? See \code{\link{nint_transformInf}}.}
 }
 \value{
 \code{nint_integrate} returns a single numeric.
@@ -24,10 +20,11 @@ nint_integrate(f, space = NULL, ..., ispaces = NULL, transformInf = F)
 \code{nint_integrate} performs n-dimensional integration of some scalar-valued function over the supplied space.
 }
 \details{
-\code{ispaces} exists for flexibility reasons.
-\code{space} is transformed by \code{nint_ispace} and merged unchanged with \code{ispaces}.
+\code{nint_integrate} calls \code{nint_integrateNCube} and \code{nint_integrateNFunc} to integrate over interval and function dimensions.
+See their help pages on how to replace them by different functions.
 
-\code{nint_integrate} utilizes \code{nint_integrateNCube} and \code{nint_integrateNFunc} to integrate over interval and function dimensions. See their help pages on how to replace them by different functions.
+Exploration of the space is done recursively with the order of dimensions optimized for efficiency.
+Therefore interchangeability of dimensions (except for function dimensions) is assumed.
 }
 \examples{
 library(docopulae)
@@ -88,6 +85,6 @@ s = nint_space(s[[1]],
 nint_integrate(function(x) 1, s) # 4*pi/3
 }
 \seealso{
-\code{\link{nint_space}}, \code{\link{nint_integrateNCube}}, \code{\link{nint_integrateNFunc}}, \code{\link{nint_ispace}}, \code{\link{nint_transformInf}}
+\code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrateNCube}}, \code{\link{nint_integrateNFunc}}
 }
 
