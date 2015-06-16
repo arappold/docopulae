@@ -13,7 +13,7 @@
 \code{update.design} returns an object of \code{class} \code{"design"}. See \code{FedorovWynn} for its structural definition.
 }
 \description{
-\code{update.design} updates the underlying model to ensure the existence of Fisher information matrices for each point in the design.
+\code{update.design} updates the underlying model of some design to ensure the existence of Fisher information matrices for each point in the design.
 It also updates the corresponding sensitivities.
 }
 \examples{

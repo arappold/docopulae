@@ -339,13 +339,11 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' @param f \code{function(y, theta, ...)}, a joint PDF.
 #' @param theta a list of parameters.
 #' @param names a vector of names or indices, the subset of parameters.
-#' @param dlogf \code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f)} with respect to \code{theta[[i]]}.
-#' @param d2logf \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
 #' @param yspace the support of \code{y}.
 #' See \code{\link{nint_space}}.
+#' @param dlogf \code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f)} with respect to \code{theta[[i]]}.
+#' @param d2logf \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
 #' @param ... other arguments passed to \code{d2logf}.
-#' @param yispaces see \code{\link{nint_integrate}}.
-#' @param transformInf see \code{\link{nint_integrate}}.
 #'
 #' @return \code{fisherI} returns a named matrix, the Fisher information.
 #'
@@ -354,8 +352,8 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' @examples #TODO
 #'
 #' @export
-fisherI = function(f, theta, names, dlogf=NULL, d2logf=NULL, yspace=NULL, ..., yispaces=NULL, transformInf=F) {
-    tt = list(f, theta, names, dlogf, d2logf, yspace, yispaces, transformInf)
+fisherI = function(f, theta, names, yspace, dlogf=NULL, d2logf=NULL, ...) {
+    tt = list(f, theta, names, yspace, dlogf, d2logf)
 
     n = length(names)
     if (n == 0)
@@ -364,11 +362,6 @@ fisherI = function(f, theta, names, dlogf=NULL, d2logf=NULL, yspace=NULL, ..., y
     if ((is.null(dlogf) && is.null(d2logf)) || (!is.null(dlogf) && !is.null(d2logf)))
         stop('either dlogf xor d2logf shall be given')
     first = !is.null(dlogf)
-
-    if (!is.null(yspace))
-        yispaces = c(nint_ispaces(yspace), yispaces)
-
-    transformInf_ = transformInf
 
     combs = combn(names, 2)
     r = matrix(0, nrow=n, ncol=n, dimnames=list(names, names))
@@ -385,7 +378,7 @@ fisherI = function(f, theta, names, dlogf=NULL, d2logf=NULL, yspace=NULL, ..., y
         i = combs[1, k]
         j = combs[2, k]
 
-        r[i, j] = nint_integrate(g, NULL, ..., ispaces=yispaces, transformInf=transformInf_)
+        r[i, j] = nint_integrate(g, yspace, ...)
         #print(j / ncol(combs))
         #print(rr)
     }
@@ -399,7 +392,7 @@ fisherI = function(f, theta, names, dlogf=NULL, d2logf=NULL, yspace=NULL, ..., y
 
     # do diagonal
     for (i in 1:n) {
-        r[i, i] = nint_integrate(g, NULL, ..., ispaces=yispaces, transformInf=transformInf_)
+        r[i, i] = nint_integrate(g, yspace, ...)
         #print(j / ncol(combs))
         #print(rr)
     }
@@ -597,17 +590,19 @@ reduce = function(des, distMax, wMin=1e-6) {
 }
 
 
-getm = function(des) {
-    idcs = indexMatrix(des$model$x, des$x)
+getm = function(des, mod=NULL) {
+    if (is.null(mod))
+        mod = des$model
+    idcs = indexMatrix(mod$x, des$x)
     if (anyNA(idcs))
         stop('model shall contain Fisher information matrices for each point in the design')
-    return(simplify2array(des$model$fisherI[idcs]))
+    return(simplify2array(mod$fisherI[idcs]))
 }
 
 
 #' Update Design
 #'
-#' \code{update.design} updates the underlying model to ensure the existence of Fisher information matrices for each point in the design.
+#' \code{update.design} updates the underlying model of some design to ensure the existence of Fisher information matrices for each point in the design.
 #' It also updates the corresponding sensitivities.
 #'
 #' @param des some design.
@@ -638,6 +633,32 @@ update.design = function(des) {
     }
 
     r$sens = sens
+    return(r)
+}
+
+#' Update Reference Design
+#'
+#' \code{update_reference} updates the underlying model of some design to ensure the existence of Fisher information matrices for each point in each other design.
+#'
+#' @param ref some design.
+#' @param other either a single design or a list structure of designs.
+#'
+#' @return \code{update_reference} returns an object of \code{class} \code{"design"}.
+#' See \code{FedorovWynn} for its structural definition.
+#'
+#' @seealso \code{\link{Defficiency}}, \code{\link{update.design}}, \code{\link{update.parm}}
+#'
+#' @examples #TODO
+#'
+#' @export
+update_reference = function(ref, other) {
+    other = flatten(other)
+    mod = ref$model
+    for (o in other) {
+        mod = update(mod, o$x)
+    }
+    r = ref
+    r$model = mod
     return(r)
 }
 
@@ -787,8 +808,7 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
 #'
 #' @export
 Defficiency = function(des, ref) {
-    # TODO check if designs are compatible
-    m = getm(des)
+    m = getm(des, ref$model)
     M = getM(m, des$w)
 
     m = getm(ref)
