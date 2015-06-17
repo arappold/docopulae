@@ -4,8 +4,7 @@
 \alias{fisherI}
 \title{Fisher Information}
 \usage{
-fisherI(f, theta, names, dlogf = NULL, d2logf = NULL, yspace = NULL, ...,
-  yispaces = NULL, transformInf = F)
+fisherI(f, theta, names, yspace, ..., dlogf = NULL, d2logf = NULL)
 }
 \arguments{
 \item{f}{\code{function(y, theta, ...)}, a joint PDF.}
@@ -14,18 +13,14 @@ fisherI(f, theta, names, dlogf = NULL, d2logf = NULL, yspace = NULL, ...,
 
 \item{names}{a vector of names or indices, the subset of parameters.}
 
-\item{dlogf}{\code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f)} with respect to \code{theta[[i]]}.}
-
-\item{d2logf}{\code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.}
-
 \item{yspace}{the support of \code{y}.
 See \code{\link{nint_space}}.}
 
 \item{...}{other arguments passed to \code{d2logf}.}
 
-\item{yispaces}{see \code{\link{nint_integrate}}.}
+\item{dlogf}{\code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f)} with respect to \code{theta[[i]]}.}
 
-\item{transformInf}{see \code{\link{nint_integrate}}.}
+\item{d2logf}{\code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.}
 }
 \value{
 \code{fisherI} returns a named matrix, the Fisher information.

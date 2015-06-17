@@ -341,9 +341,9 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' @param names a vector of names or indices, the subset of parameters.
 #' @param yspace the support of \code{y}.
 #' See \code{\link{nint_space}}.
+#' @param ... other arguments passed to \code{d2logf}.
 #' @param dlogf \code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f)} with respect to \code{theta[[i]]}.
 #' @param d2logf \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
-#' @param ... other arguments passed to \code{d2logf}.
 #'
 #' @return \code{fisherI} returns a named matrix, the Fisher information.
 #'
@@ -352,7 +352,7 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' @examples #TODO
 #'
 #' @export
-fisherI = function(f, theta, names, yspace, dlogf=NULL, d2logf=NULL, ...) {
+fisherI = function(f, theta, names, yspace, ..., dlogf=NULL, d2logf=NULL) {
     tt = list(f, theta, names, yspace, dlogf, d2logf)
 
     n = length(names)
@@ -817,7 +817,6 @@ Defficiency = function(des, ref) {
 
     idcs = getIdcs(ref$args$FedorovWynn$names, ref$model)
     if ( identical(idcs, seqi(1, n)) ) {
-        print('D')
         return((det(M) / det(Mref)) ** (1/n))
     }
 
@@ -825,7 +824,6 @@ Defficiency = function(des, ref) {
     M12 = M[idcs, -idcs]
     Mref12 = Mref[idcs, -idcs]
 
-    print('Ds')
     return(( det(M[idcs, idcs] - M12 %*% solve(M[-idcs, -idcs]) %*% t(M12)) / det(Mref[idcs, idcs] - Mref12 %*% solve(Mref[-idcs, -idcs]) %*% t(Mref12)) ) ** (1/s))
 }
 

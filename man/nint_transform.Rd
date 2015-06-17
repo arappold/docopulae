@@ -13,7 +13,7 @@ nint_transform(f, space, dIdcs, trans, infZero = 0)
 
 \item{dIdcs}{an integer vector of indices, the dimensions to transform.}
 
-\item{trans}{either a name of some builtin transformation or \code{list(g=function(x), gi=function(y), gij=function(y))} where \code{y = g(x)}, \code{gi(y) = x} and \code{gij} is the first derivative of \code{gi} with respect to \code{y}.}
+\item{trans}{either the name of some builtin transformation or \code{list(g=function(x), gij=function(y))} where \code{y = g(x)} and \code{gij} evaluates to the column matrix of \code{gi(y) = x} and its first derivative with respect to \code{y}.}
 
 \item{infZero}{the value to return if the jacobian is infinite and \code{f} returns \code{0}.}
 }
@@ -22,7 +22,7 @@ nint_transform(f, space, dIdcs, trans, infZero = 0)
 }
 \description{
 \code{nint_transform} applies monotonic continous transformations.
-A common purpose is to transform infinite intervals to finite ones.
+A common use case is to transform infinite intervals to finite ones.
 }
 \details{
 If the transformation is vector valued, that is \code{y = c(y1, ..., yn) = g(c(x1, ..., xn))}, then each component of \code{y} shall exclusively depend on the corresponding component of \code{x}.
@@ -48,7 +48,7 @@ tt = nint_transform(f, s, 1, 'ratio')
 tt$space
 nint_integrate(tt$f, tt$space)
 
-tt = nint_transform(f, s, 1, list(g=pnorm, gi=qnorm, gij=function(x) 1/dnorm(qnorm(x))))
+tt = nint_transform(f, s, 1, list(g=pnorm, gij=function(x) { t1 = qnorm(x); cbind(t1, 1/dnorm(t1))}))
 tt$space
 nint_integrate(tt$f, tt$space)
 
@@ -68,7 +68,7 @@ tt = nint_transform(f, s, 1:2, 'ratio')
 tt$space
 nint_integrate(tt$f, tt$space)
 
-tt = nint_transform(f, s, 1:2, list(g=pnorm, gi=qnorm, gij=function(x) 1/dnorm(qnorm(x))))
+tt = nint_transform(f, s, 1, list(g=pnorm, gij=function(x) { t1 = qnorm(x); cbind(t1, 1/dnorm(t1))}))
 tt$space
 # won't terminate. I guess the transformation is too steep
 #nint_integrate(tt$f, tt$space)

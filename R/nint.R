@@ -574,13 +574,15 @@ ratiog = function(x) {
     r = ifelse(is.infinite(x), s, x/abs(x + s))
 }
 
-transforms = list(tan=list(g=atan, gi=tan, gij=function(x) 1 + tan(x)**2),
-                  ratio=list(g=ratiog, gi=function(x) x / (1 - abs(x)), gij=function(x) 1 / (1 - abs(x))**2))
+transforms = list(tan=list(g=atan,
+                           gij=function(x) { t1 = tan(x); cbind(t1, 1 + t1**2) }),
+                  ratio=list(g=ratiog,
+                             gij=function(x) { t1 = 1/(1 - abs(x)); cbind(x*t1, t1**2)}))
 
 #' Transform Integral
 #'
 #' \code{nint_transform} applies monotonic continous transformations.
-#' A common purpose is to transform infinite intervals to finite ones.
+#' A common use case is to transform infinite intervals to finite ones.
 #'
 #' If the transformation is vector valued, that is \code{y = c(y1, ..., yn) = g(c(x1, ..., xn))}, then each component of \code{y} shall exclusively depend on the corresponding component of \code{x}.
 #' An incorrect expression for this would be: \code{y[i] = g[i](x[i])}.
@@ -593,7 +595,7 @@ transforms = list(tan=list(g=atan, gi=tan, gij=function(x) 1 + tan(x)**2),
 #' @param f \code{function(x, ...)}.
 #' @param space some space.
 #' @param dIdcs an integer vector of indices, the dimensions to transform.
-#' @param trans either a name of some builtin transformation or \code{list(g=function(x), gi=function(y), gij=function(y))} where \code{y = g(x)}, \code{gi(y) = x} and \code{gij} is the first derivative of \code{gi} with respect to \code{y}.
+#' @param trans either the name of some builtin transformation or \code{list(g=function(x), gij=function(y))} where \code{y = g(x)} and \code{gij} evaluates to the column matrix of \code{gi(y) = x} and its first derivative with respect to \code{y}.
 #' @param infZero the value to return if the jacobian is infinite and \code{f} returns \code{0}.
 #'
 #' @return \code{nint_transform} returns a named list containing the transformed function and space.
@@ -614,7 +616,6 @@ nint_transform = function(f, space, dIdcs, trans, infZero=0) {
     }
 
     g = trans[['g']]
-    gi = trans[['gi']]
     gij = trans[['gij']]
     neg = 0
 
@@ -649,9 +650,10 @@ nint_transform = function(f, space, dIdcs, trans, infZero=0) {
     sig = ifelse(neg %% 2, -1, 1)
     rf = function(x, ...) {
         xx = x[dIdcs]
-        x[dIdcs] = gi(xx)
+        t1 = gij(xx)
+        x[dIdcs] = t1[,1]
         v = f(x, ...)
-        j = prod(gij(xx))
+        j = prod(t1[,2])
         if (is.infinite(j)) {
             if (v == 0) {
                 v = infZero
