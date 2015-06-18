@@ -334,44 +334,57 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' \code{fisherI} utilizes \code{nint_integrate} to evaluate the Fisher information.
 #'
-#' Either \code{dlogf} xor \code{d2logf} shall be given.
+#' If \code{ff} is a list, then it shall contain \code{dlogf} xor \code{d2logf}.
 #'
-#' @param f \code{function(y, theta, ...)}, a joint PDF.
+#' @param ff either \itemize{
+#' \item \code{function(y, theta, i, j, ...)} which evaluates to the inner part of the expectation integral/sum
+#' \item \code{list(f=function(y, theta, ...), d2logf=function(y, theta, i, j, ...))} (recommended)
+#' \item \code{list(f=function(y, theta, ...), dlogf=function(y, theta, i, ...))}
+#' }
+#' where \code{f} is the joint density and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
 #' @param theta a list of parameters.
 #' @param names a vector of names or indices, the subset of parameters.
 #' @param yspace the support of \code{y}.
 #' See \code{\link{nint_space}}.
-#' @param ... other arguments passed to \code{d2logf}.
-#' @param dlogf \code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f)} with respect to \code{theta[[i]]}.
-#' @param d2logf \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
+#' @param ... other arguments passed to \code{ff}.
 #'
 #' @return \code{fisherI} returns a named matrix, the Fisher information.
 #'
-#' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_integrate}}
+#' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}
 #'
 #' @examples #TODO
 #'
 #' @export
-fisherI = function(f, theta, names, yspace, ..., dlogf=NULL, d2logf=NULL) {
-    tt = list(f, theta, names, yspace, dlogf, d2logf)
+fisherI = function(ff, theta, names, yspace, ...) {
+    tt = list(ff, theta, names, yspace)
+
+    i = 0
+    j = 0
+    if (inherits(ff, 'list')) {
+        dlogf = ff[['dlogf']]
+        d2logf = ff[['d2logf']]
+        if ((is.null(dlogf) && is.null(d2logf)) || (!is.null(dlogf) && !is.null(d2logf)))
+            stop('either dlogf xor d2logf shall be given')
+
+        f = ff[['f']]
+        if (!is.null(dlogf)) {
+            g = function(y, ...) dlogf(y, theta, i, ...)*dlogf(y, theta, j, ...)*f(y, theta, ...)
+            gd = function(y, ...) dlogf(y, theta, i, ...)**2 *f(y, theta, ...)
+        } else {
+            g = function(y, ...) -d2logf(y, theta, i, j, ...)*f(y, theta, ...)
+            gd = g
+        }
+    } else {
+        g = function(y, ...) ff(y, theta, i, j, ...)
+        gd = g
+    }
 
     n = length(names)
     if (n == 0)
         return(matrix(nrow=0, ncol=0))
 
-    if ((is.null(dlogf) && is.null(d2logf)) || (!is.null(dlogf) && !is.null(d2logf)))
-        stop('either dlogf xor d2logf shall be given')
-    first = !is.null(dlogf)
-
     combs = combn(names, 2)
     r = matrix(0, nrow=n, ncol=n, dimnames=list(names, names))
-
-    # prepare off diagonal
-    if (first) {
-        g = function(y, ...) dlogf(y, theta, i, ...)*dlogf(y, theta, j, ...)*f(y, theta, ...)
-    } else {
-        g = function(y, ...) d2logf(y, theta, i, j, ...)*f(y, theta, ...)
-    }
 
     # do off diagonal
     for (k in seqi(1, ncol(combs))) {
@@ -383,24 +396,15 @@ fisherI = function(f, theta, names, yspace, ..., dlogf=NULL, d2logf=NULL) {
         #print(rr)
     }
 
-    # prepare diagonal
-    if (first) {
-        g = function(y, ...) dlogf(y, theta, i, ...)**2 *f(y, theta, ...)
-    } else {
-        g = function(y, ...) d2logf(y, theta, i, i, ...)*f(y, theta, ...)
-    }
-
     # do diagonal
     for (i in 1:n) {
-        r[i, i] = nint_integrate(g, yspace, ...)
+        j = i # necessary
+        r[i, i] = nint_integrate(gd, yspace, ...)
         #print(j / ncol(combs))
         #print(rr)
     }
 
-    r = mirrorMatrix(r)
-    if (!first)
-        r = -r
-    return(r)
+    return(mirrorMatrix(r))
 }
 
 

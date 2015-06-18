@@ -4,10 +4,15 @@
 \alias{fisherI}
 \title{Fisher Information}
 \usage{
-fisherI(f, theta, names, yspace, ..., dlogf = NULL, d2logf = NULL)
+fisherI(ff, theta, names, yspace, ...)
 }
 \arguments{
-\item{f}{\code{function(y, theta, ...)}, a joint PDF.}
+\item{ff}{either \itemize{
+\item \code{function(y, theta, i, j, ...)} which evaluates to the inner part of the expectation integral/sum
+\item \code{list(f=function(y, theta, ...), d2logf=function(y, theta, i, j, ...))} (recommended)
+\item \code{list(f=function(y, theta, ...), dlogf=function(y, theta, i, ...))}
+}
+where \code{f} is the joint density and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.}
 
 \item{theta}{a list of parameters.}
 
@@ -16,11 +21,7 @@ fisherI(f, theta, names, yspace, ..., dlogf = NULL, d2logf = NULL)
 \item{yspace}{the support of \code{y}.
 See \code{\link{nint_space}}.}
 
-\item{...}{other arguments passed to \code{d2logf}.}
-
-\item{dlogf}{\code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f)} with respect to \code{theta[[i]]}.}
-
-\item{d2logf}{\code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f)} with respect to \code{theta[[i]]} and \code{theta[[j]]}.}
+\item{...}{other arguments passed to \code{ff}.}
 }
 \value{
 \code{fisherI} returns a named matrix, the Fisher information.
@@ -29,12 +30,12 @@ See \code{\link{nint_space}}.}
 \code{fisherI} utilizes \code{nint_integrate} to evaluate the Fisher information.
 }
 \details{
-Either \code{dlogf} xor \code{d2logf} shall be given.
+If \code{ff} is a list, then it shall contain \code{dlogf} xor \code{d2logf}.
 }
 \examples{
 #TODO
 }
 \seealso{
-\code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_integrate}}
+\code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}
 }
 
