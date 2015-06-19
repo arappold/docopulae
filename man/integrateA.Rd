@@ -12,12 +12,13 @@ integrateA(f, lower, upper, ..., subdivisions = 100L,
 \item{f,lower,upper,...,subdivisions,rel.tol,abs.tol,stop.on.error,keep.xy,aux}{see \code{stats::integrate}.}
 }
 \description{
-A tolerance wrapper for \code{stats::integrate}. It allows \code{integrate} to reach the maximum number of subdivisions.
+A tolerance wrapper for \code{stats::integrate}.
+It allows \code{integrate} to reach the maximum number of subdivisions.
 }
 \details{
 See \code{stats::integrate}.
 }
 \seealso{
-\code{\link[stats]{integrate}} in \pkg{stats}
+\code{\link[stats]{integrate}} in package \pkg{stats}
 }
 

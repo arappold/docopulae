@@ -42,7 +42,6 @@ Deriv2f = function(f, names) {
     r = replicate(length(names), list())
     base::names(r) = names
 
-    print(f)
     for (i in seq(names)) {
         a = names[[i]]
         d = Deriv::Deriv(f, a)
@@ -92,13 +91,16 @@ lproduct = function(x) {
 
 #' Integrate Alternative
 #'
-#' A tolerance wrapper for \code{stats::integrate}. It allows \code{integrate} to reach the maximum number of subdivisions.
+#' A tolerance wrapper for \code{stats::integrate}.
+#' It allows \code{integrate} to reach the maximum number of subdivisions.
 #'
 #' See \code{stats::integrate}.
 #'
 #' @param f,lower,upper,...,subdivisions,rel.tol,abs.tol,stop.on.error,keep.xy,aux see \code{stats::integrate}.
 #'
-#' @seealso \code{\link[stats]{integrate}} in \pkg{stats}
+#' @seealso \code{\link[stats]{integrate}} in package \pkg{stats}
+#'
+#' @export
 integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$double.eps^0.25, abs.tol=rel.tol, stop.on.error=TRUE, keep.xy=FALSE, aux=NULL) {
     r = stats::integrate(f, lower, upper, ..., subdivisions=subdivisions, rel.tol=rel.tol, abs.tol=abs.tol, stop.on.error=F, keep.xy=keep.xy, aux=aux)
     if ( !(r$message %in% c('OK', 'maximum number of subdivisions reached')) ) {

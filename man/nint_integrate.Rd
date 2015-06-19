@@ -59,7 +59,12 @@ nint_integrate(sin, s) # 0
 ## e) infinite, transform
 s = nint_space(nint_intvDim(-Inf, Inf),
                nint_intvDim(-Inf, Inf))
-nint_integrate(function(x) prod(dnorm(x)), s, transformInf=TRUE) # 1
+# probability integral transform
+tt = nint_transform(function(x) prod(dnorm(x)), s, 1:2, list(
+    g=function(x) pnorm(x),
+    gij=function(y) { t1 = qnorm(y); cbind(t1, 1/dnorm(t1)) }))
+tt$space
+nint_integrate(tt$f, tt$space) # 1
 
 
 ## functionally dependent

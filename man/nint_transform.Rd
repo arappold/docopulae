@@ -48,7 +48,9 @@ tt = nint_transform(f, s, 1, 'ratio')
 tt$space
 nint_integrate(tt$f, tt$space)
 
-tt = nint_transform(f, s, 1, list(g=pnorm, gij=function(x) { t1 = qnorm(x); cbind(t1, 1/dnorm(t1))}))
+# probability integral transform
+tt = nint_transform(f, s, 1, list(g=pnorm,
+    gij=function(x) { t1 = qnorm(x); cbind(t1, 1/dnorm(t1)) }))
 tt$space
 nint_integrate(tt$f, tt$space)
 
@@ -68,7 +70,9 @@ tt = nint_transform(f, s, 1:2, 'ratio')
 tt$space
 nint_integrate(tt$f, tt$space)
 
-tt = nint_transform(f, s, 1, list(g=pnorm, gij=function(x) { t1 = qnorm(x); cbind(t1, 1/dnorm(t1))}))
+# probability integral transform
+tt = nint_transform(f, s, 1:2, list(g=pnorm,
+    gij=function(x) { t1 = qnorm(x); cbind(t1, 1/dnorm(t1)) }))
 tt$space
 # won't terminate. I guess the transformation is too steep
 #nint_integrate(tt$f, tt$space)

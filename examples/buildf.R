@@ -33,6 +33,9 @@ margins = list(alist(pdf=dnorm(y1, mu1, 1),
 C = claytonCopula()
 f1 = buildf(margins, C)
 f1
+ff1 = expr2f(f1, yMap=list(y1=1, y2=2),
+                 thetaMap=list(mu1='mu1', mu2='mu2', alpha='alpha'))
+ff1
 
 f2 = buildf(function(y, theta) {
     mu = c(theta$mu1, theta$mu2)
@@ -41,14 +44,10 @@ f2 = buildf(function(y, theta) {
 
 ## plot both densities
 theta = list(mu1=2, mu2=-3, alpha=2) # tau = 0.5
+
 y1 = seq(0, 4, length.out=51)
 y2 = seq(-5, -1, length.out=51)
-z = outer(y1, y2, function(y1, y2) {
-    apply(cbind(y1, y2), 1, function(y) {
-        eval(f1, list(y1=y[1], y2=y[2],
-                      mu1=theta$mu1, mu2=theta$mu2, alpha=theta$alpha))
-    })
-})
+z = outer(y1, y2, function(y1, y2) apply(cbind(y1, y2), 1, ff1, theta))
 contour(y1, y2, z)
 
 zz = outer(y1, y2, function(y1, y2) apply(cbind(y1, y2), 1, f2, theta))

@@ -101,8 +101,8 @@ eval(m1)
 eval(m2)
 
 ## benchmark
-system.time(replicate(10, eval(m1)))
-system.time(replicate(10, eval(m2)))
+system.time(replicate(50, eval(m1)))
+system.time(replicate(5, eval(m2))) * 10
 }
 \seealso{
 \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}, \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}

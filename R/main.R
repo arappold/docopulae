@@ -352,7 +352,7 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}
 #'
-#' @examples #TODO
+#' @example examples/fisherI.R
 #'
 #' @export
 fisherI = function(ff, theta, names, yspace, ...) {

@@ -1,19 +1,66 @@
 library(docopulae)
 library(copula)
 
-eta1 = quote(beta1 + beta2*x + beta3*x**2)
-eta2 = quote(beta4*x + beta5*x**3 + beta6*x**4)
+## replace nint_integrateNCube
+tt = function(dimension) {
+    SparseGrid::createIntegrationGrid('GQU', dimension, 3) # very crude
+}
+tt = nint_integrateNCube_SparseGrid(tt)
+unlockBinding('nint_integrateNCube', environment(nint_integrate))
+assign('nint_integrateNCube', tt, envir=environment(nint_integrate))
+
+## build joint pdf and second derivative
+eta = function(theta) {
+    x = theta$x
+    c(theta$beta1 + theta$beta2*x,
+      theta$beta3 + theta$beta4*x)
+}
+
+margins = function(y, theta) {
+    e = eta(theta)
+    return(cbind(dnorm(y, e), pnorm(y, e)))
+}
+C = claytonCopula()
+
+f1 = buildf(margins, C, 'alpha')
+d2logf1 = numDeriv2Logf(f1)
+
+## apply probability integral transform
+theta = list(alpha=2, beta1=1, beta2=2, beta3=3, beta4=4,
+             x=1)
+
+g1 = function(y, theta, i, j) -d2logf1(y, theta, i, j)*f1(y, theta)
+s = nint_space(nint_intvDim(-Inf, Inf), nint_intvDim(-Inf, Inf))
+trans = list(g=function(x) pnorm(x, eta(theta)),
+             gij=function(y) {
+                     e = eta(theta); t1 = qnorm(y, e)
+                     cbind(t1, 1/dnorm(t1, e))
+                 })
+tt = nint_transform(g1, s, 1:2, trans)
+
+## get Fisher information
+n = c('alpha', 'beta1', 'beta2', 'beta3', 'beta4')
+fisherI(tt$f, theta, n, tt$space)
+
+
+## now using expressions
+eta1 = quote(beta1 + beta2*x)
+eta2 = quote(beta3 + beta4*x)
 margins = list(list(pdf=substitute(dnorm(y1, eta1, 1), list(eta1=eta1)),
                     cdf=substitute(pnorm(y1, eta1, 1), list(eta1=eta1))),
                list(pdf=substitute(dnorm(y2, eta2, 1), list(eta2=eta2)),
                     cdf=substitute(pnorm(y2, eta2, 1), list(eta2=eta2))))
-C = frankCopula()
-f = buildf(margins, C)
-f
+C = claytonCopula()
+f2 = buildf(margins, C)
 
-n = c('alpha', 'beta1', 'beta2', 'beta3', 'beta4', 'beta5', 'beta6')
-d2logf = Deriv2Logf(f, n)
-str(d2logf)
+yMap = list(y1=1, y2=2)
+thetaMap = list(alpha='alpha', beta1='beta1', beta2='beta2',
+                x='x',         beta3='beta3', beta4='beta4')
+ff2 = expr2f(f2, yMap=yMap, thetaMap=thetaMap)
+d2logf2 = Deriv2Logf(f2, n, yMap=yMap, thetaMap=thetaMap)
 
+g2 = function(y, theta, i, j) -d2logf2(y, theta, i, j)*ff2(y, theta)
+tt = nint_transform(g2, s, 1:2, trans)
 
+fisherI(tt$f, theta, n, tt$space)
 

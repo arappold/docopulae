@@ -16,7 +16,6 @@ f = function(f, funcs, x0, i0, ...) {
     # disregard unknown structure of f
     stop('do something')
 }
-
 unlockBinding('nint_integrateNFunc', environment(nint_integrate))
 assign('nint_integrateNFunc', f, envir=environment(nint_integrate))
 
