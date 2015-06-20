@@ -397,7 +397,7 @@ fisherI = function(ff, theta, names, yspace, ...) {
     }
 
     # do diagonal
-    for (i in 1:n) {
+    for (i in names) {
         j = i # necessary
         r[i, i] = nint_integrate(gd, yspace, ...)
         #print(j / ncol(combs))
