@@ -2,7 +2,7 @@
 
 #' Sequence Generation
 #'
-#' Similar to \code{base::seq}, however \code{by} is strictly 1 by default (not changing with \code{from}, \code{to}) and every closed interval [result, result + \code{by}] is contained in [\code{from}, \code{to}].
+#' Similar to \code{base::seq}, however \code{by} is strictly 1 by default (not changing with \code{from}, \code{to}) and every closed interval [result, result + \code{by}] is contained in [\code{from}, \code{to} + \code{by}].
 #'
 #' @param from,to,by see \code{\link[base]{seq}} in \pkg{base}.
 #'
@@ -16,7 +16,7 @@
 #'
 #' @export
 seqi = function(from, to, by=1) {
-    length.out_ = as.integer((to - from + sign(by)) / by)
+    length.out_ = ((to - from + sign(by)*.Machine$double.xmin) %/% by) + 1
     if (length.out_ <= 0)
         return(integer(0))
     by_ = by
