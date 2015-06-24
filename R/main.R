@@ -439,7 +439,7 @@ sensDs = function(m, Mi, A, ...) {
 
 getIdcs = function(names, mod) {
     if (is.numeric(names))
-        return(unique(names))
+        return( sort(unique(names)) )
 
     if (length(mod$fisherI) == 0)
         stop('model shall contain at least one Fisher information matrix')
@@ -456,7 +456,7 @@ getIdcs = function(names, mod) {
         }
     }
 
-    return( unique(match(names, nn)) )
+    return(sort( unique(match(names, nn)) ))
 }
 
 getA = function(idcs, n) {
