@@ -46,7 +46,7 @@ update.parm = function(mod, x) {
 
     r = mod
     x = unique(rbind(mod$x, x)) # merge x
-    idcs = seqi(nrow(mod$x) + 1, nrow(x))
+    idcs = seq1(nrow(mod$x) + 1, nrow(x))
 
     if (length(idcs) != 0) {
         xx = x[idcs,, drop=F]
@@ -116,7 +116,7 @@ buildf = function(margins, copula, alphaIdcs=NULL) {
             stop('copula does not have closed form distribution expressions')
 
         margins = lapply(margins, function(margin) lapply(margin, function(e)  substitute((e), list(e=e)) )) # wrap expressions in ()
-        names_ = paste('u', seqi(1, length(margins)), sep='')
+        names_ = paste('u', seq1(1, length(margins)), sep='')
         p = lapply(margins, function(margin) margin$cdf)
         names(p) = names_
         d = lapply(margins, function(margin) margin$pdf)
@@ -130,9 +130,9 @@ buildf = function(margins, copula, alphaIdcs=NULL) {
 
 mergeLanguage = function(...) {
     x = list(...)
-    x = lapply(x, function(x) if (x[[1]] == '{') as.list(x)[seqi(2, length(x))] else x)
+    x = lapply(x, function(x) if (x[[1]] == '{') as.list(x)[seq1(2, length(x))] else x)
     x = unlist(x, recursive=F, use.names=F)
-    names_ = paste('x', seqi(1, length(x)), sep='')
+    names_ = paste('x', seq1(1, length(x)), sep='')
     names(x) = names_
     return(substitute_q(parse(text=paste('{', paste(names_, collapse=';'), '}', sep=''))[[1]], x))
 }
@@ -387,7 +387,7 @@ fisherI = function(ff, theta, names, yspace, ...) {
     r = matrix(0, nrow=n, ncol=n, dimnames=list(names, names))
 
     # do off diagonal
-    for (k in seqi(1, ncol(combs))) {
+    for (k in seq1(1, ncol(combs))) {
         i = combs[1, k]
         j = combs[2, k]
 
@@ -426,9 +426,9 @@ sensD = function(m, Mi, ...) {
 #checkDsA = function(A) {
     #if (ncol(A) < nrow(A))
         #stop('\'A\' shall at least have the same number of columns as rows')
-    #if (!identical(A[, seqi(1, nrow(A)), drop=F], diag(nrow(A)) ))
+    #if (!identical(A[, seq1(1, nrow(A)), drop=F], diag(nrow(A)) ))
         #stop('the left part of \'A\' shall be the identity matrix')
-    #if (any(A[, seqi(nrow(A) + 1, ncol(A))] != 0))
+    #if (any(A[, seq1(nrow(A) + 1, ncol(A))] != 0))
         #stop('the right part of \'A\' shall be zero')
 #}
 
@@ -446,7 +446,7 @@ getIdcs = function(names, mod) {
     tt = mod$fisherI[[1]]
 
     if (is.null(names))
-        return( seqi(1, nrow(tt)) )
+        return( seq1(1, nrow(tt)) )
 
     nn = rownames(tt)
     if (is.null(nn)) {
@@ -462,7 +462,7 @@ getIdcs = function(names, mod) {
 getA = function(idcs, n) {
     s = length(idcs)
     r = matrix(0, nrow=n, ncol=s)
-    r[(seqi(1, s) - 1)*n + idcs] = 1
+    r[(seq1(1, s) - 1)*n + idcs] = 1
     return(r)
 }
 
@@ -504,7 +504,7 @@ FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
 
     n = dim(m)[1]
     idcs = getIdcs(names, mod)
-    if ( identical(idcs, seqi(1, n)) ) {
+    if ( identical(idcs, seq1(1, n)) ) {
         sensF = sensD
         A = NULL
         target = n
@@ -519,7 +519,7 @@ FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
     n = dim(m)[3]
     w = rep(1/n, n)
 
-    for (iIter in seqi(1, maxIter)) {
+    for (iIter in seq1(1, maxIter)) {
         M = getM(m, w)
         Mi = solve(M) # TODO might break
 
@@ -629,7 +629,7 @@ update.design = function(des) {
     Mi = solve(getM(m, des$w))
 
     idcs = getIdcs(des$args$FedorovWynn$names, mod)
-    if (identical(idcs, seqi(1, n)))
+    if (identical(idcs, seq1(1, n)))
         sens = sensD(m, Mi)
     else {
         A = getA(idcs, n)
@@ -714,7 +714,7 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
     # marginal projections
     x = des$x
     sens = des$sens
-    idcs = split(seqi(1, nrow(x)), lapply(margins, function(margin) x[, margin]), drop=T)
+    idcs = split(seq1(1, nrow(x)), lapply(margins, function(margin) x[, margin]), drop=T)
     x = x[sapply(idcs, function(idcs) idcs[1]), margins, drop=F]
     sens = sapply(idcs, function(idcs) max(sens[idcs]))
 
@@ -725,7 +725,7 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
     wx = wDes$x
     ww = wDes$w
     wsens = wDes$sens
-    idcs = split(seqi(1, nrow(wx)), lapply(margins, function(margin) wx[, margin]), drop=T)
+    idcs = split(seq1(1, nrow(wx)), lapply(margins, function(margin) wx[, margin]), drop=T)
     wx = wx[sapply(idcs, function(idcs) idcs[1]), margins, drop=F]
     ww = sapply(idcs, function(idcs) sum(ww[idcs]))
     wsens = sapply(idcs, function(idcs) max(wsens[idcs]))
@@ -820,7 +820,7 @@ Defficiency = function(des, ref) {
     Mref = getM(m, ref$w)
 
     idcs = getIdcs(ref$args$FedorovWynn$names, ref$model)
-    if ( identical(idcs, seqi(1, n)) ) {
+    if ( identical(idcs, seq1(1, n)) ) {
         return((det(M) / det(Mref)) ** (1/n))
     }
 

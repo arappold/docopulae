@@ -149,7 +149,7 @@ nint_print_spaceDims = function(x) {
     if (length(x) == 0)
         return()
     cat(nint_toString_dim(x[[1]]))
-    for (i in seqi(2, length(x))) {
+    for (i in seq1(2, length(x))) {
         cat(' or ')
         cat(nint_toString_dim(x[[i]]))
     }
@@ -252,7 +252,7 @@ nint_space = function(...) {
 #'
 #' @export
 print.nint_space = function(x, ...) {
-    for (i in seqi(1, length(x))) {
+    for (i in seq1(1, length(x))) {
         cat(i, ': ', sep='')
         nint_print_spaceDims(x[[i]])
     }
@@ -363,7 +363,7 @@ nint_ispace = function(x) {
     ii = integer(0) # interval
     fi = integer(0) # function
 
-    for (i in seqi(1, length(x))) {
+    for (i in seq1(1, length(x))) {
         xx = x[[i]]
         if (inherits(xx, 'list'))
             stop('argument is no true subspace')
@@ -546,13 +546,13 @@ nint_ispaces = function(x) {
     #if (d == 0) {
         #r[idcs] = x
     #} else if (d < 0) { # more idcs than items
-        #r[idcs[seqi(1, length(x))]] = x # set
-        #r = r[-idcs[seqi(length(x) + 1, length(idcs))]] # del
+        #r[idcs[seq1(1, length(x))]] = x # set
+        #r = r[-idcs[seq1(length(x) + 1, length(idcs))]] # del
         #r = do.call(nint_space, r)
     #} else { # more items than idcs
-        #r[idcs] = x[seqi(1, length(idcs))] # set
+        #r[idcs] = x[seq1(1, length(idcs))] # set
         #last = idcs[length(idcs)]
-        #r = c(r[seqi(1, last)], x[seqi(length(idcs) + 1, length(x))], r[seqi(last + 1, length(r))]) # insert
+        #r = c(r[seq1(1, last)], x[seq1(length(idcs) + 1, length(x))], r[seq1(last + 1, length(r))]) # insert
         #r = do.call(nint_space, r)
     #}
     #return(r)
@@ -638,7 +638,7 @@ nint_transform = function(f, space, dIdcs, trans, infZero=0) {
                 }
                 return(nint_intvDim(v))
             }, how='replace')[[1]]
-        }, seqi(1, length(dIdcs)), space[dIdcs], SIMPLIFY=F)
+        }, seq1(1, length(dIdcs)), space[dIdcs], SIMPLIFY=F)
         r = space
         r[dIdcs] = rr
         return(r)

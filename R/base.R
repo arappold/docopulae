@@ -2,25 +2,25 @@
 
 #' Sequence Generation
 #'
-#' Similar to \code{base::seq}, however \code{by} is strictly 1 by default (not changing with \code{from}, \code{to}) and every closed interval [result, result + \code{by}] is contained in [\code{from}, \code{to} + \code{by}].
+#' Similar to \code{base::seq}, however \code{by} is strictly 1 by default and \code{integer(0)} is returned if range is empty.
 #'
 #' @param from,to,by see \code{\link[base]{seq}} in \pkg{base}.
 #'
-#' @return \code{seqi} returns either \code{integer(0)} if no closed interval is contained in [\code{from}, \code{to}] (may be empty) or what an appropriate call to \code{base::seq} returned otherwise.
+#' @return \code{seq1} returns either \code{integer(0)} if range is empty or what an appropriate call to \code{base::seq} returns otherwise.
 #'
 #' See examples below.
 #'
-#' @example examples/seq.R
+#' @example examples/seq1.R
 #'
 #' @seealso \code{\link[base]{seq}} in \pkg{base}
 #'
 #' @export
-seqi = function(from, to, by=1) {
-    length.out_ = ((to - from + sign(by)*.Machine$double.xmin) %/% by) + 1
-    if (length.out_ <= 0)
+seq1 = function(from, to, by=1) {
+    if (to == from)
+        return(from)
+    if (sign(to - from) != sign(by))
         return(integer(0))
-    by_ = by
-    return(base::seq(from, by=by_, length.out=length.out_))
+    return(seq(from, to, by))
 }
 
 
@@ -122,7 +122,7 @@ clusterPeak = function(x, y, maxDist) {
     r = rep(0, length(y))
 
     dists = as.matrix(dist(x))
-    idcs = seqi(1, length(y))
+    idcs = seq1(1, length(y))
 
     rr = 1
 
@@ -148,7 +148,7 @@ clusterPeak = function(x, y, maxDist) {
 }
 
 
-orderMatrix = function(x) do.call(order, lapply(seqi(1, ncol(x)), function(i) x[,i]))
+orderMatrix = function(x) do.call(order, lapply(seq1(1, ncol(x)), function(i) x[,i]))
 
 indexMatrix = function(x, y) {
     ordx = orderMatrix(x)
