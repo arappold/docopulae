@@ -4,7 +4,7 @@
 \alias{buildf}
 \title{Build Density}
 \usage{
-buildf(margins, copula, alphaIdcs = NULL)
+buildf(margins, copula, names = NULL)
 }
 \arguments{
 \item{margins}{either \itemize{
@@ -16,7 +16,8 @@ See examples below.
 
 \item{copula}{a copula object from package \pkg{copula}.}
 
-\item{alphaIdcs}{an integer vector specifying the positions of copula parameters in \code{theta}.
+\item{names}{a vector of names or indices, the sequence of copula parameters in \code{theta}.
+\code{0} or \code{""} indicates copula parameters to omit.
 Irrelevant if \code{margins} is a list.}
 }
 \value{

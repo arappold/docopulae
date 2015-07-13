@@ -79,7 +79,8 @@ substitute_q <- function(x, env) {
 #' See examples below.
 #' }
 #' @param copula a copula object from package \pkg{copula}.
-#' @param alphaIdcs an integer vector specifying the positions of copula parameters in \code{theta}.
+#' @param names a vector of names or indices, the sequence of copula parameters in \code{theta}.
+#' \code{0} or \code{""} indicates copula parameters to omit.
 #' Irrelevant if \code{margins} is a list.
 #'
 #' @return \code{buildf} returns either \itemize{
@@ -95,18 +96,20 @@ substitute_q <- function(x, env) {
 #' @example examples/buildf.R
 #'
 #' @export
-buildf = function(margins, copula, alphaIdcs=NULL) {
-    tt = list(margins, copula, alphaIdcs)
+buildf = function(margins, copula, names=NULL) {
+    tt = list(margins, copula, names)
     if (is.function(margins)) {
-        if (length(alphaIdcs) == 0) {
+        idcs = which(names != 0 & names != '')
+        if (length(idcs) == 0) {
             r = function(y, theta, ...) {
                 dp = margins(y, theta, ...)
                 return(copula::dCopula(dp[,2], copula) * prod(dp[,1]))
             }
         } else {
+            names = names[idcs]
             r = function(y, theta, ...) {
                 dp = margins(y, theta, ...)
-                copula@parameters = as.numeric(theta[alphaIdcs])
+                copula@parameters[idcs] = as.numeric(theta[names])
                 return(copula::dCopula(dp[,2], copula) * prod(dp[,1]))
             }
         }
@@ -116,11 +119,11 @@ buildf = function(margins, copula, alphaIdcs=NULL) {
             stop('copula does not have closed form distribution expressions')
 
         margins = lapply(margins, function(margin) lapply(margin, function(e)  substitute((e), list(e=e)) )) # wrap expressions in ()
-        names_ = paste('u', seq1(1, length(margins)), sep='')
+        n = paste('u', seq1(1, length(margins)), sep='')
         p = lapply(margins, function(margin) margin$cdf)
-        names(p) = names_
+        base::names(p) = n
         d = lapply(margins, function(margin) margin$pdf)
-        names(d) = names_
+        base::names(d) = n
 
         r = substitute((a)*b, list(a=substitute_q(exprdist$pdf, p), b=substitute_q(parse(text=paste(names_, collapse='*'))[[1]], d)))
     }
@@ -525,7 +528,9 @@ FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
 
         sens = sensF(m, Mi, A)
 
-        maxIdx = which.max(sens)
+        maxIdx = which(sens == max(sens))
+        if (length(maxIdx) != 1)
+            maxIdx = sample(maxIdx, 1)
         d = sens[maxIdx] - target
         if (d < tolAbs_)
             break
@@ -806,7 +811,7 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
 #'
 #' @return \code{Defficiency} returns a single numeric.
 #'
-#' @seealso \code{\link{FedorovWynn}}, \code{\link{update.design}}
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{update_reference}}
 #'
 #' @examples #TODO
 #'

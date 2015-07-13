@@ -27,6 +27,6 @@ and Ds efficiency as
 #TODO
 }
 \seealso{
-\code{\link{FedorovWynn}}, \code{\link{update.design}}
+\code{\link{FedorovWynn}}, \code{\link{update_reference}}
 }
 
