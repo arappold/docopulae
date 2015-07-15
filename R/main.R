@@ -830,9 +830,9 @@ Defficiency = function(des, ref) {
     }
 
     s = length(idcs)
-    M12 = M[idcs, -idcs]
-    Mref12 = Mref[idcs, -idcs]
+    M12 = M[idcs, -idcs, drop=F]
+    Mref12 = Mref[idcs, -idcs, drop=F]
 
-    return(( det(M[idcs, idcs] - M12 %*% solve(M[-idcs, -idcs]) %*% t(M12)) / det(Mref[idcs, idcs] - Mref12 %*% solve(Mref[-idcs, -idcs]) %*% t(Mref12)) ) ** (1/s))
+    return(( det(M[idcs, idcs, drop=F] - M12 %*% solve(M[-idcs, -idcs, drop=F]) %*% t(M12)) / det(Mref[idcs, idcs, drop=F] - Mref12 %*% solve(Mref[-idcs, -idcs, drop=F]) %*% t(Mref12)) ) ** (1/s))
 }
 
