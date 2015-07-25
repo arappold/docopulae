@@ -2,9 +2,9 @@
 
 #' Sequence Generation
 #'
-#' Similar to \code{base::seq}, however \code{by} is strictly 1 by default and \code{integer(0)} is returned if range is empty.
+#' \code{seq1} is similar to \code{base::seq}, however \code{by} is strictly \code{1} by default and \code{integer(0)} is returned if range is empty.
 #'
-#' @param from,to,by see \code{\link[base]{seq}} in \pkg{base}.
+#' @param from,to,by see \code{\link[base]{seq}}.
 #'
 #' @return \code{seq1} returns either \code{integer(0)} if range is empty or what an appropriate call to \code{base::seq} returns otherwise.
 #'
@@ -12,7 +12,7 @@
 #'
 #' @example examples/seq1.R
 #'
-#' @seealso \code{\link[base]{seq}} in \pkg{base}
+#' @seealso \code{\link[base]{seq}}
 #'
 #' @export
 seq1 = function(from, to, by=1) {
@@ -25,19 +25,23 @@ seq1 = function(from, to, by=1) {
 
 
 Derivf = function(f, names) {
-    temp = Deriv::drule[['[[']]
-    assign('[[', list(0), envir=Deriv::drule)
+    # applies Deriv
+    # ignores [[
+    #temp = Deriv::drule[['[[']]
+    #assign('[[', list(0), envir=Deriv::drule)
 
     r = lapply(names, function(name) Deriv::Deriv(f, name))
-    names(r) = names
+    base::names(r) = names
 
-    assign('[[', temp, envir=Deriv::drule)
+    #assign('[[', temp, envir=Deriv::drule)
     return(r)
 }
 
 Deriv2f = function(f, names) {
-    temp = Deriv::drule[['[[']]
-    assign('[[', list(0), envir=Deriv::drule)
+    # applies Deriv twice
+    # ignores [[
+    #temp = Deriv::drule[['[[']]
+    #assign('[[', list(0), envir=Deriv::drule)
 
     r = replicate(length(names), list())
     base::names(r) = names
@@ -53,11 +57,13 @@ Deriv2f = function(f, names) {
         }
     }
 
-    assign('[[', temp, envir=Deriv::drule)
+    #assign('[[', temp, envir=Deriv::drule)
     return(r)
 }
 
+
 mirrorMatrix = function(x) {
+    # transforms upper/lower diagonal matrix to full matrix
     r = x
     diag(r) = 0
     r = r + t(r)
@@ -65,6 +71,8 @@ mirrorMatrix = function(x) {
     return(r)
 }
 
+
+## nested list helper
 is_flat = function(x) !any(sapply(x, inherits, 'list'))
 
 flatten = function(x) {
@@ -75,30 +83,34 @@ flatten = function(x) {
     return(do.call(c, lapply(x, flatten) ))
 }
 
+
 zmin = function(x) ifelse(length(x) == 0, 0, min(x))
 zmax = function(x) ifelse(length(x) == 0, 0, max(x))
 
+
 lproduct = function(x) {
+    # product expands a list of lists
     if (length(x) == 0)
         return(list())
-    idcs = lapply(x, function(x) 1:length(x))
+    idcs = lapply(x, seq)
     idcs = do.call(expand.grid, idcs)
     colnames(idcs) = names(x[[1]])
-    r = apply(idcs, 1, function(idcs) mapply(function(idx, i) x[[i]][[idx]], idcs, 1:length(x), SIMPLIFY=F))
+    r = apply(idcs, 1, function(idcs)
+        mapply(function(idx, i) x[[i]][[idx]], idcs, 1:length(x), SIMPLIFY=F))
     return(r)
 }
 
 
 #' Integrate Alternative
 #'
-#' A tolerance wrapper for \code{stats::integrate}.
+#' \code{integrateA} is a tolerance wrapper for \code{stats::integrate}.
 #' It allows \code{integrate} to reach the maximum number of subdivisions.
 #'
-#' See \code{stats::integrate}.
+#' See \code{\link[stats]{integrate}}.
 #'
-#' @param f,lower,upper,...,subdivisions,rel.tol,abs.tol,stop.on.error,keep.xy,aux see \code{stats::integrate}.
+#' @param f,lower,upper,...,subdivisions,rel.tol,abs.tol,stop.on.error,keep.xy,aux see \code{\link[stats]{integrate}}.
 #'
-#' @seealso \code{\link[stats]{integrate}} in package \pkg{stats}
+#' @seealso \code{\link[stats]{integrate}}
 #'
 #' @export
 integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$double.eps^0.25, abs.tol=rel.tol, stop.on.error=TRUE, keep.xy=FALSE, aux=NULL) {
@@ -148,13 +160,15 @@ clusterPeak = function(x, y, maxDist) {
 }
 
 
+# row order of a matrix
 orderMatrix = function(x) do.call(order, lapply(seq1(1, ncol(x)), function(i) x[,i]))
 
 indexMatrix = function(x, y) {
+    # for each row in y, finds the index of first matching row in x
     ordx = orderMatrix(x)
     ordy = orderMatrix(y)
     r = which(duplicated(rbind(y[ordy,, drop=F], x[ordx,, drop=F]))) - nrow(y)
-    # r contains now indices of matching rows in sorted x
+    # here r contains indices of matching rows in sorted x
     return(ordx[r][order(ordy)])
 }
 

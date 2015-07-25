@@ -1,46 +1,46 @@
 
 
-#' Create Parametric Model
+#' Parametric Model
 #'
-#' \code{parm} creates an initial model object.
+#' \code{param} creates an initial parametric model object.
 #' Unlike other model statements this function does not perform any computation.
 #'
 #' @param fisherIf \code{function(x, ...)}, where \code{x} is a numeric vector, usually a point from the design space.
 #' It shall evaluate to the Fisher information.
 #' @param dDim length of \code{x}, usually the dimensionality of the design space.
 #'
-#' @return \code{parm} returns an object of \code{class} \code{"parm"}.
-#' An object of class \code{"parm"} is a list containing the following components:
+#' @return \code{param} returns an object of \code{class} \code{"param"}.
+#' An object of class \code{"param"} is a list containing the following components:
 #' \itemize{
 #' \item fisherIf: argument
 #' \item dDim: argument
 #' \item x: row matrix of points where \code{fisherIf} has already been evaluated.
-#' \item fisherI: list of Fisher information matrices for each row of \code{x} respectively.
+#' \item fisherI: list of Fisher information matrices for each row in \code{x} respectively.
 #' }
 #'
-#' @seealso \code{\link{update.parm}}, \code{\link{FedorovWynn}}
+#' @seealso \code{\link{fisherI}}, \code{\link{update.param}},  \code{\link{FedorovWynn}}
 #'
 #' @export
-parm = function(fisherIf, dDim) {
+param = function(fisherIf, dDim) {
     r = list(fisherIf=fisherIf, dDim=dDim, x=matrix(nrow=0, ncol=dDim), fisherI=list())
-    class(r) = 'parm'
+    class(r) = 'param'
     return(r)
 }
 
 
 #' Update Parametric Model
 #'
-#' \code{update.parm} evaluates the Fisher information if necessary and returns the updated model object.
+#' \code{update.param} evaluates the Fisher information (if necessary) and returns an updated model object.
 #'
-#' @param mod an object of class \code{"parm"}.
-#' @param x a row matrix of points to evaluate the Fisher information at.
+#' @param mod an object of class \code{"param"}.
+#' @param x a row matrix of points to add.
 #' The number of columns shall be equal to \code{mod$dDim}.
-#' @return \code{update.parm} returns an object of \code{class} \code{"parm"}.
+#' @return \code{update.param} returns an object of \code{class} \code{"param"}.
 #'
-#' @seealso \code{\link{parm}}
+#' @seealso \code{\link{param}}
 #'
 #' @export
-update.parm = function(mod, x) {
+update.param = function(mod, x) {
     if (ncol(x) != mod$dDim)
         stop(paste('x shall have exactly', mod$dDim, 'columns'))
 
@@ -70,28 +70,26 @@ substitute_q <- function(x, env) {
 
 #' Build Density
 #'
-#' \code{buildf} builds an object that evaluates to the density of a random vector given the marginal distributions and some copula.
+#' \code{buildf} builds the joint probabilty density given the marginal distributions and some copula.
+#'
+#' If \code{buildf} should build an expression, the copula shall provide distribution expressions.
+#' Please note that expressions are not validated.
 #'
 #' @param margins either \itemize{
 #' \item \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
-#' It shall return a matrix with densities in the first column and cumulative densities in the second.
-#' \item list of expressions each of which contains the PDF and CDF accessible by \code{$pdf} and \code{$cdf}.
-#' See examples below.
+#' It shall return a column matrix of two, the probability densities and cumulative distributions.
+#' \item list of pairs of expressions, named \code{"pdf"} and \code{"cdf"}, the probability density and cumulative distribution.
 #' }
 #' @param copula a copula object from package \pkg{copula}.
-#' @param names a vector of names or indices, the sequence of copula parameters in \code{theta}.
+#' @param names (if \code{margins} is a function) a vector of names or indices, the sequence of copula parameters in \code{theta}.
 #' \code{0} or \code{""} indicates copula parameters to omit.
-#' Irrelevant if \code{margins} is a list.
 #'
 #' @return \code{buildf} returns either \itemize{
-#' \item \code{function(y, theta, ...)}, the joint PDF, if \code{margins} is a function.
-#' \item the joint PDF as an expression built upon the copula PDF, the marginal PDFs and CDFs, otherwise.
+#' \item \code{function(y, theta, ...)}, the joint probability density function, if \code{margins} is a function.
+#' \item the joint probabilty density as an expression, otherwise.
 #' }
 #'
-#' @details If \code{buildf} should build an expression, the copula needs to contain the probability density as an expression.
-#' Note also that there is no check whether or not the final expression is valid.
-#'
-#' @seealso \pkg{copula}, \code{\link{expr2f}}, \code{\link{fisherI}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}
+#' @seealso \pkg{copula}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 #'
 #' @example examples/buildf.R
 #'
@@ -116,7 +114,7 @@ buildf = function(margins, copula, names=NULL) {
     } else { # list of expressions
         exprdist = attr(copula, 'exprdist')
         if (is.null(exprdist))
-            stop('copula does not have closed form distribution expressions')
+            stop('copula does not provide distribution expressions')
 
         margins = lapply(margins, function(margin) lapply(margin, function(e)  substitute((e), list(e=e)) )) # wrap expressions in ()
         n = paste('u', seq1(1, length(margins)), sep='')
@@ -125,7 +123,7 @@ buildf = function(margins, copula, names=NULL) {
         d = lapply(margins, function(margin) margin$pdf)
         base::names(d) = n
 
-        r = substitute((a)*b, list(a=substitute_q(exprdist$pdf, p), b=substitute_q(parse(text=paste(names_, collapse='*'))[[1]], d)))
+        r = substitute((a)*b, list(a=substitute_q(exprdist$pdf, p), b=substitute_q(parse(text=paste(n, collapse='*'))[[1]], d)))
     }
     return(r)
 }
@@ -151,14 +149,14 @@ withQuotes = function(x) {
 #' \code{expr2f} turns an expression into \code{function(y, theta, ...)}.
 #'
 #' @param x an expression.
-#' @param map a named list of names defining left assignments (\code{a="b"} := \code{a <- b}).
-#' @param yMap like \code{map} but items \code{a=1} resolve to \code{a <- y[1]}.
-#' @param thetaMap like \code{yMap} for \code{theta} with single element access \code{[[}.
+#' @param map a named list of character strings defining left assignments (\code{a="b"} => \code{a <- b}).
+#' @param yMap like \code{map} with \code{a=b} resolving to \code{a <- y[b]}.
+#' @param thetaMap like \code{map} with \code{a=b} resolving to \code{a <- theta[[b]]}.
 #'
 #' @return \code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
 #' It evaluates expression \code{x}.
 #'
-#' @seealso \code{\link{buildf}}, \code{\link{fisherI}}
+#' @seealso \code{\link{buildf}}, \code{\link{DerivLogf}}
 #'
 #' @example examples/expr2f.R
 #'
@@ -182,19 +180,18 @@ expr2f = function(x, map=NULL, yMap=NULL, thetaMap=NULL) {
 
 #' Build Derivative Function for Log f
 #'
-#' Builds a function that evaluates to the first or second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]} or \code{theta[[i]]} and \code{theta[[j]]}.
+#' Builds a function that evaluates to the first/second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
 #'
 #' \pkg{numDeriv} produces \code{NaN}s if the log evaluates to (negative) \code{Inf} so you may want to specify \code{logZero} and \code{logInf}.
 #'
 #' @param f \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
-#' A joint PDF.
-#' @param logZero the value \code{log(f)} should return if \code{f} evaluates to 0.
-#' See details below.
+#' A joint probability density function.
+#' @param logZero the value \code{log(f)} should return if \code{f} evaluates to \code{0}.
 #' @param logInf the value \code{log(f)} should return if \code{f} evaluates to \code{Inf}.
 #' @param method see \pkg{numDeriv}
 #' @param method.args see \pkg{numDeriv}
 #'
-#' @seealso \code{\link{buildf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}, \code{\link[numDeriv]{grad}} and \code{\link[numDeriv]{hessian}} in package \pkg{numDeriv}
+#' @seealso \pkg{numDeriv}, \code{\link{buildf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 #'
 #' @example examples/numDerivLogf.R
 #'
@@ -271,23 +268,21 @@ numDeriv2Logf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double
 
 #' Build Derivative Function for Log f
 #'
-#' Builds a function that evaluates to the first or second derivative of \code{log(f)} with respect to one or any two variables specified.
+#' Builds a function that evaluates to the first/second derivative of \code{log(f)} with respect to a predefined set of variables/variable combinations.
 #'
-#' While \code{numDerivLogf} relies on \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \code{DerivLogf} utilizes \code{Deriv} to build sub functions for each variable in argument \code{names}.
+#' While \code{numDerivLogf} relies on \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \code{DerivLogf} utilizes \code{Deriv} to build sub functions for each variable in \code{names}.
 #' The same is true for \code{Deriv2Logf}.
 #'
-#' \code{Deriv} won't recognize parameters accessed by \code{[[} (e.g. \code{theta[["beta1"]]}).
-#' Therefore you need to specify mappings from \code{y} and \code{theta} to the variables used in \code{f}.
-#' See arguments above and examples below.
+#' \code{Deriv} won't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} (e.g. \code{theta[["beta1"]]}).
+#' Therefore it's necessary to specify mappings from \code{y} and \code{theta} to the variables in \code{f}.
 #'
-#' @param f a joint PDF as an expression.
+#' @param f an expression, a joint probability density.
 #' @param names a character vector of variable names.
-#' @param map a named list of names defining left assignments (\code{a="b"} := \code{a <- b}).
-#' See details below.
-#' @param yMap like \code{map} but items \code{a=1} resolve to \code{a <- y[1]}.
-#' @param thetaMap like \code{yMap} for \code{theta} with single element access \code{[[}.
+#' @param map a named list of character strings defining left assignments (\code{a="b"} => \code{a <- b}).
+#' @param yMap like \code{map} with \code{a=b} resolving to \code{a <- y[b]}.
+#' @param thetaMap like \code{map} with \code{a=b} resolving to \code{a <- theta[[b]]}.
 #'
-#' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}, \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}
+#' @seealso \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}, 
 #'
 #' @example examples/DerivLogf.R
 #'
@@ -298,7 +293,7 @@ NULL
 #'
 #' @return \code{DerivLogf} returns \code{function(y, theta, i, ...)} where \code{theta} is a list of parameters.
 #' It evaluates to the first derivative of \code{log(f)} with respect to variable \code{i}.
-#' Additionally the attribute \code{"d"} contains the list of derivative functions.
+#' Additionally the attribute \code{"d"} contains the list of sub functions.
 #'
 #' @export
 DerivLogf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
@@ -317,7 +312,7 @@ DerivLogf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' @return \code{Deriv2Logf} returns \code{function(y, theta, i, j, ...)} where \code{theta} is a list of parameters.
 #' It evaluates to the second derivative of \code{log(f)} with respect to the variables \code{i} and \code{j}.
-#' Additionally the attribute \code{"d2"} contains the list of all pairwise derivative functions.
+#' Additionally the attribute \code{"d2"} contains the list of sub functions.
 #'
 #' @export
 Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
@@ -340,20 +335,19 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' If \code{ff} is a list, then it shall contain \code{dlogf} xor \code{d2logf}.
 #'
 #' @param ff either \itemize{
-#' \item \code{function(y, theta, i, j, ...)} which evaluates to the inner part of the expectation integral/sum
+#' \item \code{function(y, theta, i, j, ...)} which evaluates to the inner part of the expectation integral/sum.
 #' \item \code{list(f=function(y, theta, ...), d2logf=function(y, theta, i, j, ...))} (recommended)
 #' \item \code{list(f=function(y, theta, ...), dlogf=function(y, theta, i, ...))}
 #' }
-#' where \code{f} is the joint density and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
+#' where \code{f} is the joint probability density function and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
 #' @param theta a list of parameters.
 #' @param names a vector of names or indices, the subset of parameters.
-#' @param yspace the support of \code{y}.
-#' See \code{\link{nint_space}}.
+#' @param yspace a space, the support of \code{y}.
 #' @param ... other arguments passed to \code{ff}.
 #'
 #' @return \code{fisherI} returns a named matrix, the Fisher information.
 #'
-#' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}
+#' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{param}},  \code{\link{nint_transform}}, \code{\link{nint_integrate}}
 #'
 #' @example examples/fisherI.R
 #'
@@ -471,11 +465,11 @@ getA = function(idcs, n) {
 
 #' Fedorov Wynn Algorithm
 #'
-#' \code{FedorovWynn} computes a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
+#' \code{FedorovWynn} finds a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
 #'
 #' TODO shortly describe what is done and why (reference to paper).
 #'
-#' @param mod an object of \code{class} \code{"parm"}.
+#' @param mod an object of \code{class} \code{"param"}.
 #' @param names a vector of names or indices, the subset of parameters to optimize for.
 #' @param tolAbs the absolute tolerance for the upper bound of the sensitivity.
 #' @param tolRel the relative tolerance with respect to the number of parameters.
@@ -494,7 +488,7 @@ getA = function(idcs, n) {
 #'
 #' @examples #TODO
 #'
-#' @seealso \code{\link{parm}}, \code{\link{reduce}}
+#' @seealso \code{\link{param}}, \code{\link{reduce}}
 #'
 #' @export
 FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
@@ -618,7 +612,7 @@ getm = function(des, mod=NULL) {
 #'
 #' @return \code{update.design} returns an object of \code{class} \code{"design"}. See \code{FedorovWynn} for its structural definition.
 #'
-#' @seealso \code{\link{reduce}}, \code{\link{update.parm}}, \code{\link{FedorovWynn}}
+#' @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
 #'
 #' @examples #TODO
 #'
@@ -655,7 +649,7 @@ update.design = function(des) {
 #' @return \code{update_reference} returns an object of \code{class} \code{"design"}.
 #' See \code{FedorovWynn} for its structural definition.
 #'
-#' @seealso \code{\link{Defficiency}}, \code{\link{update.design}}, \code{\link{update.parm}}
+#' @seealso \code{\link{Defficiency}}, \code{\link{update.design}}, \code{\link{update.param}}
 #'
 #' @examples #TODO
 #'

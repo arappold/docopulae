@@ -9,16 +9,16 @@ integrateA(f, lower, upper, ..., subdivisions = 100L,
   stop.on.error = TRUE, keep.xy = FALSE, aux = NULL)
 }
 \arguments{
-\item{f,lower,upper,...,subdivisions,rel.tol,abs.tol,stop.on.error,keep.xy,aux}{see \code{stats::integrate}.}
+\item{f,lower,upper,...,subdivisions,rel.tol,abs.tol,stop.on.error,keep.xy,aux}{see \code{\link[stats]{integrate}}.}
 }
 \description{
-A tolerance wrapper for \code{stats::integrate}.
+\code{integrateA} is a tolerance wrapper for \code{stats::integrate}.
 It allows \code{integrate} to reach the maximum number of subdivisions.
 }
 \details{
-See \code{stats::integrate}.
+See \code{\link[stats]{integrate}}.
 }
 \seealso{
-\code{\link[stats]{integrate}} in package \pkg{stats}
+\code{\link[stats]{integrate}}
 }
 

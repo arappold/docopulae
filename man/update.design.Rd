@@ -20,6 +20,6 @@ It also updates the corresponding sensitivities.
 #TODO
 }
 \seealso{
-\code{\link{reduce}}, \code{\link{update.parm}}, \code{\link{FedorovWynn}}
+\code{\link{reduce}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
 }
 

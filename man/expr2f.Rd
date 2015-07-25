@@ -9,11 +9,11 @@ expr2f(x, map = NULL, yMap = NULL, thetaMap = NULL)
 \arguments{
 \item{x}{an expression.}
 
-\item{map}{a named list of names defining left assignments (\code{a="b"} := \code{a <- b}).}
+\item{map}{a named list of character strings defining left assignments (\code{a="b"} => \code{a <- b}).}
 
-\item{yMap}{like \code{map} but items \code{a=1} resolve to \code{a <- y[1]}.}
+\item{yMap}{like \code{map} with \code{a=b} resolving to \code{a <- y[b]}.}
 
-\item{thetaMap}{like \code{yMap} for \code{theta} with single element access \code{[[}.}
+\item{thetaMap}{like \code{map} with \code{a=b} resolving to \code{a <- theta[[b]]}.}
 }
 \value{
 \code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
@@ -41,6 +41,6 @@ expr2f(f, yMap=list(y1=1, y2=2),
                                     sd1='sd1', sd2='sd2'))
 }
 \seealso{
-\code{\link{buildf}}, \code{\link{fisherI}}
+\code{\link{buildf}}, \code{\link{DerivLogf}}
 }
 

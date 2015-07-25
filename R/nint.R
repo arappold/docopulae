@@ -43,12 +43,12 @@ nint_TYPE_INTV_DIM = 3
 nint_TYPE_FUNC_DIM = 4
 
 
-#' Scattered Dimension
+#' Scatter Dimension
 #'
-#' \code{nint_scatDim} is defined by a vector of values which in combination with other scatter dimensions creates a sparse grid.
+#' \code{nint_scatDim} is defined by a sequence of values.
+#' Together with other scatter dimensions it defines a sparse grid.
 #'
-#' Imagine using cbind to create a matrix where each row defines a point.
-#' This is the role \code{nint_scatDim} plays.
+#' Imagine using \code{cbind} to create a row matrix of points.
 #'
 #' @param x a vector of any type.
 #'
@@ -65,10 +65,10 @@ nint_scatDim = function(x) {
 
 #' Grid Dimension
 #'
-#' \code{nint_gridDim} is defined by a vector of values which in combination with other grid dimensions creates a dense grid.
+#' \code{nint_gridDim} is defined by a sequence of values.
+#' Together with other grid dimensions it defines a dense grid.
 #'
-#' Imagine using expand.grid to create a matrix where each row defines a point.
-#' This is the role \code{nint_gridDim} plays.
+#' Imagine using \code{expand.grid} to create a row matrix of points.
 #'
 #' @param x a vector of any type.
 #'
@@ -85,23 +85,22 @@ nint_gridDim = function(x) {
 
 #' Interval Dimension
 #'
-#' \code{nint_intvDim} defines a continous range with a fixed lower and upper limit.
+#' \code{nint_intvDim} defines a fixed interval.
 #' The limits may be (negative) \code{Inf}.
 #'
-#' @param x either a vector containing lower and upper limit, or a single value specifying only the lower limit.
+#' @param x either a single numeric, the lower limit, or a vector of length 2, the lower and upper limit.
 #' @param b the upper limit if \code{x} is the lower limit.
 #'
 #' @return \code{nint_intvDim} returns a vector of length 2 with the dimension type attribute set to \code{nint_TYPE_INTV_DIM}.
 #'
-#' @seealso \code{\link{nint_TYPE}}, \code{\link{nint_space}}, \code{\link{nint_transform}}
+#' @seealso \code{\link{nint_TYPE}}, \code{\link{nint_space}}
 #'
 #' @export
 nint_intvDim = function(x, b=NULL) {
-    if (is.null(b)) {
+    if (is.null(b))
         x = as.vector(x)
-    } else {
+    else
         x = c(x, b)
-    }
     if (length(x) != 2) stop('exactly two values shall be specified as limits')
     attr(x, 'nint_dtype') = nint_TYPE_INTV_DIM
     return(x)
@@ -112,11 +111,12 @@ nint_intvDim = function(x, b=NULL) {
 #' \code{nint_funcDim} defines a functionally dependent dimension.
 #' It shall depend solely on the previous dimensions.
 #'
-#' @param x \code{function(y)}, where \code{y} is the partially realized point in the space. It shall return an object of type \code{nint_intvDim} or a vector.
+#' Obviously if \code{x} returns an object of type \code{nint_intvDim} the dimension is continuous, and discrete otherwise.
 #'
-#' @details Obviously if \code{x} returns an object of type \code{nint_intvDim} the dimension is continous, and discrete otherwise.
+#' As the argument to \code{x} is only partially defined the user has to make sure that the function solely depends on values up to the current dimension.
 #'
-#' As the argument of \code{x} contains values for all dimensions the user has to make sure that the function solely depends on values up to the right dimension.
+#' @param x \code{function(x)}, where \code{x} is the partially realized point in the space.
+#' It shall return an object of type \code{nint_intvDim} or a vector.
 #'
 #' @return \code{nint_scatDim} returns its argument with the dimension type attribute set to \code{nint_TYPE_FUNC_DIM}.
 #'
@@ -162,7 +162,7 @@ nint_print_spaceDims = function(x) {
 #' Error codes for space validation.
 #'
 #' @format integer
-#' @seealso \code{\link{nint_validateSpace}}
+#' @seealso \code{\link{nint_validateSpace}}, \code{\link{nint_space}}
 #'
 #' @name nint_ERROR
 NULL
@@ -171,14 +171,14 @@ NULL
 #'
 #' @usage nint_ERROR_DIM_TYPE = -1001
 #'
-#' @details \code{nint_ERROR_DIM_TYPE}: dimension type attribute does not exist or is not valid.
+#' @details \code{nint_ERROR_DIM_TYPE}: dimension type attribute does not exist or is invalid.
 nint_ERROR_DIM_TYPE = -1001
 
 #' @rdname nint_ERROR
 #'
 #' @usage nint_ERROR_SCATTER_LENGTH = -1002
 #'
-#' @details \code{nint_ERROR_SCATTER_LENGTH}: scatter dimensions of different lengths.
+#' @details \code{nint_ERROR_SCATTER_LENGTH}: scatter dimensions have different lengths.
 nint_ERROR_SCATTER_LENGTH = -1002
 
 #' @rdname nint_ERROR
@@ -192,7 +192,7 @@ nint_ERROR_SPACE_TYPE = -1003
 #'
 #' @usage nint_ERROR_SPACE_DIM = -1004
 #'
-#' @details \code{nint_ERROR_SPACE_DIM}: subspaces with different number of dimensions.
+#' @details \code{nint_ERROR_SPACE_DIM}: subspaces have different number of dimensions.
 nint_ERROR_SPACE_DIM = -1004
 
 
@@ -215,17 +215,18 @@ nint_validateSpaceDims = function(x, refl) zmin(sapply(flatten(x), nint_validate
 #' Space
 #'
 #' \code{nint_space} defines an n-dimensional space as a list of dimensions.
-#' A space may contain subspaces.
+#' A space may consist of subspaces.
 #' A space without subspaces is called true subspace.
 #'
-#' If a space contains at least one list structure of dimension objects it consists of subspaces each defined by a combination of dimension objects along all dimensions.
-#' See \code{\link{nint_expandSpace}} on how to extract them.
+#' If a space contains at least one list structure of dimension objects it consists of subspaces.
+#' Each subspace is then defined by a combination of dimension objects along the dimensions.
+#' See \code{\link{nint_expandSpace}} on how to expand a space to true subspaces.
 #'
 #' @param ... dimensions each of which may be an actual dimension object or a list structure of dimension objects.
 #'
 #' @return \code{nint_space} returns an object of \code{class} \code{"nint_space"}.
 #'
-#' @seealso \code{\link{nint_scatDim}}, \code{\link{nint_gridDim}}, \code{\link{nint_intvDim}}, \code{\link{nint_funcDim}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}, \code{\link{nint_expandSpace}}
+#' @seealso \code{\link{nint_scatDim}}, \code{\link{nint_gridDim}}, \code{\link{nint_intvDim}}, \code{\link{nint_funcDim}}, \code{\link{nint_integrate}}, \code{\link{nint_validateSpace}}, \code{\link{nint_expandSpace}}
 #'
 #' @example examples/nint_space.R
 #'
@@ -238,7 +239,7 @@ nint_space = function(...) {
 
 #' Print Space
 #'
-#' Prints object of type \code{nint_space} in a convenient way.
+#' \code{print.nint_space} prints a space in a convenient way.
 #'
 #' Each line represents a dimension.
 #' Format: "<dim idx>: <dim repr>".
@@ -260,7 +261,7 @@ print.nint_space = function(x, ...) {
 
 #' Validate Space
 #'
-#' \code{nint_validateSpace} performs some checks to make sure the space is well defined.
+#' \code{nint_validateSpace} performs a couple of checks on some space to make sure it is properly defined.
 #'
 #' @param x some space.
 #'
@@ -301,7 +302,7 @@ nint_validateSpace_getRefl_ = function(x) {
 
 #' Expand Space
 #'
-#' \code{nint_expandSpace} expands some space or list structure of spaces to a list of all true subspaces.
+#' \code{nint_expandSpace} expands some space or list structure of spaces to a list of true subspaces.
 #'
 #' @param x some space or a list structure of spaces.
 #'
@@ -424,109 +425,6 @@ nint_ispaces = function(x) {
 }
 
 
-# replaced by nint_transform
-### Transform Infinite Intervals
-###
-### \code{nint_transformInf} transforms (semi) infinite intervals to finite intervals.
-###
-### Transformations: \itemize{
-### \item (\code{-Inf}, a): \code{x = a + 1 - 1/t} with t between 0 and 1
-### \item (a, \code{Inf}): \code{x = a - 1 + 1/t} with t between 0 and 1
-### \item (\code{-Inf}, \code{Inf}): \code{x = t/(1 - abs(t))} with t between -1 and 1
-### }
-###
-### @param f a scalar-valued function.
-### @param ispace an integration space.
-###
-### @return \code{nint_transformInf} returns a list containing the transformed function and transformed integration space.
-###
-### @seealso \code{\link{nint_integrate}}, \code{\link{nint_ispace}}
-###
-### @example examples/nint_transformInf.R
-###
-### @export
-#nint_transformInf = function(f, ispace) {
-    #r = list()
-    #rispace = ispace # copy
-
-    #types = names(ispace)
-    #for (i in seq(ispace)) {
-        #type = types[[i]]
-        #if (type != 'i') {
-            #next
-        #}
-
-        #stage = ispace[[i]]
-
-        ## __  .. finite limits
-        ## l  .. -Inf, a
-        ## u  .. a, Inf
-        ## b .. -Inf, Inf
-        #infTypes = apply(stage$g, 1, function(limits) ifelse(limits[[1]] == -Inf, ifelse(limits[[2]] == Inf, 'b', 'l'), ifelse(limits[[2]] == Inf, 'u', '__')))
-
-        #lu = rep(F, length(infTypes))
-        #j = infTypes == 'l'
-        #lu = lu | j
-        #if (any(j))
-            #r$l = rbind(r$l, cbind(stage$i[j], stage$g[j, 2]))
-        #j = infTypes == 'u'
-        #lu = lu | j
-        #if (any(j))
-            #r$u = rbind(r$u, cbind(stage$i[j], stage$g[j, 1]))
-        #if (any(lu))
-            #rispace[[i]]$g[lu,] = matrix(c(0, 1), nrow=sum(lu), ncol=2, byrow=T)
-
-        #j = infTypes == 'b'
-        #if (any(j)) {
-            #r$b = c(r$b, stage$i[j])
-            #rispace[[i]]$g[j,] = matrix(c(-1, 1), nrow=sum(j), ncol=2, byrow=T)
-        #}
-    #}
-
-    #if (!is.null(r$l) && nrow(r$l) != 0) {
-        #li = r$l[,1] # idcs
-        #ll = r$l[,2] # upper limits
-        #lf = f
-        #f = function(x, ...) {
-            #t1 = 1 / x[li]
-            #t2 = prod(t1 * t1)
-            #if (t2 == Inf)
-                #return(0)
-            #x[li] = ll + 1 - t1
-            #return(lf(x, ...) * t2)
-        #}
-    #}
-    #if (!is.null(r$u) && nrow(r$u) != 0) {
-        #ui = r$u[,1] # idcs
-        #ul = r$u[,2] # lower limits
-        #uf = f
-        #f = function(x, ...) {
-            #t1 = 1 / x[ui]
-            #t2 = prod(t1 * t1)
-            #if (t2 == Inf)
-                #return(0)
-            #x[ui] = ul - 1 + t1
-            #return(uf(x, ...) * t2)
-        #}
-    #}
-    #if (!is.null(r$b)) {
-        #bi = r$b
-        #bf = f
-        #f = function(x, ...) {
-            #t1 = x[bi]
-            #t2 = 1 / (1 - abs(t1))
-            #t3 = prod(t2 * t2)
-            #if (t3 == Inf)
-                #return(0)
-            #x[bi] = t1 * t2
-            #return(bf(x, ...) * t3)
-        #}
-    #}
-
-    #return(list(f=f, ispace=rispace))
-#}
-
-
 # not needed
 ## @export
 #nint_applyToSpace = function(space, d, f) {
@@ -581,26 +479,26 @@ transforms = list(tan=list(g=atan,
 
 #' Transform Integral
 #'
-#' \code{nint_transform} applies monotonic continous transformations.
-#' A common use case is to transform infinite intervals to finite ones.
+#' \code{nint_transform} applies monotonic transformations to some integrand and space.
+#' A common use case is to apply the probability integral transform, or to transform infinite limits to finite ones.
 #'
 #' If the transformation is vector valued, that is \code{y = c(y1, ..., yn) = g(c(x1, ..., xn))}, then each component of \code{y} shall exclusively depend on the corresponding component of \code{x}.
-#' An incorrect expression for this would be: \code{y[i] = g[i](x[i])}.
+#' So \code{y[i] = g[i](x[i])} for some implicit function \code{g[i]}.
 #'
 #' Builtins: \itemize{
-#' \item tan: \code{y = atan(x)}
-#' \item ratio: \code{y = x/abs(x + sign(x))} with \code{sign(0) == 1}
+#' \item tan: \code{g(x) = atan(x) = y}
+#' \item ratio: \code{g(x) = x/abs(x + sign(x))} = y with \code{sign(0) == 1}
 #' }
 #'
-#' @param f \code{function(x, ...)}.
+#' @param f \code{function(x, ...)}, the integrand.
 #' @param space some space.
 #' @param dIdcs an integer vector of indices, the dimensions to transform.
-#' @param trans either the name of some builtin transformation or \code{list(g=function(x), gij=function(y))} where \code{y = g(x)} and \code{gij} evaluates to the column matrix of \code{gi(y) = x} and its first derivative with respect to \code{y}.
+#' @param trans either the name of some builtin transformation or \code{list(g=function(x), gij=function(y))} where \code{g(x) = y} and \code{gij} evaluates to the column matrix of \code{gi(y) = x} and its first derivative with respect to \code{y}.
 #' @param infZero the value to return if the jacobian is infinite and \code{f} returns \code{0}.
 #'
-#' @return \code{nint_transform} returns a named list containing the transformed function and space.
+#' @return \code{nint_transform} returns a named list containing the transformed integrand and space.
 #'
-#' @seealso \code{\link{nint_space}}, \code{\link{nint_integrate}}, \code{\link{nint_intvDim}}
+#' @seealso \code{\link{nint_integrate}}, \code{\link{nint_space}}
 #'
 #' @example examples/nint_transform.R
 #'
@@ -623,7 +521,7 @@ nint_transform = function(f, space, dIdcs, trans, infZero=0) {
         x = rep(NA, length(dIdcs))
         rr = mapply(function(i, d) { # for each dimension
             rapply(list(d), function(d) { # for each true dimension
-                dtype = attr(d, 'nint_dtype')
+                dtype = nint_dtype(d)
                 if (is.null(dtype) || dtype != nint_TYPE_INTV_DIM)
                     stop('dimensions shall exclusively be of type interval')
 
@@ -668,16 +566,16 @@ nint_transform = function(f, space, dIdcs, trans, infZero=0) {
 
 
 
-#' Integrate N Cube
+#' Integrate Hypercube
 #'
 #' Interface to the integration over interval dimensions.
 #'
+#' \code{nint_integrate} uses \code{nint_integrateNCube} to handle interval dimensions.
+#' See examples below on how to deploy different solutions.
+#'
 #' @usage nint_integrateNCube(f, lowerLimit, upperLimit, ...)
 #'
-#' @details \code{nint_integrateNCube} is a reference to the function that \code{nint_integrate} calls with exactly these arguments to integrate over interval dimensions.
-#' See examples below on how to replace it with a different function.
-#'
-#' @param f the scalar-valued function (integrand) to be integrated.
+#' @param f the scalar-valued wrapper function to be integrated.
 #' @param lowerLimit the lower limits of integration.
 #' @param upperLimit the upper limits of integration.
 #' @param ... other arguments passed to \code{f}.
@@ -695,12 +593,12 @@ NULL
 
 #' @param integrate \code{function(f, lowerLimit, upperLimit, ...)} which calls \code{stats::integrate}.
 #'
-#' @details \code{nint_integrateNCube_integrate} uses \code{integrate} recursively.
+#' @details \code{nint_integrateNCube_integrate} calls \code{integrate} recursively.
 #' Downside: number of function evaluations is \code{(subdivisions * 21) ** N}.
-#' This is the default because no package is required.
+#' This is the default because no additional package is required.
 #' However, you most likely want to consider different solutions.
 #'
-#' @seealso \code{\link{integrateA}}, \code{\link[stats]{integrate}} in \pkg{stats}
+#' @seealso \code{\link{integrateA}}, \code{\link[stats]{integrate}}
 #'
 #' @rdname nint_integrateNCube
 #'
@@ -710,19 +608,19 @@ nint_integrateNCube_integrate = function(integrate) {
     r = function(f, lowerLimit, upperLimit, ...) {
         maxDepth = length(lowerLimit)
 
-        y = rep(0, maxDepth)
+        x = rep(0, maxDepth)
         d = 0
-        g = Vectorize(function(x, ...) {
-            y[d] <<- x
+        g = Vectorize(function(xx, ...) {
+            x[d] <<- xx
             if (d == maxDepth) {
-                return(f(y, ...))
+                return(f(x, ...))
             }
 
             d <<- d + 1
             r = integrate(g, lowerLimit[d], upperLimit[d], ...)$value
             d <<- d - 1
             return(r)
-        }, 'x')
+        }, 'xx')
 
         return(g(0, ...))
     }
@@ -779,15 +677,15 @@ nint_integrateNCube = nint_integrateNCube_integrate(integrateA)
 #'
 #' Inferface to the integration over function dimensions.
 #'
+#' \code{nint_integrate} uses \code{nint_integrateNFunc} to handle function dimensions.
+#' See examples below on how to deploy different solutions.
+#'
 #' @usage nint_integrateNFunc(f, funcs, x0, i0, ...)
 #'
-#' @details \code{nint_integrateNCube} is a reference to the function that \code{nint_integrate} calls with exactly these arguments to integrate over function dimensions.
-#' See examples below on how to replace it with a different function.
-#'
-#' @param f the scalar-valued function (integrand) to be integrated.
-#' @param funcs the list of functions. See \code{\link{nint_funcDim}}.
-#' @param x0 the partially realized point.
-#' @param i0 the vector of indices where the function dimensions fit into \code{x0}.
+#' @param f the scalar-valued wrapper function to be integrated.
+#' @param funcs the list of function dimensions.
+#' @param x0 the partially realized point in the space.
+#' @param i0 the vector of indices of function dimensions in the space.
 #' @param ... other arguments passed to \code{f}.
 #'
 #' @return \code{nint_integrateNFunc} returns a single numeric.
@@ -801,38 +699,39 @@ nint_integrateNCube = nint_integrateNCube_integrate(integrateA)
 #' @export
 NULL
 
-#' @param integrateIntv \code{function(f, lowerLimit, upperLimit, ...)}, which performs one dimensional integration.
+#' @param integrate1 \code{function(f, lowerLimit, upperLimit, ...)} which performs one dimensional integration.
 #'
-#' @details \code{nint_integrateNFunc_recursive} returns a recursive implementation which directly sums over discrete dimensions and uses \code{integrateIntv} otherwise. In conjunction with \code{stats::integrate} this is the default.
+#' @details \code{nint_integrateNFunc_recursive} returns a recursive implementation which directly sums over discrete dimensions and uses \code{integrate1} otherwise.
+#' In conjunction with \code{integrateA} this is the default.
 #'
-#' @seealso \code{\link[stats]{integrate}} in \pkg{stats}
+#' @seealso \code{\link{integrateA}}
 #'
 #' @rdname nint_integrateNFunc
-nint_integrateNFunc_recursive = function(integrateIntv) {
+nint_integrateNFunc_recursive = function(integrate1) {
     r = function(f, funcs, x0, i0, ...) {
         maxDepth = length(funcs)
         if (maxDepth == 0)
             return(0)
 
-        y = rep(0, maxDepth)
+        x = rep(0, maxDepth)
         d = 0
-        g = Vectorize(function(x, ...) {
-            y[d] <<- x
-            x0[i0[d]] <<- x
+        g = Vectorize(function(xx, ...) {
+            x[d] <<- xx
+            x0[i0[d]] <<- xx
             if (d == maxDepth) {
-                return(f(y, ...))
+                return(f(x, ...))
             }
 
             d <<- d + 1
             n = funcs[[d]](x0)
             type = nint_dtype(n)
             if (type == nint_TYPE_INTV_DIM)
-                r = integrateIntv(g, n[1], n[2], ...)
+                r = integrate1(g, n[1], n[2], ...)
             else
                 r = sum(vapply(n, g, 0, ...))
             d <<- d - 1
             return(r)
-        }, 'x')
+        }, 'xx')
 
         return(g(0, ...))
     }
@@ -845,13 +744,13 @@ nint_integrateNFunc = nint_integrateNFunc_recursive(function(...) integrateA(...
 
 #' Integrate
 #'
-#' \code{nint_integrate} performs n-dimensional integration of some scalar-valued function over the supplied space.
+#' \code{nint_integrate} performs summation and integration of some scalar-valued function over some space.
 #'
-#' \code{nint_integrate} calls \code{nint_integrateNCube} and \code{nint_integrateNFunc} to integrate over interval and function dimensions.
-#' See their help pages on how to replace them by different functions.
+#' \code{nint_integrate} uses \code{nint_integrateNCube} and \code{nint_integrateNFunc} to handle interval and function dimensions.
+#' See their help pages on how to deploy different solutions.
 #'
-#' Exploration of the space is done recursively with the order of dimensions optimized for efficiency.
-#' Therefore interchangeability of dimensions (except for function dimensions) is assumed.
+#' The order of dimensions is optimized for efficiency.
+#' Therefore interchangeability (except for function dimensions) is assumed.
 #'
 #' @param f the scalar-valued function (integrand) to be integrated.
 #' @param space some space.
@@ -870,7 +769,7 @@ nint_integrate = function(f, space, ...) {
         return(0)
 
     # globals
-    y = rep(0, sum(sapply(ispaces[[1]], function(x) length(x$i)) ))
+    x = rep(0, sum(sapply(ispaces[[1]], function(x) length(x$i)) ))
     ispace = NULL
     gg = list() # sequence of functions
     maxDepth = 0
@@ -880,13 +779,13 @@ nint_integrate = function(f, space, ...) {
 
     gs = function(...) sum(apply(g, 1, gd, ...)) # g scatter
     gi = function(...) nint_integrateNCube(gd, g[,1], g[,2], ...) # g interval
-    gf = function(...) nint_integrateNFunc(gd, g, y, i, ...) # g function
+    gf = function(...) nint_integrateNFunc(gd, g, x, i, ...) # g function
     gl = list(s=gs, g=gs, i=gi, f=gf) # g list
 
-    gd = function(x, ...) { # g dispatch
-        y[i] <<- x
+    gd = function(xx, ...) { # g dispatch
+        x[i] <<- xx
         if (d == maxDepth)
-            return(f(y, ...))
+            return(f(x, ...))
 
         # save state
         ti = i

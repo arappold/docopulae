@@ -12,7 +12,7 @@
 \item{...}{ignored.}
 }
 \description{
-Prints object of type \code{nint_space} in a convenient way.
+\code{print.nint_space} prints a space in a convenient way.
 }
 \details{
 Each line represents a dimension.

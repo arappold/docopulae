@@ -17,10 +17,9 @@ numDeriv2Logf(f, logZero = .Machine$double.xmin,
 }
 \arguments{
 \item{f}{\code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
-A joint PDF.}
+A joint probability density function.}
 
-\item{logZero}{the value \code{log(f)} should return if \code{f} evaluates to 0.
-See details below.}
+\item{logZero}{the value \code{log(f)} should return if \code{f} evaluates to \code{0}.}
 
 \item{logInf}{the value \code{log(f)} should return if \code{f} evaluates to \code{Inf}.}
 
@@ -34,7 +33,7 @@ See details below.}
 \code{numDeriv2Logf} returns \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
 }
 \description{
-Builds a function that evaluates to the first or second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]} or \code{theta[[i]]} and \code{theta[[j]]}.
+Builds a function that evaluates to the first/second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
 }
 \details{
 \pkg{numDeriv} produces \code{NaN}s if the log evaluates to (negative) \code{Inf} so you may want to specify \code{logZero} and \code{logInf}.
@@ -76,6 +75,6 @@ dimnames(m) = list(n, n)
 m
 }
 \seealso{
-\code{\link{buildf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}, \code{\link[numDeriv]{grad}} and \code{\link[numDeriv]{hessian}} in package \pkg{numDeriv}
+\pkg{numDeriv}, \code{\link{buildf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 }
 

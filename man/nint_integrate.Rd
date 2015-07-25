@@ -17,14 +17,14 @@ nint_integrate(f, space, ...)
 \code{nint_integrate} returns a single numeric.
 }
 \description{
-\code{nint_integrate} performs n-dimensional integration of some scalar-valued function over the supplied space.
+\code{nint_integrate} performs summation and integration of some scalar-valued function over some space.
 }
 \details{
-\code{nint_integrate} calls \code{nint_integrateNCube} and \code{nint_integrateNFunc} to integrate over interval and function dimensions.
-See their help pages on how to replace them by different functions.
+\code{nint_integrate} uses \code{nint_integrateNCube} and \code{nint_integrateNFunc} to handle interval and function dimensions.
+See their help pages on how to deploy different solutions.
 
-Exploration of the space is done recursively with the order of dimensions optimized for efficiency.
-Therefore interchangeability of dimensions (except for function dimensions) is assumed.
+The order of dimensions is optimized for efficiency.
+Therefore interchangeability (except for function dimensions) is assumed.
 }
 \examples{
 library(docopulae)

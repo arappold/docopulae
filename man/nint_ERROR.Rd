@@ -22,16 +22,16 @@ nint_ERROR_SPACE_DIM = -1004
 Error codes for space validation.
 }
 \details{
-\code{nint_ERROR_DIM_TYPE}: dimension type attribute does not exist or is not valid.
+\code{nint_ERROR_DIM_TYPE}: dimension type attribute does not exist or is invalid.
 
-\code{nint_ERROR_SCATTER_LENGTH}: scatter dimensions of different lengths.
+\code{nint_ERROR_SCATTER_LENGTH}: scatter dimensions have different lengths.
 
 \code{nint_ERROR_SPACE_TYPE}: object not of type \code{"nint_space"}.
 
-\code{nint_ERROR_SPACE_DIM}: subspaces with different number of dimensions.
+\code{nint_ERROR_SPACE_DIM}: subspaces have different number of dimensions.
 }
 \seealso{
-\code{\link{nint_validateSpace}}
+\code{\link{nint_validateSpace}}, \code{\link{nint_space}}
 }
 \keyword{datasets}
 

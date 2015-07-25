@@ -10,36 +10,34 @@ DerivLogf(f, names, map = NULL, yMap = NULL, thetaMap = NULL)
 Deriv2Logf(f, names, map = NULL, yMap = NULL, thetaMap = NULL)
 }
 \arguments{
-\item{f}{a joint PDF as an expression.}
+\item{f}{an expression, a joint probability density.}
 
 \item{names}{a character vector of variable names.}
 
-\item{map}{a named list of names defining left assignments (\code{a="b"} := \code{a <- b}).
-See details below.}
+\item{map}{a named list of character strings defining left assignments (\code{a="b"} => \code{a <- b}).}
 
-\item{yMap}{like \code{map} but items \code{a=1} resolve to \code{a <- y[1]}.}
+\item{yMap}{like \code{map} with \code{a=b} resolving to \code{a <- y[b]}.}
 
-\item{thetaMap}{like \code{yMap} for \code{theta} with single element access \code{[[}.}
+\item{thetaMap}{like \code{map} with \code{a=b} resolving to \code{a <- theta[[b]]}.}
 }
 \value{
 \code{DerivLogf} returns \code{function(y, theta, i, ...)} where \code{theta} is a list of parameters.
 It evaluates to the first derivative of \code{log(f)} with respect to variable \code{i}.
-Additionally the attribute \code{"d"} contains the list of derivative functions.
+Additionally the attribute \code{"d"} contains the list of sub functions.
 
 \code{Deriv2Logf} returns \code{function(y, theta, i, j, ...)} where \code{theta} is a list of parameters.
 It evaluates to the second derivative of \code{log(f)} with respect to the variables \code{i} and \code{j}.
-Additionally the attribute \code{"d2"} contains the list of all pairwise derivative functions.
+Additionally the attribute \code{"d2"} contains the list of sub functions.
 }
 \description{
-Builds a function that evaluates to the first or second derivative of \code{log(f)} with respect to one or any two variables specified.
+Builds a function that evaluates to the first/second derivative of \code{log(f)} with respect to a predefined set of variables/variable combinations.
 }
 \details{
-While \code{numDerivLogf} relies on \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \code{DerivLogf} utilizes \code{Deriv} to build sub functions for each variable in argument \code{names}.
+While \code{numDerivLogf} relies on \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \code{DerivLogf} utilizes \code{Deriv} to build sub functions for each variable in \code{names}.
 The same is true for \code{Deriv2Logf}.
 
-\code{Deriv} won't recognize parameters accessed by \code{[[} (e.g. \code{theta[["beta1"]]}).
-Therefore you need to specify mappings from \code{y} and \code{theta} to the variables used in \code{f}.
-See arguments above and examples below.
+\code{Deriv} won't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} (e.g. \code{theta[["beta1"]]}).
+Therefore it's necessary to specify mappings from \code{y} and \code{theta} to the variables in \code{f}.
 }
 \examples{
 library(docopulae)
@@ -105,6 +103,6 @@ system.time(replicate(50, eval(m1)))
 system.time(replicate(5, eval(m2))) * 10
 }
 \seealso{
-\code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}, \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}
+\code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}},
 }
 

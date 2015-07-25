@@ -7,7 +7,8 @@
 nint_funcDim(x)
 }
 \arguments{
-\item{x}{\code{function(y)}, where \code{y} is the partially realized point in the space. It shall return an object of type \code{nint_intvDim} or a vector.}
+\item{x}{\code{function(x)}, where \code{x} is the partially realized point in the space.
+It shall return an object of type \code{nint_intvDim} or a vector.}
 }
 \value{
 \code{nint_scatDim} returns its argument with the dimension type attribute set to \code{nint_TYPE_FUNC_DIM}.
@@ -17,9 +18,9 @@ nint_funcDim(x)
 It shall depend solely on the previous dimensions.
 }
 \details{
-Obviously if \code{x} returns an object of type \code{nint_intvDim} the dimension is continous, and discrete otherwise.
+Obviously if \code{x} returns an object of type \code{nint_intvDim} the dimension is continuous, and discrete otherwise.
 
-As the argument of \code{x} contains values for all dimensions the user has to make sure that the function solely depends on values up to the right dimension.
+As the argument to \code{x} is only partially defined the user has to make sure that the function solely depends on values up to the current dimension.
 }
 \seealso{
 \code{\link{nint_TYPE}}, \code{\link{nint_space}}

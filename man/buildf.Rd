@@ -9,29 +9,27 @@ buildf(margins, copula, names = NULL)
 \arguments{
 \item{margins}{either \itemize{
 \item \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
-It shall return a matrix with densities in the first column and cumulative densities in the second.
-\item list of expressions each of which contains the PDF and CDF accessible by \code{$pdf} and \code{$cdf}.
-See examples below.
+It shall return a column matrix of two, the probability densities and cumulative distributions.
+\item list of pairs of expressions, named \code{"pdf"} and \code{"cdf"}, the probability density and cumulative distribution.
 }}
 
 \item{copula}{a copula object from package \pkg{copula}.}
 
-\item{names}{a vector of names or indices, the sequence of copula parameters in \code{theta}.
-\code{0} or \code{""} indicates copula parameters to omit.
-Irrelevant if \code{margins} is a list.}
+\item{names}{(if \code{margins} is a function) a vector of names or indices, the sequence of copula parameters in \code{theta}.
+\code{0} or \code{""} indicates copula parameters to omit.}
 }
 \value{
 \code{buildf} returns either \itemize{
-\item \code{function(y, theta, ...)}, the joint PDF, if \code{margins} is a function.
-\item the joint PDF as an expression built upon the copula PDF, the marginal PDFs and CDFs, otherwise.
+\item \code{function(y, theta, ...)}, the joint probability density function, if \code{margins} is a function.
+\item the joint probabilty density as an expression, otherwise.
 }
 }
 \description{
-\code{buildf} builds an object that evaluates to the density of a random vector given the marginal distributions and some copula.
+\code{buildf} builds the joint probabilty density given the marginal distributions and some copula.
 }
 \details{
-If \code{buildf} should build an expression, the copula needs to contain the probability density as an expression.
-Note also that there is no check whether or not the final expression is valid.
+If \code{buildf} should build an expression, the copula shall provide distribution expressions.
+Please note that expressions are not validated.
 }
 \examples{
 library(docopulae)
@@ -90,6 +88,6 @@ zz = outer(y1, y2, function(y1, y2) apply(cbind(y1, y2), 1, f2, theta))
 contour(y1, y2, zz, col='red', add=TRUE)
 }
 \seealso{
-\pkg{copula}, \code{\link{expr2f}}, \code{\link{fisherI}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}
+\pkg{copula}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 }
 

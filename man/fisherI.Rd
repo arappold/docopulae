@@ -8,18 +8,17 @@ fisherI(ff, theta, names, yspace, ...)
 }
 \arguments{
 \item{ff}{either \itemize{
-\item \code{function(y, theta, i, j, ...)} which evaluates to the inner part of the expectation integral/sum
+\item \code{function(y, theta, i, j, ...)} which evaluates to the inner part of the expectation integral/sum.
 \item \code{list(f=function(y, theta, ...), d2logf=function(y, theta, i, j, ...))} (recommended)
 \item \code{list(f=function(y, theta, ...), dlogf=function(y, theta, i, ...))}
 }
-where \code{f} is the joint density and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.}
+where \code{f} is the joint probability density function and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.}
 
 \item{theta}{a list of parameters.}
 
 \item{names}{a vector of names or indices, the subset of parameters.}
 
-\item{yspace}{the support of \code{y}.
-See \code{\link{nint_space}}.}
+\item{yspace}{a space, the support of \code{y}.}
 
 \item{...}{other arguments passed to \code{ff}.}
 }
@@ -101,6 +100,6 @@ fisherI(tt$f, theta, n, tt$space)
 
 }
 \seealso{
-\code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}
+\code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{param}},  \code{\link{nint_transform}}, \code{\link{nint_integrate}}
 }
 

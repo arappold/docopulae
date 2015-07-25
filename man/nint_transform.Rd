@@ -7,30 +7,30 @@
 nint_transform(f, space, dIdcs, trans, infZero = 0)
 }
 \arguments{
-\item{f}{\code{function(x, ...)}.}
+\item{f}{\code{function(x, ...)}, the integrand.}
 
 \item{space}{some space.}
 
 \item{dIdcs}{an integer vector of indices, the dimensions to transform.}
 
-\item{trans}{either the name of some builtin transformation or \code{list(g=function(x), gij=function(y))} where \code{y = g(x)} and \code{gij} evaluates to the column matrix of \code{gi(y) = x} and its first derivative with respect to \code{y}.}
+\item{trans}{either the name of some builtin transformation or \code{list(g=function(x), gij=function(y))} where \code{g(x) = y} and \code{gij} evaluates to the column matrix of \code{gi(y) = x} and its first derivative with respect to \code{y}.}
 
 \item{infZero}{the value to return if the jacobian is infinite and \code{f} returns \code{0}.}
 }
 \value{
-\code{nint_transform} returns a named list containing the transformed function and space.
+\code{nint_transform} returns a named list containing the transformed integrand and space.
 }
 \description{
-\code{nint_transform} applies monotonic continous transformations.
-A common use case is to transform infinite intervals to finite ones.
+\code{nint_transform} applies monotonic transformations to some integrand and space.
+A common use case is to apply the probability integral transform, or to transform infinite limits to finite ones.
 }
 \details{
 If the transformation is vector valued, that is \code{y = c(y1, ..., yn) = g(c(x1, ..., xn))}, then each component of \code{y} shall exclusively depend on the corresponding component of \code{x}.
-An incorrect expression for this would be: \code{y[i] = g[i](x[i])}.
+So \code{y[i] = g[i](x[i])} for some implicit function \code{g[i]}.
 
 Builtins: \itemize{
-\item tan: \code{y = atan(x)}
-\item ratio: \code{y = x/abs(x + sign(x))} with \code{sign(0) == 1}
+\item tan: \code{g(x) = atan(x) = y}
+\item ratio: \code{g(x) = x/abs(x + sign(x))} = y with \code{sign(0) == 1}
 }
 }
 \examples{
@@ -79,6 +79,6 @@ tt$space
 
 }
 \seealso{
-\code{\link{nint_space}}, \code{\link{nint_integrate}}, \code{\link{nint_intvDim}}
+\code{\link{nint_integrate}}, \code{\link{nint_space}}
 }
 

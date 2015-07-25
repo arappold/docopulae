@@ -14,12 +14,13 @@ nint_space(...)
 }
 \description{
 \code{nint_space} defines an n-dimensional space as a list of dimensions.
-A space may contain subspaces.
+A space may consist of subspaces.
 A space without subspaces is called true subspace.
 }
 \details{
-If a space contains at least one list structure of dimension objects it consists of subspaces each defined by a combination of dimension objects along all dimensions.
-See \code{\link{nint_expandSpace}} on how to extract them.
+If a space contains at least one list structure of dimension objects it consists of subspaces.
+Each subspace is then defined by a combination of dimension objects along the dimensions.
+See \code{\link{nint_expandSpace}} on how to expand a space to true subspaces.
 }
 \examples{
 library(docopulae)
@@ -31,6 +32,6 @@ s = nint_space(nint_gridDim(1:4),
 s
 }
 \seealso{
-\code{\link{nint_scatDim}}, \code{\link{nint_gridDim}}, \code{\link{nint_intvDim}}, \code{\link{nint_funcDim}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}, \code{\link{nint_expandSpace}}
+\code{\link{nint_scatDim}}, \code{\link{nint_gridDim}}, \code{\link{nint_intvDim}}, \code{\link{nint_funcDim}}, \code{\link{nint_integrate}}, \code{\link{nint_validateSpace}}, \code{\link{nint_expandSpace}}
 }
 

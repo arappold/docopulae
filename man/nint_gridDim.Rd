@@ -13,11 +13,11 @@ nint_gridDim(x)
 \code{nint_scatDim} returns its argument with the dimension type attribute set to \code{nint_TYPE_GRID_DIM}.
 }
 \description{
-\code{nint_gridDim} is defined by a vector of values which in combination with other grid dimensions creates a dense grid.
+\code{nint_gridDim} is defined by a sequence of values.
+Together with other grid dimensions it defines a dense grid.
 }
 \details{
-Imagine using expand.grid to create a matrix where each row defines a point.
-This is the role \code{nint_gridDim} plays.
+Imagine using \code{expand.grid} to create a row matrix of points.
 }
 \seealso{
 \code{\link{nint_TYPE}}, \code{\link{nint_space}}

@@ -7,7 +7,7 @@
 seq1(from, to, by = 1)
 }
 \arguments{
-\item{from,to,by}{see \code{\link[base]{seq}} in \pkg{base}.}
+\item{from,to,by}{see \code{\link[base]{seq}}.}
 }
 \value{
 \code{seq1} returns either \code{integer(0)} if range is empty or what an appropriate call to \code{base::seq} returns otherwise.
@@ -15,7 +15,7 @@ seq1(from, to, by = 1)
 See examples below.
 }
 \description{
-Similar to \code{base::seq}, however \code{by} is strictly 1 by default and \code{integer(0)} is returned if range is empty.
+\code{seq1} is similar to \code{base::seq}, however \code{by} is strictly \code{1} by default and \code{integer(0)} is returned if range is empty.
 }
 \examples{
 library(docopulae)
@@ -26,11 +26,11 @@ seq1(3, 1)
 3:1
 
 ## by = -3
-seq1(5, -2, -3)
 seq1(5, 5, -3)
 seq1(5, 3, -3)
+seq1(5, 2, -3)
 }
 \seealso{
-\code{\link[base]{seq}} in \pkg{base}
+\code{\link[base]{seq}}
 }
 

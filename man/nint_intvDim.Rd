@@ -7,7 +7,7 @@
 nint_intvDim(x, b = NULL)
 }
 \arguments{
-\item{x}{either a vector containing lower and upper limit, or a single value specifying only the lower limit.}
+\item{x}{either a single numeric, the lower limit, or a vector of length 2, the lower and upper limit.}
 
 \item{b}{the upper limit if \code{x} is the lower limit.}
 }
@@ -15,10 +15,10 @@ nint_intvDim(x, b = NULL)
 \code{nint_intvDim} returns a vector of length 2 with the dimension type attribute set to \code{nint_TYPE_INTV_DIM}.
 }
 \description{
-\code{nint_intvDim} defines a continous range with a fixed lower and upper limit.
+\code{nint_intvDim} defines a fixed interval.
 The limits may be (negative) \code{Inf}.
 }
 \seealso{
-\code{\link{nint_TYPE}}, \code{\link{nint_space}}, \code{\link{nint_transform}}
+\code{\link{nint_TYPE}}, \code{\link{nint_space}}
 }
 

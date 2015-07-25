@@ -14,7 +14,7 @@ nint_expandSpace(x)
 Each space is a true subspace.
 }
 \description{
-\code{nint_expandSpace} expands some space or list structure of spaces to a list of all true subspaces.
+\code{nint_expandSpace} expands some space or list structure of spaces to a list of true subspaces.
 }
 \examples{
 library(docopulae)

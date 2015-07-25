@@ -8,7 +8,7 @@ FedorovWynn(mod, names = NULL, tolAbs = Inf, tolRel = 1e-04,
   maxIter = 10000)
 }
 \arguments{
-\item{mod}{an object of \code{class} \code{"parm"}.}
+\item{mod}{an object of \code{class} \code{"param"}.}
 
 \item{names}{a vector of names or indices, the subset of parameters to optimize for.}
 
@@ -31,7 +31,7 @@ An object of class \code{"design"} is a list containing the following components
 }
 }
 \description{
-\code{FedorovWynn} computes a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
+\code{FedorovWynn} finds a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
 }
 \details{
 TODO shortly describe what is done and why (reference to paper).
@@ -40,6 +40,6 @@ TODO shortly describe what is done and why (reference to paper).
 #TODO
 }
 \seealso{
-\code{\link{parm}}, \code{\link{reduce}}
+\code{\link{param}}, \code{\link{reduce}}
 }
 

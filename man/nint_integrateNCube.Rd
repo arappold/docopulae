@@ -5,7 +5,7 @@
 \alias{nint_integrateNCube_SparseGrid}
 \alias{nint_integrateNCube_cubature}
 \alias{nint_integrateNCube_integrate}
-\title{Integrate N Cube}
+\title{Integrate Hypercube}
 \usage{
 nint_integrateNCube(f, lowerLimit, upperLimit, ...)
 
@@ -22,7 +22,7 @@ nint_integrateNCube_SparseGrid(createIntegrationGrid)
 
 \item{createIntegrationGrid}{\code{function(dimension)} which calls \code{SparseGrid::createIntegrationGrid}.}
 
-\item{f}{the scalar-valued function (integrand) to be integrated.}
+\item{f}{the scalar-valued wrapper function to be integrated.}
 
 \item{lowerLimit}{the lower limits of integration.}
 
@@ -37,12 +37,12 @@ nint_integrateNCube_SparseGrid(createIntegrationGrid)
 Interface to the integration over interval dimensions.
 }
 \details{
-\code{nint_integrateNCube} is a reference to the function that \code{nint_integrate} calls with exactly these arguments to integrate over interval dimensions.
-See examples below on how to replace it with a different function.
+\code{nint_integrate} uses \code{nint_integrateNCube} to handle interval dimensions.
+See examples below on how to deploy different solutions.
 
-\code{nint_integrateNCube_integrate} uses \code{integrate} recursively.
+\code{nint_integrateNCube_integrate} calls \code{integrate} recursively.
 Downside: number of function evaluations is \code{(subdivisions * 21) ** N}.
-This is the default because no package is required.
+This is the default because no additional package is required.
 However, you most likely want to consider different solutions.
 
 \code{nint_integrateNCube_cubature} is a trivial wrapper for \code{cubature::adaptIntegrate}.
@@ -95,7 +95,7 @@ nint_integrate(sin, nint_space(nint_intvDim(0, 2*pi)))
 \seealso{
 \code{\link{nint_integrate}}
 
-\code{\link{integrateA}}, \code{\link[stats]{integrate}} in \pkg{stats}
+\code{\link{integrateA}}, \code{\link[stats]{integrate}}
 
 \code{\link[cubature]{adaptIntegrate}} in package \pkg{cubature}
 

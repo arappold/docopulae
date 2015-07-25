@@ -7,18 +7,18 @@
 \usage{
 nint_integrateNFunc(f, funcs, x0, i0, ...)
 
-nint_integrateNFunc_recursive(integrateIntv)
+nint_integrateNFunc_recursive(integrate1)
 }
 \arguments{
-\item{integrateIntv}{\code{function(f, lowerLimit, upperLimit, ...)}, which performs one dimensional integration.}
+\item{integrate1}{\code{function(f, lowerLimit, upperLimit, ...)} which performs one dimensional integration.}
 
-\item{f}{the scalar-valued function (integrand) to be integrated.}
+\item{f}{the scalar-valued wrapper function to be integrated.}
 
-\item{funcs}{the list of functions. See \code{\link{nint_funcDim}}.}
+\item{funcs}{the list of function dimensions.}
 
-\item{x0}{the partially realized point.}
+\item{x0}{the partially realized point in the space.}
 
-\item{i0}{the vector of indices where the function dimensions fit into \code{x0}.}
+\item{i0}{the vector of indices of function dimensions in the space.}
 
 \item{...}{other arguments passed to \code{f}.}
 }
@@ -29,10 +29,11 @@ nint_integrateNFunc_recursive(integrateIntv)
 Inferface to the integration over function dimensions.
 }
 \details{
-\code{nint_integrateNCube} is a reference to the function that \code{nint_integrate} calls with exactly these arguments to integrate over function dimensions.
-See examples below on how to replace it with a different function.
+\code{nint_integrate} uses \code{nint_integrateNFunc} to handle function dimensions.
+See examples below on how to deploy different solutions.
 
-\code{nint_integrateNFunc_recursive} returns a recursive implementation which directly sums over discrete dimensions and uses \code{integrateIntv} otherwise. In conjunction with \code{stats::integrate} this is the default.
+\code{nint_integrateNFunc_recursive} returns a recursive implementation which directly sums over discrete dimensions and uses \code{integrate1} otherwise.
+In conjunction with \code{integrateA} this is the default.
 }
 \examples{
 library(docopulae)
@@ -62,6 +63,6 @@ try(nint_integrate(function(x) 1, s))
 \seealso{
 \code{\link{nint_integrate}}
 
-\code{\link[stats]{integrate}} in \pkg{stats}
+\code{\link{integrateA}}
 }
 

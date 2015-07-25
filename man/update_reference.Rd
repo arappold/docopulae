@@ -22,6 +22,6 @@ See \code{FedorovWynn} for its structural definition.
 #TODO
 }
 \seealso{
-\code{\link{Defficiency}}, \code{\link{update.design}}, \code{\link{update.parm}}
+\code{\link{Defficiency}}, \code{\link{update.design}}, \code{\link{update.param}}
 }
 

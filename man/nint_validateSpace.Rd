@@ -14,7 +14,7 @@ nint_validateSpace(x)
 See \code{\link{nint_ERROR}}.
 }
 \description{
-\code{nint_validateSpace} performs some checks to make sure the space is well defined.
+\code{nint_validateSpace} performs a couple of checks on some space to make sure it is properly defined.
 }
 \examples{
 library(docopulae)

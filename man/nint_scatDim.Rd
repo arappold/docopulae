@@ -2,7 +2,7 @@
 % Please edit documentation in R/nint.R
 \name{nint_scatDim}
 \alias{nint_scatDim}
-\title{Scattered Dimension}
+\title{Scatter Dimension}
 \usage{
 nint_scatDim(x)
 }
@@ -13,11 +13,11 @@ nint_scatDim(x)
 \code{nint_scatDim} returns its argument with the dimension type attribute set to \code{nint_TYPE_SCAT_DIM}.
 }
 \description{
-\code{nint_scatDim} is defined by a vector of values which in combination with other scatter dimensions creates a sparse grid.
+\code{nint_scatDim} is defined by a sequence of values.
+Together with other scatter dimensions it defines a sparse grid.
 }
 \details{
-Imagine using cbind to create a matrix where each row defines a point.
-This is the role \code{nint_scatDim} plays.
+Imagine using \code{cbind} to create a row matrix of points.
 }
 \seealso{
 \code{\link{nint_TYPE}}, \code{\link{nint_space}}
