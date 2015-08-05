@@ -16,12 +16,13 @@ update_reference(ref, other)
 See \code{FedorovWynn} for its structural definition.
 }
 \description{
-\code{update_reference} updates the underlying model of some design to ensure the existence of Fisher information matrices for each point in each other design.
+\code{update_reference} updates the underlying model of some reference design.
+The existence of Fisher information matrices for alien design points is a common requirement for comparative statistics.
 }
 \examples{
 #TODO
 }
 \seealso{
-\code{\link{Defficiency}}, \code{\link{update.design}}, \code{\link{update.param}}
+\code{\link{update.param}}, \code{\link{Defficiency}}
 }
 

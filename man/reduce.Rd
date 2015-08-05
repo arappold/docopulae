@@ -7,16 +7,16 @@
 reduce(des, distMax, wMin = 1e-06)
 }
 \arguments{
-\item{des}{an object of \code{class} \code{"design"}.}
+\item{des}{some design.}
 
 \item{distMax}{maximum euclidean distance between points to be merged.}
 
-\item{wMin}{minimum weight a significant design point shall have.}
+\item{wMin}{minimum weight a design point shall have to be considered significant.}
 }
 \value{
 \code{reduce} returns an object of \code{class} \code{"design"}.
 See \code{FedorovWynn} for its structural definition.
-The sensitivity is \code{NA} for every design point.
+The sensitivity is set to \code{NA} for all design points.
 }
 \description{
 \code{reduce} drops insignificant design points and merges design points in a certain neighbourhood.
@@ -25,6 +25,6 @@ The sensitivity is \code{NA} for every design point.
 #TODO
 }
 \seealso{
-\code{\link{FedorovWynn}}, \code{\link{update.design}}
+\code{\link{FedorovWynn}}, \code{\link{update.design}}, \code{\link{plot.design}}
 }
 

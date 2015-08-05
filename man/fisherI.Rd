@@ -14,7 +14,7 @@ fisherI(ff, theta, names, yspace, ...)
 }
 where \code{f} is the joint probability density function and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.}
 
-\item{theta}{a list of parameters.}
+\item{theta}{the list of parameters.}
 
 \item{names}{a vector of names or indices, the subset of parameters.}
 
@@ -29,7 +29,7 @@ where \code{f} is the joint probability density function and \code{dlogf}/\code{
 \code{fisherI} utilizes \code{nint_integrate} to evaluate the Fisher information.
 }
 \details{
-If \code{ff} is a list, then it shall contain \code{dlogf} xor \code{d2logf}.
+If \code{ff} is a list, it shall contain \code{dlogf} xor \code{d2logf}.
 }
 \examples{
 library(docopulae)
@@ -100,6 +100,6 @@ fisherI(tt$f, theta, n, tt$space)
 
 }
 \seealso{
-\code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{param}},  \code{\link{nint_transform}}, \code{\link{nint_integrate}}
+\code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}, \code{\link{param}}
 }
 

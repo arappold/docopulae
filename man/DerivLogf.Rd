@@ -36,7 +36,7 @@ Builds a function that evaluates to the first/second derivative of \code{log(f)}
 While \code{numDerivLogf} relies on \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \code{DerivLogf} utilizes \code{Deriv} to build sub functions for each variable in \code{names}.
 The same is true for \code{Deriv2Logf}.
 
-\code{Deriv} won't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} (e.g. \code{theta[["beta1"]]}).
+\code{Deriv} won't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} as variables (e.g. \code{theta[["beta1"]]}).
 Therefore it's necessary to specify mappings from \code{y} and \code{theta} to the variables in \code{f}.
 }
 \examples{
@@ -103,6 +103,6 @@ system.time(replicate(50, eval(m1)))
 system.time(replicate(5, eval(m2))) * 10
 }
 \seealso{
-\code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}},
+\code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}
 }
 

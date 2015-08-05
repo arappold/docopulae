@@ -226,7 +226,7 @@ nint_validateSpaceDims = function(x, refl) zmin(sapply(flatten(x), nint_validate
 #'
 #' @return \code{nint_space} returns an object of \code{class} \code{"nint_space"}.
 #'
-#' @seealso \code{\link{nint_scatDim}}, \code{\link{nint_gridDim}}, \code{\link{nint_intvDim}}, \code{\link{nint_funcDim}}, \code{\link{nint_integrate}}, \code{\link{nint_validateSpace}}, \code{\link{nint_expandSpace}}
+#' @seealso \code{\link{nint_scatDim}}, \code{\link{nint_gridDim}}, \code{\link{nint_intvDim}}, \code{\link{nint_funcDim}}, \code{\link{nint_integrate}}, \code{\link{nint_validateSpace}}, \code{\link{nint_expandSpace}}, \code{\link{fisherI}}
 #'
 #' @example examples/nint_space.R
 #'
@@ -498,7 +498,7 @@ transforms = list(tan=list(g=atan,
 #'
 #' @return \code{nint_transform} returns a named list containing the transformed integrand and space.
 #'
-#' @seealso \code{\link{nint_integrate}}, \code{\link{nint_space}}
+#' @seealso \code{\link{nint_integrate}}, \code{\link{nint_space}}, \code{\link{fisherI}}
 #'
 #' @example examples/nint_transform.R
 #'
@@ -758,7 +758,7 @@ nint_integrateNFunc = nint_integrateNFunc_recursive(function(...) integrateA(...
 #'
 #' @return \code{nint_integrate} returns a single numeric.
 #'
-#' @seealso \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrateNCube}}, \code{\link{nint_integrateNFunc}}
+#' @seealso \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrateNCube}}, \code{\link{nint_integrateNFunc}}, \code{\link{fisherI}}
 #'
 #' @example examples/nint_integrate.R
 #'

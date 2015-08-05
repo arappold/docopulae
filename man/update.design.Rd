@@ -10,16 +10,17 @@
 \item{des}{some design.}
 }
 \value{
-\code{update.design} returns an object of \code{class} \code{"design"}. See \code{FedorovWynn} for its structural definition.
+\code{update.design} returns an object of \code{class} \code{"design"}.
+See \code{FedorovWynn} for its structural definition.
 }
 \description{
-\code{update.design} updates the underlying model of some design to ensure the existence of Fisher information matrices for each point in the design.
-It also updates the corresponding sensitivities.
+\code{update.design} updates the underlying model and the sensitivities.
+Usually this is necessary for custom or transformed (e.g. reduced) designs.
 }
 \examples{
 #TODO
 }
 \seealso{
-\code{\link{reduce}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
+\code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}
 }
 

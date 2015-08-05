@@ -2,19 +2,19 @@
 % Please edit documentation in R/main.R
 \name{FedorovWynn}
 \alias{FedorovWynn}
-\title{Fedorov Wynn Algorithm}
+\title{Fedorov Wynn}
 \usage{
 FedorovWynn(mod, names = NULL, tolAbs = Inf, tolRel = 1e-04,
   maxIter = 10000)
 }
 \arguments{
-\item{mod}{an object of \code{class} \code{"param"}.}
+\item{mod}{some model.}
 
 \item{names}{a vector of names or indices, the subset of parameters to optimize for.}
 
-\item{tolAbs}{the absolute tolerance for the upper bound of the sensitivity.}
+\item{tolAbs}{the absolute tolerance regarding the sensitivities.}
 
-\item{tolRel}{the relative tolerance with respect to the number of parameters.}
+\item{tolRel}{the relative tolerance regarding the sensitivities with respect to the theoretical limit.}
 
 \item{maxIter}{the maximum number of iterations.}
 }
@@ -23,23 +23,26 @@ FedorovWynn(mod, names = NULL, tolAbs = Inf, tolRel = 1e-04,
 An object of class \code{"design"} is a list containing the following components:
 \itemize{
 \item mod: argument
-\item x: row matrix of design points, in this case \code{mod$x}.
-\item w: a numeric vector of weights for each design point.
-\item sens: a numeric vector of sensitivity for each design point.
+\item x: a row matrix of design points, here identical to \code{mod$x}.
+\item w: a numeric vector of weights, for each design point respectively.
+\item sens: a numeric vector of sensitivities, for each design point respectively.
 \item args: a list of arguments.
 \item adds: a list of additional (runtime) information.
 }
 }
 \description{
-\code{FedorovWynn} finds a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
+\code{FedorovWynn} finds a D- or Ds-optimal design using a Fedorov-Wynn-type algorithm.
 }
 \details{
-TODO shortly describe what is done and why (reference to paper).
+The algorithm starts from a uniform weight design.
+In each iteration weight is redistributed to the point which has the highest sensitivity.
+Sequence: \code{1/i}.
+The algorithm stops when all sensitivities are below a certain absolute and relative tolerance level, or the maximum number of iterations is reached.
 }
 \examples{
 #TODO
 }
 \seealso{
-\code{\link{param}}, \code{\link{reduce}}
+\code{\link{param}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
 }
 

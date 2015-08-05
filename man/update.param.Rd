@@ -7,18 +7,18 @@
 \method{update}{param}(mod, x)
 }
 \arguments{
-\item{mod}{an object of class \code{"param"}.}
+\item{mod}{some model.}
 
-\item{x}{a row matrix of points to add.
+\item{x}{a row matrix of points.
 The number of columns shall be equal to \code{mod$dDim}.}
 }
 \value{
 \code{update.param} returns an object of \code{class} \code{"param"}.
 }
 \description{
-\code{update.param} evaluates the Fisher information (if necessary) and returns an updated model object.
+\code{update.param} evaluates the Fisher information at uncharted points and returns an updated model object.
 }
 \seealso{
-\code{\link{param}}
+\code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}
 }
 

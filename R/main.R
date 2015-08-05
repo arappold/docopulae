@@ -6,7 +6,7 @@
 #' Unlike other model statements this function does not perform any computation.
 #'
 #' @param fisherIf \code{function(x, ...)}, where \code{x} is a numeric vector, usually a point from the design space.
-#' It shall evaluate to the Fisher information.
+#' It shall evaluate to the Fisher information matrix.
 #' @param dDim length of \code{x}, usually the dimensionality of the design space.
 #'
 #' @return \code{param} returns an object of \code{class} \code{"param"}.
@@ -14,11 +14,11 @@
 #' \itemize{
 #' \item fisherIf: argument
 #' \item dDim: argument
-#' \item x: row matrix of points where \code{fisherIf} has already been evaluated.
-#' \item fisherI: list of Fisher information matrices for each row in \code{x} respectively.
+#' \item x: a row matrix of points where \code{fisherIf} has already been evaluated.
+#' \item fisherI: a list of Fisher information matrices, for each row in \code{x} respectively.
 #' }
 #'
-#' @seealso \code{\link{fisherI}}, \code{\link{update.param}},  \code{\link{FedorovWynn}}
+#' @seealso \code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
 #'
 #' @export
 param = function(fisherIf, dDim) {
@@ -30,14 +30,14 @@ param = function(fisherIf, dDim) {
 
 #' Update Parametric Model
 #'
-#' \code{update.param} evaluates the Fisher information (if necessary) and returns an updated model object.
+#' \code{update.param} evaluates the Fisher information at uncharted points and returns an updated model object.
 #'
-#' @param mod an object of class \code{"param"}.
-#' @param x a row matrix of points to add.
+#' @param mod some model.
+#' @param x a row matrix of points.
 #' The number of columns shall be equal to \code{mod$dDim}.
 #' @return \code{update.param} returns an object of \code{class} \code{"param"}.
 #'
-#' @seealso \code{\link{param}}
+#' @seealso \code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}
 #'
 #' @export
 update.param = function(mod, x) {
@@ -156,7 +156,7 @@ withQuotes = function(x) {
 #' @return \code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
 #' It evaluates expression \code{x}.
 #'
-#' @seealso \code{\link{buildf}}, \code{\link{DerivLogf}}
+#' @seealso \code{\link{buildf}}, \code{\link{fisherI}}
 #'
 #' @example examples/expr2f.R
 #'
@@ -265,7 +265,6 @@ numDeriv2Logf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double
 }
 
 
-
 #' Build Derivative Function for Log f
 #'
 #' Builds a function that evaluates to the first/second derivative of \code{log(f)} with respect to a predefined set of variables/variable combinations.
@@ -273,7 +272,7 @@ numDeriv2Logf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double
 #' While \code{numDerivLogf} relies on \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \code{DerivLogf} utilizes \code{Deriv} to build sub functions for each variable in \code{names}.
 #' The same is true for \code{Deriv2Logf}.
 #'
-#' \code{Deriv} won't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} (e.g. \code{theta[["beta1"]]}).
+#' \code{Deriv} won't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} as variables (e.g. \code{theta[["beta1"]]}).
 #' Therefore it's necessary to specify mappings from \code{y} and \code{theta} to the variables in \code{f}.
 #'
 #' @param f an expression, a joint probability density.
@@ -282,7 +281,7 @@ numDeriv2Logf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double
 #' @param yMap like \code{map} with \code{a=b} resolving to \code{a <- y[b]}.
 #' @param thetaMap like \code{map} with \code{a=b} resolving to \code{a <- theta[[b]]}.
 #'
-#' @seealso \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}, 
+#' @seealso \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}
 #'
 #' @example examples/DerivLogf.R
 #'
@@ -332,7 +331,7 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' \code{fisherI} utilizes \code{nint_integrate} to evaluate the Fisher information.
 #'
-#' If \code{ff} is a list, then it shall contain \code{dlogf} xor \code{d2logf}.
+#' If \code{ff} is a list, it shall contain \code{dlogf} xor \code{d2logf}.
 #'
 #' @param ff either \itemize{
 #' \item \code{function(y, theta, i, j, ...)} which evaluates to the inner part of the expectation integral/sum.
@@ -340,14 +339,14 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' \item \code{list(f=function(y, theta, ...), dlogf=function(y, theta, i, ...))}
 #' }
 #' where \code{f} is the joint probability density function and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
-#' @param theta a list of parameters.
+#' @param theta the list of parameters.
 #' @param names a vector of names or indices, the subset of parameters.
 #' @param yspace a space, the support of \code{y}.
 #' @param ... other arguments passed to \code{ff}.
 #'
 #' @return \code{fisherI} returns a named matrix, the Fisher information.
 #'
-#' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{param}},  \code{\link{nint_transform}}, \code{\link{nint_integrate}}
+#' @seealso \code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}, \code{\link{param}}
 #'
 #' @example examples/fisherI.R
 #'
@@ -405,7 +404,6 @@ fisherI = function(ff, theta, names, yspace, ...) {
 }
 
 
-
 design = function(mod, x, w, sens, args=list(), adds=list()) {
     r = list(model=mod, x=x, w=w, sens=sens, args=args, adds=adds)
     class(r) = 'design'
@@ -419,15 +417,6 @@ getM = function(m, w) {
 sensD = function(m, Mi, ...) {
     return(apply(m, 3, function(m, Mi) sum(diag(Mi %*% m)), Mi))
 }
-
-#checkDsA = function(A) {
-    #if (ncol(A) < nrow(A))
-        #stop('\'A\' shall at least have the same number of columns as rows')
-    #if (!identical(A[, seq1(1, nrow(A)), drop=F], diag(nrow(A)) ))
-        #stop('the left part of \'A\' shall be the identity matrix')
-    #if (any(A[, seq1(nrow(A) + 1, ncol(A))] != 0))
-        #stop('the right part of \'A\' shall be zero')
-#}
 
 sensDs = function(m, Mi, A, ...) {
     t1 = Mi %*% A %*% solve(t(A) %*% Mi %*% A) %*% t(A) %*% Mi
@@ -463,32 +452,35 @@ getA = function(idcs, n) {
     return(r)
 }
 
-#' Fedorov Wynn Algorithm
+#' Fedorov Wynn
 #'
-#' \code{FedorovWynn} finds a D- or Ds-optimal design using the Fedorov-Wynn algorithm.
+#' \code{FedorovWynn} finds a D- or Ds-optimal design using a Fedorov-Wynn-type algorithm.
 #'
-#' TODO shortly describe what is done and why (reference to paper).
+#' The algorithm starts from a uniform weight design.
+#' In each iteration weight is redistributed to the point which has the highest sensitivity.
+#' Sequence: \code{1/i}.
+#' The algorithm stops when all sensitivities are below a certain absolute and relative tolerance level, or the maximum number of iterations is reached.
 #'
-#' @param mod an object of \code{class} \code{"param"}.
+#' @param mod some model.
 #' @param names a vector of names or indices, the subset of parameters to optimize for.
-#' @param tolAbs the absolute tolerance for the upper bound of the sensitivity.
-#' @param tolRel the relative tolerance with respect to the number of parameters.
+#' @param tolAbs the absolute tolerance regarding the sensitivities.
+#' @param tolRel the relative tolerance regarding the sensitivities with respect to the theoretical limit.
 #' @param maxIter the maximum number of iterations.
 #'
 #' @return \code{FedorovWynn} returns an object of \code{class} \code{"design"}.
 #' An object of class \code{"design"} is a list containing the following components:
 #' \itemize{
 #' \item mod: argument
-#' \item x: row matrix of design points, in this case \code{mod$x}.
-#' \item w: a numeric vector of weights for each design point.
-#' \item sens: a numeric vector of sensitivity for each design point.
+#' \item x: a row matrix of design points, here identical to \code{mod$x}.
+#' \item w: a numeric vector of weights, for each design point respectively.
+#' \item sens: a numeric vector of sensitivities, for each design point respectively.
 #' \item args: a list of arguments.
 #' \item adds: a list of additional (runtime) information.
 #' }
 #'
 #' @examples #TODO
 #'
-#' @seealso \code{\link{param}}, \code{\link{reduce}}
+#' @seealso \code{\link{param}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
 #'
 #' @export
 FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
@@ -498,6 +490,9 @@ FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
         return(design(mod, mod$x, numeric(0), numeric(0), args=args))
 
     m = simplify2array(mod$fisherI)
+
+    if (anyNA(m))
+        stop('Fisher information matrices shall not contain missing values')
 
     n = dim(m)[1]
     idcs = getIdcs(names, mod)
@@ -518,7 +513,7 @@ FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
 
     for (iIter in seq1(1, maxIter)) {
         M = getM(m, w)
-        Mi = solve(M) # TODO might break
+        Mi = solve(M)
 
         sens = sensF(m, Mi, A)
 
@@ -548,20 +543,19 @@ wPoint = function(x, w) {
     return( apply(sweep(x, 1, w, '*'), 2, sum) / sum(w) )
 }
 
-
 #' Reduce Design
 #'
 #' \code{reduce} drops insignificant design points and merges design points in a certain neighbourhood.
 #'
-#' @param des an object of \code{class} \code{"design"}.
+#' @param des some design.
 #' @param distMax maximum euclidean distance between points to be merged.
-#' @param wMin minimum weight a significant design point shall have.
+#' @param wMin minimum weight a design point shall have to be considered significant.
 #'
 #' @return \code{reduce} returns an object of \code{class} \code{"design"}.
 #' See \code{FedorovWynn} for its structural definition.
-#' The sensitivity is \code{NA} for every design point.
+#' The sensitivity is set to \code{NA} for all design points.
 #'
-#' @seealso \code{\link{FedorovWynn}}, \code{\link{update.design}}
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{update.design}}, \code{\link{plot.design}}
 #'
 #' @examples #TODO
 #'
@@ -598,21 +592,22 @@ getm = function(des, mod=NULL) {
         mod = des$model
     idcs = indexMatrix(mod$x, des$x)
     if (anyNA(idcs))
-        stop('model shall contain Fisher information matrices for each point in the design')
+        stop('model shall contain Fisher information matrices for each point in the design. See update.design and update_reference')
     return(simplify2array(mod$fisherI[idcs]))
 }
 
 
 #' Update Design
 #'
-#' \code{update.design} updates the underlying model of some design to ensure the existence of Fisher information matrices for each point in the design.
-#' It also updates the corresponding sensitivities.
+#' \code{update.design} updates the underlying model and the sensitivities.
+#' Usually this is necessary for custom or transformed (e.g. reduced) designs.
 #'
 #' @param des some design.
 #'
-#' @return \code{update.design} returns an object of \code{class} \code{"design"}. See \code{FedorovWynn} for its structural definition.
+#' @return \code{update.design} returns an object of \code{class} \code{"design"}.
+#' See \code{FedorovWynn} for its structural definition.
 #'
-#' @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
+#' @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}
 #'
 #' @examples #TODO
 #'
@@ -639,9 +634,11 @@ update.design = function(des) {
     return(r)
 }
 
+
 #' Update Reference Design
 #'
-#' \code{update_reference} updates the underlying model of some design to ensure the existence of Fisher information matrices for each point in each other design.
+#' \code{update_reference} updates the underlying model of some reference design.
+#' The existence of Fisher information matrices for alien design points is a common requirement for comparative statistics.
 #'
 #' @param ref some design.
 #' @param other either a single design or a list structure of designs.
@@ -649,7 +646,7 @@ update.design = function(des) {
 #' @return \code{update_reference} returns an object of \code{class} \code{"design"}.
 #' See \code{FedorovWynn} for its structural definition.
 #'
-#' @seealso \code{\link{Defficiency}}, \code{\link{update.design}}, \code{\link{update.param}}
+#' @seealso \code{\link{update.param}}, \code{\link{Defficiency}}
 #'
 #' @examples #TODO
 #'
@@ -677,30 +674,32 @@ add.alpha <- function(col, alpha=1){
 
 #' Plot Design
 #'
-#' \code{plot_design} visualizes the weights and sensitivities of some design.
-#' Designs with more than one dimension are projected to a specified margin.
+#' \code{plot.design} creates a one dimensional plot of sensitivities and weights.
+#' If the design space has additional dimensions, the design is projected on a specified margin.
 #'
-#' The diameter of each circle is proportional to its weight.
+#' If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing values, then the latter are linearly interpolated from the sensitivities in \code{des}.
+#'
+#' If \code{circles=T}, the diameter of each circle is proportional to the corresponding weight.
 #'
 #' @param des some design.
 #' @param ... other arguments passed to plot.
-#' @param margins a vector of indices.
+#' @param margins a vector of indices, the dimensions to project on.
 #' Defaults to \code{1}.
-#' @param wDes a design from which to take the weights.
-#' Defaults to argument \code{des}.
+#' @param wDes a design to take weights from.
+#' Defaults to \code{des}.
 #' See \code{reduce}.
-#' @param plus add plus symbols to the sensitivity curve.
+#' @param plus add plus symbols to the sensitivity.
 #' @param circles draw weights as circles instead of as bars.
-#' @param border \code{c(bottom, left, top, right)}, relative margins to add if drawing circles.
-#' @param sensArgs a list of arguments for drawing the sensitivity.
-#' @param wArgs a list of arguments for drawing the weights.
+#' @param border (if drawing circles) \code{c(bottom, left, top, right)}, the relative margins to add.
+#' @param sensArgs a list of arguments to use for drawing the sensitivities.
+#' @param wArgs a list of arguments to use for drawing the weights.
 #'
 #' @seealso \code{\link{FedorovWynn}}, \code{\link{reduce}}
 #'
 #' @examples #TODO
 #'
 #' @export
-plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
+plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
     if (is.null(margins))
         margins = 1
         #margins = 1:(des$model$dDim)
@@ -793,19 +792,19 @@ plot_design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
 
 #' D Efficiency
 #'
-#' \code{Defficiency} computes the D or Ds efficiency measure for some design with respect to some reference design.
+#' \code{Defficiency} computes the D- or Ds-efficiency measure for some design with respect to some reference design.
 #'
 #' D efficiency is defined as
-#' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( abs(M(\xi, \theta))  /  abs(M(\xi*, \theta)) )**(1/n)}
+#' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( det(M(\xi, \theta))  /  det(M(\xi*, \theta)) )**(1/n)}
 #' and Ds efficiency as
-#' \deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}{( abs(M11(\xi, \theta) - M12(\xi, \theta) \%*\% solve(M22(\xi, \theta)) \%*\% t(M12(\xi, \theta)))  /  abs(M11(\xi*, \theta) - M12(\xi*, \theta) \%*\% solve(M22(\xi*, \theta)) \%*\% t(M12(\xi*, \theta))) )**(1/s)}
+#' \deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}{( det(M11(\xi, \theta) - M12(\xi, \theta) \%*\% solve(M22(\xi, \theta)) \%*\% t(M12(\xi, \theta)))  /  det(M11(\xi*, \theta) - M12(\xi*, \theta) \%*\% solve(M22(\xi*, \theta)) \%*\% t(M12(\xi*, \theta))) )**(1/s)}
 #'
 #' @param des some design.
-#' @param ref some other design to use as reference.
+#' @param ref some design, the reference.
 #'
 #' @return \code{Defficiency} returns a single numeric.
 #'
-#' @seealso \code{\link{FedorovWynn}}, \code{\link{update_reference}}
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{update_reference}}, \code{\link{update.design}}
 #'
 #' @examples #TODO
 #'

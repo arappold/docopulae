@@ -79,6 +79,6 @@ tt$space
 
 }
 \seealso{
-\code{\link{nint_integrate}}, \code{\link{nint_space}}
+\code{\link{nint_integrate}}, \code{\link{nint_space}}, \code{\link{fisherI}}
 }
 

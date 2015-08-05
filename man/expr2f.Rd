@@ -41,6 +41,6 @@ expr2f(f, yMap=list(y1=1, y2=2),
                                     sd1='sd1', sd2='sd2'))
 }
 \seealso{
-\code{\link{buildf}}, \code{\link{DerivLogf}}
+\code{\link{buildf}}, \code{\link{fisherI}}
 }
 

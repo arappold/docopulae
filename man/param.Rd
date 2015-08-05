@@ -8,7 +8,7 @@ param(fisherIf, dDim)
 }
 \arguments{
 \item{fisherIf}{\code{function(x, ...)}, where \code{x} is a numeric vector, usually a point from the design space.
-It shall evaluate to the Fisher information.}
+It shall evaluate to the Fisher information matrix.}
 
 \item{dDim}{length of \code{x}, usually the dimensionality of the design space.}
 }
@@ -18,8 +18,8 @@ An object of class \code{"param"} is a list containing the following components:
 \itemize{
 \item fisherIf: argument
 \item dDim: argument
-\item x: row matrix of points where \code{fisherIf} has already been evaluated.
-\item fisherI: list of Fisher information matrices for each row in \code{x} respectively.
+\item x: a row matrix of points where \code{fisherIf} has already been evaluated.
+\item fisherI: a list of Fisher information matrices, for each row in \code{x} respectively.
 }
 }
 \description{
@@ -27,6 +27,6 @@ An object of class \code{"param"} is a list containing the following components:
 Unlike other model statements this function does not perform any computation.
 }
 \seealso{
-\code{\link{fisherI}}, \code{\link{update.param}},  \code{\link{FedorovWynn}}
+\code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
 }
 
