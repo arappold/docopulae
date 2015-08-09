@@ -698,7 +698,7 @@ add.alpha <- function(col, alpha=1){
 #'
 #' @examples #TODO
 #'
-#' @export
+#' @export plot.design
 plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
     if (is.null(margins))
         margins = 1
