@@ -16,7 +16,7 @@ where \code{f} is the joint probability density function and \code{dlogf}/\code{
 
 \item{theta}{the list of parameters.}
 
-\item{names}{a vector of names or indices, the subset of parameters.}
+\item{names}{a vector of names or indices, the subset of parameters to use.}
 
 \item{yspace}{a space, the support of \code{y}.}
 

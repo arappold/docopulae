@@ -4,13 +4,15 @@
 \alias{FedorovWynn}
 \title{Fedorov Wynn}
 \usage{
-FedorovWynn(mod, names = NULL, tolAbs = Inf, tolRel = 1e-04,
-  maxIter = 10000)
+FedorovWynn(mod, sNames = NULL, names = NULL, tolAbs = Inf,
+  tolRel = 1e-04, maxIter = 10000)
 }
 \arguments{
 \item{mod}{some model.}
 
-\item{names}{a vector of names or indices, the subset of parameters to optimize for.}
+\item{sNames}{a vector of names or indices, the subset of parameters to optimize for.}
+
+\item{names}{a vector of names or indices, the set of parameters use.}
 
 \item{tolAbs}{the absolute tolerance regarding the sensitivities.}
 
@@ -34,6 +36,8 @@ An object of class \code{"design"} is a list containing the following components
 \code{FedorovWynn} finds a D- or Ds-optimal design using a Fedorov-Wynn-type algorithm.
 }
 \details{
+Both \code{sNames} and \code{names} default to the set of parameters for which the Fisher information is available.
+
 The algorithm starts from a uniform weight design.
 In each iteration weight is redistributed to the point which has the highest sensitivity.
 Sequence: \code{1/i}.

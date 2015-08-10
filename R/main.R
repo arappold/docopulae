@@ -340,7 +340,7 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' }
 #' where \code{f} is the joint probability density function and \code{dlogf}/\code{d2logf} is the first/second derivative of \code{log(f)} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
 #' @param theta the list of parameters.
-#' @param names a vector of names or indices, the subset of parameters.
+#' @param names a vector of names or indices, the subset of parameters to use.
 #' @param yspace a space, the support of \code{y}.
 #' @param ... other arguments passed to \code{ff}.
 #'
@@ -445,10 +445,13 @@ getIdcs = function(names, mod) {
     return(sort( unique(match(names, nn)) ))
 }
 
-getA = function(idcs, n) {
-    s = length(idcs)
+getA = function(sIdcs, idcs) {
+    s = length(sIdcs)
+    n = length(idcs)
+    i = match(sIdcs, idcs)
+
     r = matrix(0, nrow=n, ncol=s)
-    r[(seq1(1, s) - 1)*n + idcs] = 1
+    r[(seq1(1, s) - 1)*n + i] = 1
     return(r)
 }
 
@@ -456,13 +459,16 @@ getA = function(idcs, n) {
 #'
 #' \code{FedorovWynn} finds a D- or Ds-optimal design using a Fedorov-Wynn-type algorithm.
 #'
+#' Both \code{sNames} and \code{names} default to the set of parameters for which the Fisher information is available.
+#'
 #' The algorithm starts from a uniform weight design.
 #' In each iteration weight is redistributed to the point which has the highest sensitivity.
 #' Sequence: \code{1/i}.
 #' The algorithm stops when all sensitivities are below a certain absolute and relative tolerance level, or the maximum number of iterations is reached.
 #'
 #' @param mod some model.
-#' @param names a vector of names or indices, the subset of parameters to optimize for.
+#' @param sNames a vector of names or indices, the subset of parameters to optimize for.
+#' @param names a vector of names or indices, the set of parameters use.
 #' @param tolAbs the absolute tolerance regarding the sensitivities.
 #' @param tolRel the relative tolerance regarding the sensitivities with respect to the theoretical limit.
 #' @param maxIter the maximum number of iterations.
@@ -483,27 +489,33 @@ getA = function(idcs, n) {
 #' @seealso \code{\link{param}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
 #'
 #' @export
-FedorovWynn = function(mod, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
-    args = list(FedorovWynn=list(names=names, tolAbs=tolAbs, tolRel=tolRel, maxIter=maxIter))
+FedorovWynn = function(mod, sNames=NULL, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
+    args = list(FedorovWynn=list(sNames=sNames, names=names, tolAbs=tolAbs, tolRel=tolRel, maxIter=maxIter))
 
     if (nrow(mod$x) == 0)
         return(design(mod, mod$x, numeric(0), numeric(0), args=args))
 
+    sIdcs = getIdcs(sNames, mod)
+    idcs = getIdcs(names, mod)
+    if (!all(sIdcs %in% idcs))
+        stop('sNames shall be a subset of names (argument)')
+
     m = simplify2array(mod$fisherI)
+    if (length(idcs) != dim(m)[1]) {
+        m = m[idcs, idcs,]
+    }
 
     if (anyNA(m))
         stop('Fisher information matrices shall not contain missing values')
 
-    n = dim(m)[1]
-    idcs = getIdcs(names, mod)
-    if ( identical(idcs, seq1(1, n)) ) {
+    if ( identical(sIdcs, idcs) ) {
         sensF = sensD
         A = NULL
-        target = n
+        target = length(idcs)
     } else {
         sensF = sensDs
-        s = length(idcs)
-        A = getA(idcs, n)
+        s = length(sIdcs)
+        A = getA(sIdcs, idcs)
         target = s
     }
 
@@ -618,15 +630,19 @@ update.design = function(des) {
     mod = update(des$model, des$x)
     r$model = mod
 
+    sIdcs = getIdcs(des$args$FedorovWynn$sNames, mod)
+    idcs = getIdcs(des$args$FedorovWynn$names, mod)
+
     m = getm(r)
-    n = dim(m)[1]
+    if (length(idcs) != dim(m)[1]) {
+        m = m[idcs, idcs,]
+    }
     Mi = solve(getM(m, des$w))
 
-    idcs = getIdcs(des$args$FedorovWynn$names, mod)
-    if (identical(idcs, seq1(1, n)))
+    if (identical(sIdcs, idcs)) {
         sens = sensD(m, Mi)
-    else {
-        A = getA(idcs, n)
+    } else {
+        A = getA(sIdcs, idcs)
         sens = sensDs(m, Mi, A)
     }
 
@@ -794,13 +810,19 @@ plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
 #'
 #' \code{Defficiency} computes the D- or Ds-efficiency measure for some design with respect to some reference design.
 #'
+#' Both \code{sNames} and \code{names} default to the corresponding argument which was used to find the reference design.
+#'
 #' D efficiency is defined as
 #' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( det(M(\xi, \theta))  /  det(M(\xi*, \theta)) )**(1/n)}
 #' and Ds efficiency as
 #' \deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}{( det(M11(\xi, \theta) - M12(\xi, \theta) \%*\% solve(M22(\xi, \theta)) \%*\% t(M12(\xi, \theta)))  /  det(M11(\xi*, \theta) - M12(\xi*, \theta) \%*\% solve(M22(\xi*, \theta)) \%*\% t(M12(\xi*, \theta))) )**(1/s)}
 #'
+#' where \eqn{M_{11}}{M11} is the submatrix corresponding to the parameters in \code{sNames}, \eqn{M_{22}}{M22} is the submatrix corresponding to the parameters in \code{names} which are not in \code{sNames}, and \eqn{M_{12}}{M12} is defined as the resulting off diagonal submatrix.
+#'
 #' @param des some design.
 #' @param ref some design, the reference.
+#' @param sNames a vector of names or indices, the subset of parameters to use.
+#' @param names a vector of names or indices, the set of parameters to use.
 #'
 #' @return \code{Defficiency} returns a single numeric.
 #'
@@ -809,23 +831,39 @@ plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
 #' @examples #TODO
 #'
 #' @export
-Defficiency = function(des, ref) {
+Defficiency = function(des, ref, sNames=NULL, names=NULL) {
+    if (is.null(sNames)) {
+        sNames = ref$args$FedorovWynn$sNames
+    }
+
+    if (is.null(names)) {
+        names = ref$args$FedorovWynn$names
+    }
+
+    sIdcs = getIdcs(sNames, ref$model)
+    idcs = getIdcs(names, ref$model)
+
     m = getm(des, ref$model)
+    if (length(idcs) != dim(m)[1]) {
+        m = m[idcs, idcs,]
+    }
     M = getM(m, des$w)
 
     m = getm(ref)
-    n = dim(m)[1]
+    if (length(idcs) != dim(m)[1]) {
+        m = m[idcs, idcs,]
+    }
     Mref = getM(m, ref$w)
 
-    idcs = getIdcs(ref$args$FedorovWynn$names, ref$model)
-    if ( identical(idcs, seq1(1, n)) ) {
-        return((det(M) / det(Mref)) ** (1/n))
+    if ( identical(sIdcs, idcs) ) {
+        return((det(M) / det(Mref)) ** (1/length(idcs)))
     }
 
-    s = length(idcs)
-    M12 = M[idcs, -idcs, drop=F]
-    Mref12 = Mref[idcs, -idcs, drop=F]
+    s = length(sIdcs)
+    i = match(sIdcs, idcs)
+    M12 = M[i, -i, drop=F]
+    Mref12 = Mref[i, -i, drop=F]
 
-    return(( det(M[idcs, idcs, drop=F] - M12 %*% solve(M[-idcs, -idcs, drop=F]) %*% t(M12)) / det(Mref[idcs, idcs, drop=F] - Mref12 %*% solve(Mref[-idcs, -idcs, drop=F]) %*% t(Mref12)) ) ** (1/s))
+    return(( det(M[i, i, drop=F] - M12 %*% solve(M[-i, -i, drop=F]) %*% t(M12)) / det(Mref[i, i, drop=F] - Mref12 %*% solve(Mref[-i, -i, drop=F]) %*% t(Mref12)) ) ** (1/s))
 }
 
