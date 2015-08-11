@@ -18,6 +18,14 @@ It allows \code{integrate} to reach the maximum number of subdivisions.
 \details{
 See \code{\link[stats]{integrate}}.
 }
+\examples{
+f = function(x) ifelse(x < 0, cos(x), sin(x))
+#curve(f(x), -1, 1)
+try(integrate(f, -1, 1, subdivisions=1)$value)
+integrateA(f, -1, 1, subdivisions=1)$value
+integrateA(f, -1, 1, subdivisions=2)$value
+integrateA(f, -1, 1, subdivisions=3)$value
+}
 \seealso{
 \code{\link[stats]{integrate}}
 }

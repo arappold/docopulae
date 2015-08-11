@@ -17,9 +17,7 @@ See \code{\link{nint_ERROR}}.
 \code{nint_validateSpace} performs a couple of checks on some space to make sure it is properly defined.
 }
 \examples{
-library(docopulae)
-
-## valid spaces
+## valid
 s = nint_space()
 s
 nint_validateSpace(s)
@@ -49,11 +47,11 @@ nint_validateSpace(list(nint_space())) # valid
 nint_validateSpace(list(1))
 
 ## -1004
-s1 = nint_space(nint_intvDim(-Inf, Inf),
-                nint_intvDim(-3, 2))
-s2 = do.call(nint_space, s1[1])
-s1
-s2
+s1 = nint_space(nint_gridDim(1:3),
+                nint_scatDim(c(0, 1)))
+s2 = nint_space(s1[[1]])
+s1 # 2D
+s2 # 1D
 nint_validateSpace(list(s1, s2))
 }
 \seealso{

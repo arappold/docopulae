@@ -112,6 +112,8 @@ lproduct = function(x) {
 #'
 #' @seealso \code{\link[stats]{integrate}}
 #'
+#' @example examples/integrateA.R
+#'
 #' @export
 integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$double.eps^0.25, abs.tol=rel.tol, stop.on.error=TRUE, keep.xy=FALSE, aux=NULL) {
     r = stats::integrate(f, lower, upper, ..., subdivisions=subdivisions, rel.tol=rel.tol, abs.tol=abs.tol, stop.on.error=F, keep.xy=keep.xy, aux=aux)
@@ -160,15 +162,63 @@ clusterPeak = function(x, y, maxDist) {
 }
 
 
-# row order of a matrix
-orderMatrix = function(x) do.call(order, lapply(seq1(1, ncol(x)), function(i) x[,i]))
+#' Matrix Ordering Permutation
+#'
+#' \code{roworder} returns a permutation which rearranges the rows of its first argument into ascending order.
+#'
+#' @param x a matrix.
+#' @param ... other arguments passed to \code{order}.
+#'
+#' @return \code{roworder} returns an integer vector.
+#'
+#' @seealso \code{\link[base]{order}}
+#'
+#' @example examples/roworder.R
+#'
+#' @export
+roworder = function(x, ...) {
+    cols = lapply(seq1(1, ncol(x)), function(i) x[,i])
+    args = c(cols, ...)
+    return(do.call(order, args))
+}
 
-indexMatrix = function(x, y) {
-    # for each row in y, finds the index of first matching row in x
-    ordx = orderMatrix(x)
-    ordy = orderMatrix(y)
-    r = which(duplicated(rbind(y[ordy,, drop=F], x[ordx,, drop=F]))) - nrow(y)
-    # here r contains indices of matching rows in sorted x
-    return(ordx[r][order(ordy)])
+
+#' Row Matching
+#'
+#' \code{rowmatch} returns a vector of the positions of (first) matches of the rows of its first argument in the rows of its second.
+#'
+#' \code{rowmatch} requires unique rows in \code{x} and \code{table}.
+#'
+#' @param x a row matrix or data.frame, the rows to be matched.
+#' @param table a row matrix or data.frame, the rows to be matched against.
+#' @param nomatch the value to be returned in the case when no match is found.
+#' Note that it is coerced to \code{integer}.
+#'
+#' @return \code{rowmatch} returns an integer vector giving the position of the matching row in \code{table} for each row in \code{x}. And \code{nomatch} if there is no matching row.
+#'
+#' @seealso \code{\link[base]{match}}
+#'
+#' @example examples/rowmatch.R
+#'
+#' @export
+rowmatch = function(x, table, nomatch=NA_integer_) {
+    nomatch = as.integer(nomatch)
+
+    ordx = roworder(x)
+    ordt = roworder(table)
+    sx = x[ordx,, drop=F]
+    st = table[ordt,, drop=F]
+    isx = which(duplicated(rbind(st, sx))) - nrow(st) # idcs of sorted table in sorted x
+    ist = which(duplicated(rbind(sx, st))) - nrow(sx) # idcs of sorted x in sorted table
+
+    if (any(isx < 0) || any(ist < 0))
+        stop('rows in x and table shall be unique')
+
+    ix = ordx[isx] # idcs of sorted table in x
+    it = ordt[ist] # idcs of sorted x in table
+
+    r = rep(nomatch[1], nrow(x))
+    r[ix] = it
+    return(r)
 }
 

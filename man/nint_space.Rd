@@ -23,12 +23,13 @@ Each subspace is then defined by a combination of dimension objects along the di
 See \code{\link{nint_expandSpace}} on how to expand a space to true subspaces.
 }
 \examples{
-library(docopulae)
-
-s = nint_space(nint_gridDim(1:4),
-               list(nint_intvDim(-Inf, -3), nint_intvDim(3, Inf)),
-               list(list(list(nint_scatDim(c(1, 2))), nint_scatDim(c(2, 3))),
-                    nint_scatDim(c(3, 4)) ))
+s = nint_space(nint_gridDim(seq(1, 3, 0.9)),
+               nint_scatDim(seq(2, 5, 0.8)),
+               nint_intvDim(-Inf, Inf),
+               nint_funcDim(function(x) nint_intvDim(0, x[1])),
+               list(nint_gridDim(c(0, 10)),
+                    list(nint_intvDim(1, 7)))
+               )
 s
 }
 \seealso{

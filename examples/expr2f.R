@@ -1,4 +1,3 @@
-library(docopulae)
 library(copula)
 
 ## build f

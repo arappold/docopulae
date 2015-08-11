@@ -40,7 +40,6 @@ The same is true for \code{Deriv2Logf}.
 Therefore it's necessary to specify mappings from \code{y} and \code{theta} to the variables in \code{f}.
 }
 \examples{
-library(docopulae)
 library(copula)
 
 ## build f

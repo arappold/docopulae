@@ -1,4 +1,3 @@
-library(docopulae)
 library(copula)
 
 ## replace nint_integrateNCube

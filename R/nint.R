@@ -135,7 +135,7 @@ nint_dtype = function(x) attr(x, 'nint_dtype')
 nint_toString_scatDim = function(x) paste('s(', toString(x), ')', sep='')
 nint_toString_gridDim = toString
 nint_toString_intvDim = function(x) paste('[', x[1], ', ', x[2], ']', sep='')
-nint_toString_funcDim = function(x) paste(format.default(x), sep='', collapse='')
+nint_toString_funcDim = function(x) paste(capture.output(print(attr(x, 'srcref'))), collapse='\n')
 
 nint_toString_dim = function(x) {
     type = nint_dtype(x)
@@ -591,12 +591,14 @@ nint_transform = function(f, space, dIdcs, trans, infZero=0) {
 #' @export
 NULL
 
+#' @details The function built by \code{nint_integrateNCube_integrate} calls \code{integrate} (argument) recursively.
+#' The number of function evaluations therefore increases exponentially with the number of dimensions (\code{(subdivisions * 21) ** D} if \code{stats::integrate}, the default, is used).
+#' At the moment it is the default method because no additional package is required.
+#' However, you most likely want to consider different solutions.
+#'
 #' @param integrate \code{function(f, lowerLimit, upperLimit, ...)} which calls \code{stats::integrate}.
 #'
-#' @details \code{nint_integrateNCube_integrate} calls \code{integrate} recursively.
-#' Downside: number of function evaluations is \code{(subdivisions * 21) ** N}.
-#' This is the default because no additional package is required.
-#' However, you most likely want to consider different solutions.
+#' @return \code{nint_integrateNCube_integrate} returns a recursive implementation for \code{nint_integrateNCube} based on one dimensional integration.
 #'
 #' @seealso \code{\link{integrateA}}, \code{\link[stats]{integrate}}
 #'
@@ -627,9 +629,11 @@ nint_integrateNCube_integrate = function(integrate) {
     return(r)
 }
 
+#' @details The function built by \code{nint_integrateNCube_cubature} is a trivial wrapper for \code{cubature::adaptIntegrate}.
+#'
 #' @param adaptIntegrate \code{function(f, lowerLimit, upperLimit, ...)} which calls \code{cubature::adaptIntegrate}.
 #'
-#' @details \code{nint_integrateNCube_cubature} is a trivial wrapper for \code{cubature::adaptIntegrate}.
+#' @return \code{nint_integrateNCube_cubature} returns a trivial implementation for \code{nint_integrateNCube} indirectly based on \code{cubature::adaptIntegrate}.
 #'
 #' @seealso \code{\link[cubature]{adaptIntegrate}} in package \pkg{cubature}
 #'
@@ -644,10 +648,12 @@ nint_integrateNCube_cubature = function(adaptIntegrate) {
     return(r)
 }
 
+#' @details The function built by \code{nint_integrateNCube_SparseGrid} is an almost trivial wrapper for \code{SparseGrid::createIntegrationGrid}.
+#' It scales the grid to the integration region.
+#'
 #' @param createIntegrationGrid \code{function(dimension)} which calls \code{SparseGrid::createIntegrationGrid}.
 #'
-#' @details \code{nint_integrateNCube_SparseGrid} is an almost trivial wrapper for \code{SparseGrid::createIntegrationGrid}.
-#' It scales the grid to the integration region.
+#' @return \code{nint_integrateNCube_SparseGrid} returns an implementation for \code{nint_integrateNCube} indirectly based on \code{SparseGrid::createIntegrationGrid}.
 #'
 #' @seealso \code{\link[SparseGrid]{createIntegrationGrid}} in package \pkg{SparseGrid}
 #'
@@ -699,14 +705,18 @@ nint_integrateNCube = nint_integrateNCube_integrate(integrateA)
 #' @export
 NULL
 
+#' @details The function built by \code{nint_integrateNFunc_recursive} directly sums over discrete dimensions and uses \code{integrate1} otherwise.
+#' In conjunction with \code{integrateA} this is the default.
+#'
 #' @param integrate1 \code{function(f, lowerLimit, upperLimit, ...)} which performs one dimensional integration.
 #'
-#' @details \code{nint_integrateNFunc_recursive} returns a recursive implementation which directly sums over discrete dimensions and uses \code{integrate1} otherwise.
-#' In conjunction with \code{integrateA} this is the default.
+#' @return \code{nint_integrateNFunc_recursive} returns a recursive implementation for \code{nint_integrateNFunc}.
 #'
 #' @seealso \code{\link{integrateA}}
 #'
 #' @rdname nint_integrateNFunc
+#'
+#' @export
 nint_integrateNFunc_recursive = function(integrate1) {
     r = function(f, funcs, x0, i0, ...) {
         maxDepth = length(funcs)

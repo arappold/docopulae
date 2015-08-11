@@ -32,7 +32,6 @@ If \code{buildf} should build an expression, the copula shall provide distributi
 Please note that expressions are not validated.
 }
 \examples{
-library(docopulae)
 library(copula)
 library(mvtnorm)
 

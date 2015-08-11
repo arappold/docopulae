@@ -24,6 +24,8 @@ nint_integrateNFunc_recursive(integrate1)
 }
 \value{
 \code{nint_integrateNFunc} returns a single numeric.
+
+\code{nint_integrateNFunc_recursive} returns a recursive implementation for \code{nint_integrateNFunc}.
 }
 \description{
 Inferface to the integration over function dimensions.
@@ -32,32 +34,47 @@ Inferface to the integration over function dimensions.
 \code{nint_integrate} uses \code{nint_integrateNFunc} to handle function dimensions.
 See examples below on how to deploy different solutions.
 
-\code{nint_integrateNFunc_recursive} returns a recursive implementation which directly sums over discrete dimensions and uses \code{integrate1} otherwise.
+The function built by \code{nint_integrateNFunc_recursive} directly sums over discrete dimensions and uses \code{integrate1} otherwise.
 In conjunction with \code{integrateA} this is the default.
 }
 \examples{
-library(docopulae)
-
-## volume of sphere
+## area of circle
 s = nint_space(
     nint_intvDim(-1, 1),
-    nint_funcDim(function(x) nint_intvDim(c(-1, 1) * sin(acos(x[1])) )),
-    nint_funcDim(function(x) {
-        r = sin(acos(x[1]))
-        nint_intvDim(c(-1, 1) * r*cos(asin(x[2] / r)))
-    }))
-nint_integrate(function(x) 1, s) # 4*pi/3
+    nint_funcDim(function(x) nint_intvDim(c(-1, 1) * sin(acos(x[1])) ))
+)
+nint_integrate(function(x) 1, s) # pi
+## see nint_integrate's examples for more sophisticated integrals
 
-## replace nint_integrateNFunc
+
+## prepare for custom recursive implementation
+using = T
+nfunc = nint_integrateNFunc_recursive(
+    function(f, lowerLimit, upperLimit, ...) {
+        if (using) { # this function is called many times
+            using <<- F
+            cat('using integrateA\\n')
+        }
+        integrateA(f, lowerLimit, upperLimit, ..., subdivisions=1)$value
+    }
+)
+unlockBinding('nint_integrateNFunc', environment(nint_integrate))
+assign('nint_integrateNFunc', nfunc, envir=environment(nint_integrate))
+
+## integrate with custom recursive implementation
+nint_integrate(function(x) 1, s) # pi
+
+
+## prepare for custom solution
 f = function(f, funcs, x0, i0, ...) {
+    # add sophisticated code here
     print(list(f=f, funcs=funcs, x0=x0, i0=i0, ...))
-    # disregard unknown structure of f
     stop('do something')
 }
 unlockBinding('nint_integrateNFunc', environment(nint_integrate))
 assign('nint_integrateNFunc', f, envir=environment(nint_integrate))
 
-## integrate with replacement
+## integrate with custom solution
 try(nint_integrate(function(x) 1, s))
 }
 \seealso{

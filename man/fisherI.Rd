@@ -32,7 +32,6 @@ where \code{f} is the joint probability density function and \code{dlogf}/\code{
 If \code{ff} is a list, it shall contain \code{dlogf} xor \code{d2logf}.
 }
 \examples{
-library(docopulae)
 library(copula)
 
 ## replace nint_integrateNCube

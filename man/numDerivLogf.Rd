@@ -39,7 +39,6 @@ Builds a function that evaluates to the first/second derivative of \code{log(f(y
 \pkg{numDeriv} produces \code{NaN}s if the log evaluates to (negative) \code{Inf} so you may want to specify \code{logZero} and \code{logInf}.
 }
 \examples{
-library(docopulae)
 library(copula)
 
 ## build f

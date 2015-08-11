@@ -17,11 +17,12 @@ Each space is a true subspace.
 \code{nint_expandSpace} expands some space or list structure of spaces to a list of true subspaces.
 }
 \examples{
-library(docopulae)
-
-s = nint_space(
-    list(nint_intvDim(1, 2), nint_intvDim(3, 4)),
-    list(nint_intvDim(-Inf, 0), nint_scatDim(c(0)), nint_intvDim(0, Inf)) )
+s = nint_space(list(nint_intvDim(1, 2),
+                    nint_intvDim(3, 4)),
+               list(nint_intvDim(-Inf, 0),
+                    nint_gridDim(c(0)),
+                    nint_intvDim(0, Inf))
+               )
 s
 nint_expandSpace(s)
 }

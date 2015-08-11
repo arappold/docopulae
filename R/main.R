@@ -590,7 +590,7 @@ reduce = function(des, distMax, wMin=1e-6) {
     rw = rw / sum(rw)
     names(rw) = NULL
 
-    ord = orderMatrix(rx)
+    ord = roworder(rx)
     rx = rx[ord,, drop=F]
     rw = rw[ord]
     rargs = des$args
@@ -602,7 +602,7 @@ reduce = function(des, distMax, wMin=1e-6) {
 getm = function(des, mod=NULL) {
     if (is.null(mod))
         mod = des$model
-    idcs = indexMatrix(mod$x, des$x)
+    idcs = rowmatch(des$x, mod$x)
     if (anyNA(idcs))
         stop('model shall contain Fisher information matrices for each point in the design. See update.design and update_reference')
     return(simplify2array(mod$fisherI[idcs]))
@@ -732,7 +732,7 @@ plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
     x = x[sapply(idcs, function(idcs) idcs[1]), margins, drop=F]
     sens = sapply(idcs, function(idcs) max(sens[idcs]))
 
-    ord = orderMatrix(x)
+    ord = roworder(x)
     x = x[ord,, drop=F]
     sens = sens[ord]
 

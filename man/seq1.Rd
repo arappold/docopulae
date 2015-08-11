@@ -18,17 +18,12 @@ See examples below.
 \code{seq1} is similar to \code{base::seq}, however \code{by} is strictly \code{1} by default and \code{integer(0)} is returned if range is empty.
 }
 \examples{
-library(docopulae)
-
-## by = 1
 seq1(1, 3)
-seq1(3, 1)
+seq1(3, 1) # different from seq
+seq(3, 1)
 3:1
 
-## by = -3
-seq1(5, 5, -3)
-seq1(5, 3, -3)
-seq1(5, 2, -3)
+seq1(5, 1, -3)
 }
 \seealso{
 \code{\link[base]{seq}}

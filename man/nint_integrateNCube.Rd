@@ -32,6 +32,12 @@ nint_integrateNCube_SparseGrid(createIntegrationGrid)
 }
 \value{
 \code{nint_integrateNCube} returns a single numeric.
+
+\code{nint_integrateNCube_integrate} returns a recursive implementation for \code{nint_integrateNCube} based on one dimensional integration.
+
+\code{nint_integrateNCube_cubature} returns a trivial implementation for \code{nint_integrateNCube} indirectly based on \code{cubature::adaptIntegrate}.
+
+\code{nint_integrateNCube_SparseGrid} returns an implementation for \code{nint_integrateNCube} indirectly based on \code{SparseGrid::createIntegrationGrid}.
 }
 \description{
 Interface to the integration over interval dimensions.
@@ -40,57 +46,58 @@ Interface to the integration over interval dimensions.
 \code{nint_integrate} uses \code{nint_integrateNCube} to handle interval dimensions.
 See examples below on how to deploy different solutions.
 
-\code{nint_integrateNCube_integrate} calls \code{integrate} recursively.
-Downside: number of function evaluations is \code{(subdivisions * 21) ** N}.
-This is the default because no additional package is required.
+The function built by \code{nint_integrateNCube_integrate} calls \code{integrate} (argument) recursively.
+The number of function evaluations therefore increases exponentially with the number of dimensions (\code{(subdivisions * 21) ** D} if \code{stats::integrate}, the default, is used).
+At the moment it is the default method because no additional package is required.
 However, you most likely want to consider different solutions.
 
-\code{nint_integrateNCube_cubature} is a trivial wrapper for \code{cubature::adaptIntegrate}.
+The function built by \code{nint_integrateNCube_cubature} is a trivial wrapper for \code{cubature::adaptIntegrate}.
 
-\code{nint_integrateNCube_SparseGrid} is an almost trivial wrapper for \code{SparseGrid::createIntegrationGrid}.
+The function built by \code{nint_integrateNCube_SparseGrid} is an almost trivial wrapper for \code{SparseGrid::createIntegrationGrid}.
 It scales the grid to the integration region.
 }
 \examples{
-library(docopulae)
+## integrate with defaults (stats::integrate)
+nint_integrate(sin, nint_space(nint_intvDim(pi/4, 3*pi/4)))
 
-## integrate with defaults
-nint_integrate(sin, nint_space(nint_intvDim(0, 2*pi)))
 
-## replace nint_integrateNCube
-f = function(f, lowerLimit, upperLimit, ...) {
-    print('using integrateA')
+## prepare for integrateA
+ncube = function(f, lowerLimit, upperLimit, ...) {
+    cat('using integrateA\\n')
     integrateA(f, lowerLimit, upperLimit, ..., subdivisions=2)
 }
-f = nint_integrateNCube_integrate(f)
+ncube = nint_integrateNCube_integrate(ncube)
 unlockBinding('nint_integrateNCube', environment(nint_integrate))
-assign('nint_integrateNCube', f, envir=environment(nint_integrate))
+assign('nint_integrateNCube', ncube, envir=environment(nint_integrate))
 
-## integrate with replacement
-nint_integrate(sin, nint_space(nint_intvDim(0, 2*pi))) # no difference here
+## integrate with integrateA
+nint_integrate(sin, nint_space(nint_intvDim(pi/4, 3*pi/4)))
 
-## replace nint_integrateNCube
-f = function(f, lowerLimit, upperLimit, ...) {
-    print('using cubature')
+
+## prepare for cubature
+ncube = function(f, lowerLimit, upperLimit, ...) {
+    cat('using cubature\\n')
     r = cubature::adaptIntegrate(f, lowerLimit, upperLimit, ..., maxEval=1e3)
     return(r$integral)
 }
 unlockBinding('nint_integrateNCube', environment(nint_integrate))
-assign('nint_integrateNCube', f, envir=environment(nint_integrate))
+assign('nint_integrateNCube', ncube, envir=environment(nint_integrate))
 
-## integrate with replacement
-nint_integrate(sin, nint_space(nint_intvDim(0, 2*pi)))
+## integrate with cubature
+nint_integrate(sin, nint_space(nint_intvDim(pi/4, 3*pi/4)))
 
-## replace nint_integrateNCube
-f = function(dimension) {
-    print('using SparseGrid')
+
+## prepare for SparseGrid
+ncube = function(dimension) {
+    cat('using SparseGrid\\n')
     SparseGrid::createIntegrationGrid('GQU', dimension, 7)
 }
-f = nint_integrateNCube_SparseGrid(f)
+ncube = nint_integrateNCube_SparseGrid(ncube)
 unlockBinding('nint_integrateNCube', environment(nint_integrate))
-assign('nint_integrateNCube', f, envir=environment(nint_integrate))
+assign('nint_integrateNCube', ncube, envir=environment(nint_integrate))
 
-## integrate with replacement
-nint_integrate(sin, nint_space(nint_intvDim(0, 2*pi)))
+## integrate with SparseGrid
+nint_integrate(sin, nint_space(nint_intvDim(pi/4, 3*pi/4)))
 }
 \seealso{
 \code{\link{nint_integrate}}

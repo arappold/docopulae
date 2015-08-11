@@ -23,7 +23,6 @@ It evaluates expression \code{x}.
 \code{expr2f} turns an expression into \code{function(y, theta, ...)}.
 }
 \examples{
-library(docopulae)
 library(copula)
 
 ## build f
