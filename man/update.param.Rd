@@ -18,6 +18,9 @@ The number of columns shall be equal to \code{mod$dDim}.}
 \description{
 \code{update.param} evaluates the Fisher information at uncharted points and returns an updated model object.
 }
+\examples{
+## see examples for param
+}
 \seealso{
 \code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}
 }

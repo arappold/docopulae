@@ -20,7 +20,7 @@ See \code{FedorovWynn} for its structural definition.
 The existence of Fisher information matrices for alien design points is a common requirement for comparative statistics.
 }
 \examples{
-#TODO
+## see examples for param
 }
 \seealso{
 \code{\link{update.param}}, \code{\link{Defficiency}}

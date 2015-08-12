@@ -20,6 +20,8 @@
 #'
 #' @seealso \code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
 #'
+#' @example examples/main.R
+#'
 #' @export
 param = function(fisherIf, dDim) {
     r = list(fisherIf=fisherIf, dDim=dDim, x=matrix(nrow=0, ncol=dDim), fisherI=list())
@@ -38,6 +40,8 @@ param = function(fisherIf, dDim) {
 #' @return \code{update.param} returns an object of \code{class} \code{"param"}.
 #'
 #' @seealso \code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}
+#'
+#' @examples ## see examples for param
 #'
 #' @export
 update.param = function(mod, x) {
@@ -158,7 +162,7 @@ withQuotes = function(x) {
 #'
 #' @seealso \code{\link{buildf}}, \code{\link{fisherI}}
 #'
-#' @example examples/expr2f.R
+#' @examples ## see examples for param
 #'
 #' @export
 expr2f = function(x, map=NULL, yMap=NULL, thetaMap=NULL) {
@@ -193,7 +197,7 @@ expr2f = function(x, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' @seealso \pkg{numDeriv}, \code{\link{buildf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 #'
-#' @example examples/numDerivLogf.R
+#' @examples ## see examples for param
 #'
 #' @name numDerivLogf
 NULL
@@ -283,7 +287,8 @@ numDeriv2Logf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double
 #'
 #' @seealso \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}
 #'
-#' @example examples/DerivLogf.R
+#' @examples ## see examples for param
+#' ## mind the gain regarding runtime compared to numDeriv
 #'
 #' @name DerivLogf
 NULL
@@ -348,7 +353,7 @@ Deriv2Logf = function(f, names, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' @seealso \code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}, \code{\link{param}}
 #'
-#' @example examples/fisherI.R
+#' @examples ## see examples for param
 #'
 #' @export
 fisherI = function(ff, theta, names, yspace, ...) {
@@ -484,9 +489,9 @@ getA = function(sIdcs, idcs) {
 #' \item adds: a list of additional (runtime) information.
 #' }
 #'
-#' @examples #TODO
-#'
 #' @seealso \code{\link{param}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
+#'
+#' @examples ## see examples for param
 #'
 #' @export
 FedorovWynn = function(mod, sNames=NULL, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
@@ -569,7 +574,7 @@ wPoint = function(x, w) {
 #'
 #' @seealso \code{\link{FedorovWynn}}, \code{\link{update.design}}, \code{\link{plot.design}}
 #'
-#' @examples #TODO
+#' @examples ## see examples for param
 #'
 #' @export
 reduce = function(des, distMax, wMin=1e-6) {
@@ -621,7 +626,7 @@ getm = function(des, mod=NULL) {
 #'
 #' @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}
 #'
-#' @examples #TODO
+#' @examples ## see examples for param
 #'
 #' @export
 update.design = function(des) {
@@ -664,7 +669,7 @@ update.design = function(des) {
 #'
 #' @seealso \code{\link{update.param}}, \code{\link{Defficiency}}
 #'
-#' @examples #TODO
+#' @examples ## see examples for param
 #'
 #' @export
 update_reference = function(ref, other) {
@@ -712,7 +717,7 @@ add.alpha <- function(col, alpha=1){
 #'
 #' @seealso \code{\link{FedorovWynn}}, \code{\link{reduce}}
 #'
-#' @examples #TODO
+#' @examples ## see examples for param
 #'
 #' @export plot.design
 plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
@@ -828,7 +833,7 @@ plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
 #'
 #' @seealso \code{\link{FedorovWynn}}, \code{\link{update_reference}}, \code{\link{update.design}}
 #'
-#' @examples #TODO
+#' @examples ## see examples for param
 #'
 #' @export
 Defficiency = function(des, ref, sNames=NULL, names=NULL) {

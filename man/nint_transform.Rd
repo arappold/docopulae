@@ -81,9 +81,9 @@ tt = nint_transform(f, s, 1:2, list(
 tt$space
 #nint_integrate(tt$f, tt$space) # Do you dare?
 
-# The probability integral transform was used many times with fisherI,
-# always with great success and considerable gains.
-# It might be stats::integrate; see nint_integrateNCube
+## The probability integral transform was used many times with fisherI,
+## always with great success and considerable gains.
+## It might be stats::integrate; see nint_integrateNCube
 }
 \seealso{
 \code{\link{nint_integrate}}, \code{\link{nint_space}}, \code{\link{fisherI}}

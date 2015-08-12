@@ -32,7 +32,7 @@ and Ds efficiency as
 where \eqn{M_{11}}{M11} is the submatrix corresponding to the parameters in \code{sNames}, \eqn{M_{22}}{M22} is the submatrix corresponding to the parameters in \code{names} which are not in \code{sNames}, and \eqn{M_{12}}{M12} is defined as the resulting off diagonal submatrix.
 }
 \examples{
-#TODO
+## see examples for param
 }
 \seealso{
 \code{\link{FedorovWynn}}, \code{\link{update_reference}}, \code{\link{update.design}}

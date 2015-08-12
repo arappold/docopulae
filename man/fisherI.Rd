@@ -32,71 +32,7 @@ where \code{f} is the joint probability density function and \code{dlogf}/\code{
 If \code{ff} is a list, it shall contain \code{dlogf} xor \code{d2logf}.
 }
 \examples{
-library(copula)
-
-## replace nint_integrateNCube
-tt = function(dimension) {
-    SparseGrid::createIntegrationGrid('GQU', dimension, 3) # very crude
-}
-tt = nint_integrateNCube_SparseGrid(tt)
-unlockBinding('nint_integrateNCube', environment(nint_integrate))
-assign('nint_integrateNCube', tt, envir=environment(nint_integrate))
-
-## build joint pdf and second derivative
-eta = function(theta) {
-    x = theta$x
-    c(theta$beta1 + theta$beta2*x,
-      theta$beta3 + theta$beta4*x)
-}
-
-margins = function(y, theta) {
-    e = eta(theta)
-    return(cbind(dnorm(y, e), pnorm(y, e)))
-}
-C = claytonCopula()
-
-f1 = buildf(margins, C, 'alpha')
-d2logf1 = numDeriv2Logf(f1)
-
-## apply probability integral transform
-theta = list(alpha=2, beta1=1, beta2=2, beta3=3, beta4=4,
-             x=1)
-
-g1 = function(y, theta, i, j) -d2logf1(y, theta, i, j)*f1(y, theta)
-s = nint_space(nint_intvDim(-Inf, Inf), nint_intvDim(-Inf, Inf))
-trans = list(g=function(x) pnorm(x, eta(theta)),
-             gij=function(y) {
-                     e = eta(theta); t1 = qnorm(y, e)
-                     cbind(t1, 1/dnorm(t1, e))
-                 })
-tt = nint_transform(g1, s, 1:2, trans)
-
-## get Fisher information
-n = c('alpha', 'beta1', 'beta2', 'beta3', 'beta4')
-fisherI(tt$f, theta, n, tt$space)
-
-
-## now using expressions
-eta1 = quote(beta1 + beta2*x)
-eta2 = quote(beta3 + beta4*x)
-margins = list(list(pdf=substitute(dnorm(y1, eta1, 1), list(eta1=eta1)),
-                    cdf=substitute(pnorm(y1, eta1, 1), list(eta1=eta1))),
-               list(pdf=substitute(dnorm(y2, eta2, 1), list(eta2=eta2)),
-                    cdf=substitute(pnorm(y2, eta2, 1), list(eta2=eta2))))
-C = claytonCopula()
-f2 = buildf(margins, C)
-
-yMap = list(y1=1, y2=2)
-thetaMap = list(alpha='alpha', beta1='beta1', beta2='beta2',
-                x='x',         beta3='beta3', beta4='beta4')
-ff2 = expr2f(f2, yMap=yMap, thetaMap=thetaMap)
-d2logf2 = Deriv2Logf(f2, n, yMap=yMap, thetaMap=thetaMap)
-
-g2 = function(y, theta, i, j) -d2logf2(y, theta, i, j)*ff2(y, theta)
-tt = nint_transform(g2, s, 1:2, trans)
-
-fisherI(tt$f, theta, n, tt$space)
-
+## see examples for param
 }
 \seealso{
 \code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}, \code{\link{param}}

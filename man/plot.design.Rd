@@ -40,7 +40,7 @@ If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing
 If \code{circles=T}, the diameter of each circle is proportional to the corresponding weight.
 }
 \examples{
-#TODO
+## see examples for param
 }
 \seealso{
 \code{\link{FedorovWynn}}, \code{\link{reduce}}

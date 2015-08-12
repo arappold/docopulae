@@ -44,7 +44,7 @@ Sequence: \code{1/i}.
 The algorithm stops when all sensitivities are below a certain absolute and relative tolerance level, or the maximum number of iterations is reached.
 }
 \examples{
-#TODO
+## see examples for param
 }
 \seealso{
 \code{\link{param}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}

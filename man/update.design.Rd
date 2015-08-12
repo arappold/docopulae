@@ -18,7 +18,7 @@ See \code{FedorovWynn} for its structural definition.
 Usually this is necessary for custom or transformed (e.g. reduced) designs.
 }
 \examples{
-#TODO
+## see examples for param
 }
 \seealso{
 \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}

@@ -22,7 +22,7 @@ The sensitivity is set to \code{NA} for all design points.
 \code{reduce} drops insignificant design points and merges design points in a certain neighbourhood.
 }
 \examples{
-#TODO
+## see examples for param
 }
 \seealso{
 \code{\link{FedorovWynn}}, \code{\link{update.design}}, \code{\link{plot.design}}
