@@ -47,6 +47,6 @@ The algorithm stops when all sensitivities are below a certain absolute and rela
 ## see examples for param
 }
 \seealso{
-\code{\link{param}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
+\code{\link{param}}, \code{\link{getM}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
 }
 

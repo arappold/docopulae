@@ -48,11 +48,11 @@ nint_integrate(function(x) 1, s) # pi
 
 
 ## prepare for custom recursive implementation
-using = T
+using = TRUE
 nfunc = nint_integrateNFunc_recursive(
     function(f, lowerLimit, upperLimit, ...) {
         if (using) { # this function is called many times
-            using <<- F
+            using <<- FALSE
             cat('using integrateA\\n')
         }
         integrateA(f, lowerLimit, upperLimit, ..., subdivisions=1)$value

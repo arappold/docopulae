@@ -22,6 +22,6 @@ The number of columns shall be equal to \code{mod$dDim}.}
 ## see examples for param
 }
 \seealso{
-\code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}
+\code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}, \code{\link{getM}}
 }
 

@@ -21,6 +21,6 @@ Usually this is necessary for custom or transformed (e.g. reduced) designs.
 ## see examples for param
 }
 \seealso{
-\code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}
+\code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}, \code{\link{getM}}
 }
 

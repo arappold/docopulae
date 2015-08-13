@@ -25,8 +25,8 @@ seq1 = function(from, to, by=1) {
 
 
 Derivf = function(f, names) {
-    # applies Deriv
-    # ignores [[
+    ## applies Deriv
+    ## ignores [[
     #temp = Deriv::drule[['[[']]
     #assign('[[', list(0), envir=Deriv::drule)
 
@@ -38,8 +38,8 @@ Derivf = function(f, names) {
 }
 
 Deriv2f = function(f, names) {
-    # applies Deriv twice
-    # ignores [[
+    ## applies Deriv twice
+    ## ignores [[
     #temp = Deriv::drule[['[[']]
     #assign('[[', list(0), envir=Deriv::drule)
 
@@ -63,10 +63,8 @@ Deriv2f = function(f, names) {
 
 
 mirrorMatrix = function(x) {
-    # transforms upper/lower diagonal matrix to full matrix
-    r = x
-    diag(r) = 0
-    r = r + t(r)
+    ## transforms upper/lower diagonal matrix to full matrix
+    r = x + t(x)
     diag(r) = diag(x)
     return(r)
 }
@@ -84,12 +82,12 @@ flatten = function(x) {
 }
 
 
-zmin = function(x) ifelse(length(x) == 0, 0, min(x))
-zmax = function(x) ifelse(length(x) == 0, 0, max(x))
+zmin = function(x) if (length(x) == 0) 0 else min(x)
+zmax = function(x) if (length(x) == 0) 0 else max(x)
 
 
 lproduct = function(x) {
-    # product expands a list of lists
+    ## product expands a list of lists
     if (length(x) == 0)
         return(list())
     idcs = lapply(x, seq)
@@ -127,11 +125,11 @@ integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$
 
 
 clusterPeak = function(x, y, maxDist) {
-    # x = row matrix of points
-    # y = corresponding vector of values (of length nrow(x))
-    #
-    # iteratively assigns points to the nearest cluster
-    # in reverse order of magnitude of y
+    ## x = row matrix of points
+    ## y = corresponding vector of values (of length nrow(x))
+    ##
+    ## iteratively assigns points to the nearest cluster
+    ## in reverse order of magnitude of y
 
     r = rep(0, length(y))
 

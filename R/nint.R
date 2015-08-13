@@ -1,5 +1,5 @@
 ## ideas
-# - implement simplify/merge
+## - implement simplify/merge
 
 
 #' Dimension Type Attribute Values
@@ -197,8 +197,8 @@ nint_ERROR_SPACE_DIM = -1004
 
 
 nint_validateSpaceDim = function(x, refl) {
-    # check - dim type
-    #       - scat length
+    ## check - dim type
+    ##       - scat length
     type = nint_dtype(x)
     if (is.null(type))
         return(nint_ERROR_DIM_TYPE)
@@ -339,21 +339,21 @@ nint_expandSpace_ = function(x) {
 ##
 ## @export
 nint_ispace = function(x) {
-    # - group dimensions by type and put them in the following order
-    #   - scatter (s)
-    #   - grid (g)
-    #   - interval (i)
-    #   - function (f)
-    # - bind scattered dimensions by column
-    # - expand grid dimensions to grid
-    # - bind interval limits by row
-    # - create function list
-    #
-    # - result := list(type=list(i=idcs, g=data))
-    #   type := c('s', 'g', 'i', 'f')
-    #   data := matrix      if type == 's'
-    #        or data.frame  if type == 'g' or type == 'i'
-    #        or list        if type == 'f'
+    ## - group dimensions by type and put them in the following order
+    ##   - scatter (s)
+    ##   - grid (g)
+    ##   - interval (i)
+    ##   - function (f)
+    ## - bind scattered dimensions by column
+    ## - expand grid dimensions to grid
+    ## - bind interval limits by row
+    ## - create function list
+    ##
+    ## - result := list(type=list(i=idcs, g=data))
+    ##   type := c('s', 'g', 'i', 'f')
+    ##   data := matrix      if type == 's'
+    ##        or data.frame  if type == 'g' or type == 'i'
+    ##        or list        if type == 'f'
 
     if (length(x) == 0)
         return(list())
@@ -425,7 +425,7 @@ nint_ispaces = function(x) {
 }
 
 
-# not needed
+## not needed
 ## @export
 #nint_applyToSpace = function(space, d, f) {
     #r = lapply(flatten(space), nint_applyToSpace_, d, f)
@@ -469,7 +469,7 @@ ratiog = function(x) {
     s = sign(x)
     if (any(s == 0, na.rm=T))
         s[s == 0] = 1
-    r = ifelse(is.infinite(x), s, x/abs(x + s))
+    return( ifelse(is.infinite(x), s, x/abs(x + s)) )
 }
 
 transforms = list(tan=list(g=atan,
@@ -666,7 +666,7 @@ nint_integrateNCube_SparseGrid = function(createIntegrationGrid) {
         n = length(lowerLimit)
         d = upperLimit - lowerLimit
         grid = createIntegrationGrid(n) # generates grid on [0, 1] ** n
-        # transform to [lowerLimit, upperLimit]
+        ## transform to [lowerLimit, upperLimit]
         grid$nodes = sweep(sweep(grid$nodes, 2, d, '*'), 2, lowerLimit, '+')
 
         r = apply(grid$nodes, 1, f, ...)
@@ -778,7 +778,7 @@ nint_integrate = function(f, space, ...) {
     if (length(ispaces) == 0)
         return(0)
 
-    # globals
+    ## globals
     x = rep(0, sum(sapply(ispaces[[1]], function(x) length(x$i)) ))
     ispace = NULL
     gg = list() # sequence of functions
@@ -797,20 +797,20 @@ nint_integrate = function(f, space, ...) {
         if (d == maxDepth)
             return(f(x, ...))
 
-        # save state
+        ## save state
         ti = i
         tg = g
 
-        # prepare descend
+        ## prepare descend
         d <<- d + 1
         idim = ispace[[d]]
         i <<- idim$i
         g <<- idim$g
 
-        # descend
+        ## descend
         r = gg[[d]](...)
 
-        # restore state
+        ## restore state
         d <<- d - 1
         i <<- ti
         g <<- tg

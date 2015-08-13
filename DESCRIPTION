@@ -6,6 +6,7 @@ Author: Andreas Rappold [aut, cre]
 Maintainer: Andreas Rappold <arappold@gmx.at>
 Description: docopulae offers a set of functions to define parametric models by their joint density (likelihood), evaluate the Fisher information, find D- and Ds-optimal designs and eventually compute common statistics. A crucial aspect is modularity, so the user may replace any function by a specialized solution. The package also consists of a number of convenience functions for general purpose and specific to the task.
 Depends: R (>= 3.1.1)
-Suggests: copula, numDeriv, Deriv, cubature, SparseGrid, mvtnorm
+Suggests: copula, numDeriv, Deriv, cubature, SparseGrid, mvtnorm,
+    testthat
 License: MIT + file LICENSE
 LazyData: true

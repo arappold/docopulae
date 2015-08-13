@@ -40,7 +40,7 @@ assign('nint_integrateNCube', ncube, envir=environment(nint_integrate))
 
 
 ## general settings
-numDeriv = F
+numDeriv = FALSE
 
 ## copula
 copula = claytonCopula()
@@ -142,14 +142,17 @@ system.time(m <- update(m, matrix(seq(0, 1, length.out=101), ncol=1)))
 
 system.time(d <- FedorovWynn(m))
 d$adds
+getM(d)
 
 rd = reduce(d, 0.05)
 
 plot(d, wDes=rd)
 
 ## update.design
+try(getM(rd))
 rd$sens
 rd = update(rd)
+getM(rd)
 rd$sens
 
 ## create custom design from previously obtained
@@ -168,6 +171,6 @@ d = update_reference(d, list(d2))
 Defficiency(d2, d)
 }
 \seealso{
-\code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
+\code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}, \code{\link{getM}}
 }
 

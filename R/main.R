@@ -18,7 +18,7 @@
 #' \item fisherI: a list of Fisher information matrices, for each row in \code{x} respectively.
 #' }
 #'
-#' @seealso \code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}
+#' @seealso \code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}, \code{\link{getM}}
 #'
 #' @example examples/main.R
 #'
@@ -39,7 +39,7 @@ param = function(fisherIf, dDim) {
 #' The number of columns shall be equal to \code{mod$dDim}.
 #' @return \code{update.param} returns an object of \code{class} \code{"param"}.
 #'
-#' @seealso \code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}
+#' @seealso \code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}, \code{\link{getM}}
 #'
 #' @examples ## see examples for param
 #'
@@ -65,7 +65,7 @@ update.param = function(mod, x) {
 }
 
 
-# from http://adv-r.had.co.nz/Computing-on-the-language.html#substitute
+## from http://adv-r.had.co.nz/Computing-on-the-language.html#substitute
 substitute_q <- function(x, env) {
     call <- substitute(substitute(y, env), list(y = x))
     eval(call)
@@ -133,7 +133,7 @@ buildf = function(margins, copula, names=NULL) {
 }
 
 
-mergeLanguage = function(...) {
+joinLanguage = function(...) {
     x = list(...)
     x = lapply(x, function(x) if (x[[1]] == '{') as.list(x)[seq1(2, length(x))] else x)
     x = unlist(x, recursive=F, use.names=F)
@@ -178,7 +178,7 @@ expr2f = function(x, map=NULL, yMap=NULL, thetaMap=NULL) {
     }
 
     map = parse(text=paste('{', paste(names(map), map, sep='=', collapse=';'), '}'))[[1]]
-    return(as.function(c(alist(y=, theta=, ...=), list(mergeLanguage(map, x)) )) )
+    return(as.function(c(alist(y=, theta=, ...=), list(joinLanguage(map, x)) )) )
 }
 
 
@@ -250,8 +250,8 @@ numDeriv2Logf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double
     if (method == 'Richardson') {
         r = function(y, theta, i, j, ...) {
             if (i == j) {
+                ## sole second derivative at D[2]
                 return( numDeriv::genD(logf, theta[[i]], method, method.args, y, theta, i, ...)$D[2] )
-                # sole second derivative at D[2]
             }
             return( numDeriv::genD(logf, c(theta[[i]], theta[[j]]), method, method.args, y, theta, c(i, j), ...)$D[4] ) # sole mixed second derivative at D[4]
         }
@@ -387,7 +387,7 @@ fisherI = function(ff, theta, names, yspace, ...) {
     combs = combn(names, 2)
     r = matrix(0, nrow=n, ncol=n, dimnames=list(names, names))
 
-    # do off diagonal
+    ## do off diagonal
     for (k in seq1(1, ncol(combs))) {
         i = combs[1, k]
         j = combs[2, k]
@@ -397,7 +397,7 @@ fisherI = function(ff, theta, names, yspace, ...) {
         #print(rr)
     }
 
-    # do diagonal
+    ## do diagonal
     for (i in names) {
         j = i # necessary
         r[i, i] = nint_integrate(gd, yspace, ...)
@@ -415,7 +415,7 @@ design = function(mod, x, w, sens, args=list(), adds=list()) {
     return(r)
 }
 
-getM = function(m, w) {
+getM_ = function(m, w) {
     return(apply(sweep(m, 3, w, '*'), c(1, 2), sum))
 }
 
@@ -489,7 +489,7 @@ getA = function(sIdcs, idcs) {
 #' \item adds: a list of additional (runtime) information.
 #' }
 #'
-#' @seealso \code{\link{param}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
+#' @seealso \code{\link{param}}, \code{\link{getM}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
 #'
 #' @examples ## see examples for param
 #'
@@ -529,7 +529,7 @@ FedorovWynn = function(mod, sNames=NULL, names=NULL, tolAbs=Inf, tolRel=1e-4, ma
     w = rep(1/n, n)
 
     for (iIter in seq1(1, maxIter)) {
-        M = getM(m, w)
+        M = getM_(m, w)
         Mi = solve(M)
 
         sens = sensF(m, Mi, A)
@@ -554,9 +554,9 @@ FedorovWynn = function(mod, sNames=NULL, names=NULL, tolAbs=Inf, tolRel=1e-4, ma
 
 
 wPoint = function(x, w) {
-    # x = row matrix
-    # w = vector
-    # nrow(x) == length(w)
+    ## x = row matrix
+    ## w = vector
+    ## nrow(x) == length(w)
     return( apply(sweep(x, 1, w, '*'), 2, sum) / sum(w) )
 }
 
@@ -609,7 +609,7 @@ getm = function(des, mod=NULL) {
         mod = des$model
     idcs = rowmatch(des$x, mod$x)
     if (anyNA(idcs))
-        stop('model shall contain Fisher information matrices for each point in the design. See update.design and update_reference')
+        stop('model shall contain Fisher information matrices for each point in the design. See update_reference, update.design and update.model')
     return(simplify2array(mod$fisherI[idcs]))
 }
 
@@ -624,7 +624,7 @@ getm = function(des, mod=NULL) {
 #' @return \code{update.design} returns an object of \code{class} \code{"design"}.
 #' See \code{FedorovWynn} for its structural definition.
 #'
-#' @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}
+#' @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}, \code{\link{getM}}
 #'
 #' @examples ## see examples for param
 #'
@@ -642,7 +642,7 @@ update.design = function(des) {
     if (length(idcs) != dim(m)[1]) {
         m = m[idcs, idcs,]
     }
-    Mi = solve(getM(m, des$w))
+    Mi = solve(getM_(m, des$w))
 
     if (identical(sIdcs, idcs)) {
         sens = sensD(m, Mi)
@@ -684,8 +684,29 @@ update_reference = function(ref, other) {
 }
 
 
-# from http://www.magesblog.com/2013/04/how-to-change-alpha-value-of-colours-in.html
-## Add an alpha value to a colour
+#' Get Fisher Information
+#'
+#' \code{getM} returns the Fisher information corresponding to some design.
+#'
+#' @param des some design.
+#' @param mod some model to take Fisher informations from.
+#' Defaults to \code{des$model}.
+#'
+#' @return \code{getM} returns a named matrix, the Fisher information.
+#'
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{param}}, \code{\link{update.design}}, \code{\link{update.param}}
+#'
+#' @examples ## see examples for param
+#'
+#' @export
+getM = function(des, mod=NULL) {
+    m = getm(des, mod)
+    return(getM_(m, des$w))
+}
+
+
+## from http://www.magesblog.com/2013/04/how-to-change-alpha-value-of-colours-in.html
+## Adds transparency to colours
 add.alpha <- function(col, alpha=1){
     if (missing(col))
         stop("Please provide a vector of colours.")
@@ -730,7 +751,7 @@ plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, bor
     if (1 < length(margins))
         stop('not yet implemented')
 
-    # marginal projections
+    ## marginal projections
     x = des$x
     sens = des$sens
     idcs = split(seq1(1, nrow(x)), lapply(margins, function(margin) x[, margin]), drop=T)
@@ -847,25 +868,27 @@ Defficiency = function(des, ref, sNames=NULL, names=NULL) {
 
     sIdcs = getIdcs(sNames, ref$model)
     idcs = getIdcs(names, ref$model)
+    i = match(sIdcs, idcs)
+    if (anyNA(i))
+        stop('sNames shall be a subset of names (argument)')
 
     m = getm(des, ref$model)
     if (length(idcs) != dim(m)[1]) {
         m = m[idcs, idcs,]
     }
-    M = getM(m, des$w)
+    M = getM_(m, des$w)
 
     m = getm(ref)
     if (length(idcs) != dim(m)[1]) {
         m = m[idcs, idcs,]
     }
-    Mref = getM(m, ref$w)
+    Mref = getM_(m, ref$w)
 
     if ( identical(sIdcs, idcs) ) {
         return((det(M) / det(Mref)) ** (1/length(idcs)))
     }
 
     s = length(sIdcs)
-    i = match(sIdcs, idcs)
     M12 = M[i, -i, drop=F]
     Mref12 = Mref[i, -i, drop=F]
 
