@@ -1,3 +1,4 @@
+\donttest{
 library(copula)
 
 
@@ -140,3 +141,4 @@ plot(d, wDes=d2, ylim=c(0, max(d2$sens)))
 
 d = update_reference(d, list(d2))
 Defficiency(d2, d)
+}

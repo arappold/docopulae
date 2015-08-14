@@ -27,6 +27,7 @@ An object of class \code{"param"} is a list containing the following components:
 Unlike other model statements this function does not perform any computation.
 }
 \examples{
+\donttest{
 library(copula)
 
 
@@ -169,6 +170,7 @@ plot(d, wDes=d2, ylim=c(0, max(d2$sens)))
 
 d = update_reference(d, list(d2))
 Defficiency(d2, d)
+}
 }
 \seealso{
 \code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}, \code{\link{getM}}

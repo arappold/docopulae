@@ -46,6 +46,13 @@ The algorithm stops when all sensitivities are below a certain absolute and rela
 \examples{
 ## see examples for param
 }
+\references{
+Fedorov, V. V. (1971) The Design of Experiments in the Multiresponse Case.
+\emph{Theory of Probability and its Applications}, 16(2):323-332.
+
+Wynn, Henry P. (1970) The Sequential Generation of D-Optimum Experimental Designs.
+\emph{The Annals of Mathematical Statistics}, 41(5):1655-1664.
+}
 \seealso{
 \code{\link{param}}, \code{\link{getM}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
 }

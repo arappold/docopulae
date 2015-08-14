@@ -10,13 +10,13 @@
 \title{Dimension Type Attribute Values}
 \format{integer}
 \usage{
-nint_TYPE_SCAT_DIM = 1
+nint_TYPE_SCAT_DIM # = 1
 
-nint_TYPE_GRID_DIM = 2
+nint_TYPE_GRID_DIM # = 2
 
-nint_TYPE_INTV_DIM = 3
+nint_TYPE_INTV_DIM # = 3
 
-nint_TYPE_FUNC_DIM = 4
+nint_TYPE_FUNC_DIM # = 4
 }
 \description{
 A dimension object is identified by its dimension type attribute \code{"nint_dtype"}.

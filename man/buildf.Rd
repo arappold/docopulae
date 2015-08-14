@@ -89,6 +89,9 @@ contour(y1, y2, z)
 z2 = outer(y1, y2, function(y1, y2) apply(cbind(y1, y2), 1, f2, theta))
 contour(y1, y2, z2, col='red', add=TRUE)
 }
+\references{
+uses substitute_q from \url{http://adv-r.had.co.nz/Computing-on-the-language.html}
+}
 \seealso{
 \pkg{copula}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 }

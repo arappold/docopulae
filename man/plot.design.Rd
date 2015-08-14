@@ -4,12 +4,12 @@
 \alias{plot.design}
 \title{Plot Design}
 \usage{
-\method{plot}{design}(des, ..., margins = NULL, wDes = NULL, plus = T,
+\method{plot}{design}(x, ..., margins = NULL, wDes = NULL, plus = T,
   circles = F, border = c(0.1, 0.1, 0, 0.1), sensArgs = list(),
   wArgs = list())
 }
 \arguments{
-\item{des}{some design.}
+\item{x}{some design.}
 
 \item{...}{other arguments passed to plot.}
 
@@ -17,7 +17,7 @@
 Defaults to \code{1}.}
 
 \item{wDes}{a design to take weights from.
-Defaults to \code{des}.
+Defaults to \code{x}.
 See \code{reduce}.}
 
 \item{plus}{add plus symbols to the sensitivity.}
@@ -35,12 +35,15 @@ See \code{reduce}.}
 If the design space has additional dimensions, the design is projected on a specified margin.
 }
 \details{
-If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing values, then the latter are linearly interpolated from the sensitivities in \code{des}.
+If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing values, then the latter are linearly interpolated from the sensitivities in \code{x}.
 
 If \code{circles=T}, the diameter of each circle is proportional to the corresponding weight.
 }
 \examples{
 ## see examples for param
+}
+\references{
+uses add.alpha from \url{http://www.magesblog.com/2013/04/how-to-change-alpha-value-of-colours-in.html}
 }
 \seealso{
 \code{\link{FedorovWynn}}, \code{\link{reduce}}

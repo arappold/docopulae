@@ -20,7 +20,7 @@
 #'
 #' @seealso \code{\link{fisherI}}, \code{\link{update.param}}, \code{\link{FedorovWynn}}, \code{\link{getM}}
 #'
-#' @example examples/main.R
+#' @example R/examples/main.R
 #'
 #' @export
 param = function(fisherIf, dDim) {
@@ -34,9 +34,11 @@ param = function(fisherIf, dDim) {
 #'
 #' \code{update.param} evaluates the Fisher information at uncharted points and returns an updated model object.
 #'
-#' @param mod some model.
+#' @param object some model.
 #' @param x a row matrix of points.
-#' The number of columns shall be equal to \code{mod$dDim}.
+#' The number of columns shall be equal to \code{object$dDim}.
+#' @param ... ignored.
+#'
 #' @return \code{update.param} returns an object of \code{class} \code{"param"}.
 #'
 #' @seealso \code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}, \code{\link{getM}}
@@ -44,7 +46,9 @@ param = function(fisherIf, dDim) {
 #' @examples ## see examples for param
 #'
 #' @export
-update.param = function(mod, x) {
+update.param = function(object, x, ...) {
+    mod = object # workaround for S3 requirement
+
     if (ncol(x) != mod$dDim)
         stop(paste('x shall have exactly', mod$dDim, 'columns'))
 
@@ -93,9 +97,11 @@ substitute_q <- function(x, env) {
 #' \item the joint probabilty density as an expression, otherwise.
 #' }
 #'
+#' @references uses substitute_q from \url{http://adv-r.had.co.nz/Computing-on-the-language.html}
+#'
 #' @seealso \pkg{copula}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 #'
-#' @example examples/buildf.R
+#' @example R/examples/buildf.R
 #'
 #' @export
 buildf = function(margins, copula, names=NULL) {
@@ -159,6 +165,8 @@ withQuotes = function(x) {
 #'
 #' @return \code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
 #' It evaluates expression \code{x}.
+#'
+#' @references uses substitute_q from \url{http://adv-r.had.co.nz/Computing-on-the-language.html}
 #'
 #' @seealso \code{\link{buildf}}, \code{\link{fisherI}}
 #'
@@ -489,6 +497,12 @@ getA = function(sIdcs, idcs) {
 #' \item adds: a list of additional (runtime) information.
 #' }
 #'
+#' @references Fedorov, V. V. (1971) The Design of Experiments in the Multiresponse Case.
+#' \emph{Theory of Probability and its Applications}, 16(2):323-332.
+#'
+#' Wynn, Henry P. (1970) The Sequential Generation of D-Optimum Experimental Designs.
+#' \emph{The Annals of Mathematical Statistics}, 41(5):1655-1664.
+#'
 #' @seealso \code{\link{param}}, \code{\link{getM}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
 #'
 #' @examples ## see examples for param
@@ -619,7 +633,8 @@ getm = function(des, mod=NULL) {
 #' \code{update.design} updates the underlying model and the sensitivities.
 #' Usually this is necessary for custom or transformed (e.g. reduced) designs.
 #'
-#' @param des some design.
+#' @param object some design.
+#' @param ... ignored.
 #'
 #' @return \code{update.design} returns an object of \code{class} \code{"design"}.
 #' See \code{FedorovWynn} for its structural definition.
@@ -629,7 +644,9 @@ getm = function(des, mod=NULL) {
 #' @examples ## see examples for param
 #'
 #' @export
-update.design = function(des) {
+update.design = function(object, ...) {
+    des = object # workaround for S3 requirement
+
     r = des
 
     mod = update(des$model, des$x)
@@ -719,16 +736,16 @@ add.alpha <- function(col, alpha=1){
 #' \code{plot.design} creates a one dimensional plot of sensitivities and weights.
 #' If the design space has additional dimensions, the design is projected on a specified margin.
 #'
-#' If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing values, then the latter are linearly interpolated from the sensitivities in \code{des}.
+#' If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing values, then the latter are linearly interpolated from the sensitivities in \code{x}.
 #'
 #' If \code{circles=T}, the diameter of each circle is proportional to the corresponding weight.
 #'
-#' @param des some design.
+#' @param x some design.
 #' @param ... other arguments passed to plot.
 #' @param margins a vector of indices, the dimensions to project on.
 #' Defaults to \code{1}.
 #' @param wDes a design to take weights from.
-#' Defaults to \code{des}.
+#' Defaults to \code{x}.
 #' See \code{reduce}.
 #' @param plus add plus symbols to the sensitivity.
 #' @param circles draw weights as circles instead of as bars.
@@ -736,12 +753,16 @@ add.alpha <- function(col, alpha=1){
 #' @param sensArgs a list of arguments to use for drawing the sensitivities.
 #' @param wArgs a list of arguments to use for drawing the weights.
 #'
+#' @references uses add.alpha from \url{http://www.magesblog.com/2013/04/how-to-change-alpha-value-of-colours-in.html}
+#'
 #' @seealso \code{\link{FedorovWynn}}, \code{\link{reduce}}
 #'
 #' @examples ## see examples for param
 #'
 #' @export plot.design
-plot.design = function(des, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
+plot.design = function(x, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
+    des = x # workaround for S3 requirement
+
     if (is.null(margins))
         margins = 1
         #margins = 1:(des$model$dDim)

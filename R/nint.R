@@ -16,28 +16,28 @@ NULL
 
 #' @rdname nint_TYPE
 #'
-#' @usage nint_TYPE_SCAT_DIM = 1
+#' @usage nint_TYPE_SCAT_DIM # = 1
 #'
 #' @export
 nint_TYPE_SCAT_DIM = 1
 
 #' @rdname nint_TYPE
 #'
-#' @usage nint_TYPE_GRID_DIM = 2
+#' @usage nint_TYPE_GRID_DIM # = 2
 #'
 #' @export
 nint_TYPE_GRID_DIM = 2
 
 #' @rdname nint_TYPE
 #'
-#' @usage nint_TYPE_INTV_DIM = 3
+#' @usage nint_TYPE_INTV_DIM # = 3
 #'
 #' @export
 nint_TYPE_INTV_DIM = 3
 
 #' @rdname nint_TYPE
 #'
-#' @usage nint_TYPE_FUNC_DIM = 4
+#' @usage nint_TYPE_FUNC_DIM # = 4
 #'
 #' @export
 nint_TYPE_FUNC_DIM = 4
@@ -169,28 +169,28 @@ NULL
 
 #' @rdname nint_ERROR
 #'
-#' @usage nint_ERROR_DIM_TYPE = -1001
+#' @usage nint_ERROR_DIM_TYPE # = -1001
 #'
 #' @details \code{nint_ERROR_DIM_TYPE}: dimension type attribute does not exist or is invalid.
 nint_ERROR_DIM_TYPE = -1001
 
 #' @rdname nint_ERROR
 #'
-#' @usage nint_ERROR_SCATTER_LENGTH = -1002
+#' @usage nint_ERROR_SCATTER_LENGTH # = -1002
 #'
 #' @details \code{nint_ERROR_SCATTER_LENGTH}: scatter dimensions have different lengths.
 nint_ERROR_SCATTER_LENGTH = -1002
 
 #' @rdname nint_ERROR
 #'
-#' @usage nint_ERROR_SPACE_TYPE = -1003
+#' @usage nint_ERROR_SPACE_TYPE # = -1003
 #'
 #' @details \code{nint_ERROR_SPACE_TYPE}: object not of type \code{"nint_space"}.
 nint_ERROR_SPACE_TYPE = -1003
 
 #' @rdname nint_ERROR
 #'
-#' @usage nint_ERROR_SPACE_DIM = -1004
+#' @usage nint_ERROR_SPACE_DIM # = -1004
 #'
 #' @details \code{nint_ERROR_SPACE_DIM}: subspaces have different number of dimensions.
 nint_ERROR_SPACE_DIM = -1004
@@ -228,7 +228,7 @@ nint_validateSpaceDims = function(x, refl) zmin(sapply(flatten(x), nint_validate
 #'
 #' @seealso \code{\link{nint_scatDim}}, \code{\link{nint_gridDim}}, \code{\link{nint_intvDim}}, \code{\link{nint_funcDim}}, \code{\link{nint_integrate}}, \code{\link{nint_validateSpace}}, \code{\link{nint_expandSpace}}, \code{\link{fisherI}}
 #'
-#' @example examples/nint_space.R
+#' @example R/examples/nint_space.R
 #'
 #' @export
 nint_space = function(...) {
@@ -270,7 +270,7 @@ print.nint_space = function(x, ...) {
 #'
 #' @seealso \code{\link{nint_ERROR}}, \code{\link{nint_space}}
 #'
-#' @example examples/nint_validateSpace.R
+#' @example R/examples/nint_validateSpace.R
 #'
 #' @export
 nint_validateSpace = function(x) {
@@ -311,7 +311,7 @@ nint_validateSpace_getRefl_ = function(x) {
 #'
 #' @seealso \code{\link{nint_space}}
 #'
-#' @example examples/nint_expandSpace.R
+#' @example R/examples/nint_expandSpace.R
 #'
 #' @export
 nint_expandSpace = function(x) {
@@ -335,7 +335,7 @@ nint_expandSpace_ = function(x) {
 ##
 ## @seealso \code{\link{nint_space}}, \code{\link{nint_integrate}}
 ##
-## @example examples/nint_ispace.R
+## @example R/examples/nint_ispace.R
 ##
 ## @export
 nint_ispace = function(x) {
@@ -500,7 +500,7 @@ transforms = list(tan=list(g=atan,
 #'
 #' @seealso \code{\link{nint_integrate}}, \code{\link{nint_space}}, \code{\link{fisherI}}
 #'
-#' @example examples/nint_transform.R
+#' @example R/examples/nint_transform.R
 #'
 #' @export
 nint_transform = function(f, space, dIdcs, trans, infZero=0) {
@@ -584,7 +584,7 @@ nint_transform = function(f, space, dIdcs, trans, infZero=0) {
 #'
 #' @seealso \code{\link{nint_integrate}}
 #'
-#' @example examples/nint_integrateNCube.R
+#' @example R/examples/nint_integrateNCube.R
 #'
 #' @name nint_integrateNCube
 #'
@@ -698,7 +698,7 @@ nint_integrateNCube = nint_integrateNCube_integrate(integrateA)
 #'
 #' @seealso \code{\link{nint_integrate}}
 #'
-#' @example examples/nint_integrateNFunc.R
+#' @example R/examples/nint_integrateNFunc.R
 #'
 #' @name nint_integrateNFunc
 #'
@@ -770,7 +770,7 @@ nint_integrateNFunc = nint_integrateNFunc_recursive(function(...) integrateA(...
 #'
 #' @seealso \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrateNCube}}, \code{\link{nint_integrateNFunc}}, \code{\link{fisherI}}
 #'
-#' @example examples/nint_integrate.R
+#' @example R/examples/nint_integrate.R
 #'
 #' @export
 nint_integrate = function(f, space, ...) {

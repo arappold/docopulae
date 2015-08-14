@@ -10,13 +10,13 @@
 \title{Space Validation Errors}
 \format{integer}
 \usage{
-nint_ERROR_DIM_TYPE = -1001
+nint_ERROR_DIM_TYPE # = -1001
 
-nint_ERROR_SCATTER_LENGTH = -1002
+nint_ERROR_SCATTER_LENGTH # = -1002
 
-nint_ERROR_SPACE_TYPE = -1003
+nint_ERROR_SPACE_TYPE # = -1003
 
-nint_ERROR_SPACE_DIM = -1004
+nint_ERROR_SPACE_DIM # = -1004
 }
 \description{
 Error codes for space validation.

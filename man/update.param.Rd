@@ -4,13 +4,15 @@
 \alias{update.param}
 \title{Update Parametric Model}
 \usage{
-\method{update}{param}(mod, x)
+\method{update}{param}(object, x, ...)
 }
 \arguments{
-\item{mod}{some model.}
+\item{object}{some model.}
 
 \item{x}{a row matrix of points.
-The number of columns shall be equal to \code{mod$dDim}.}
+The number of columns shall be equal to \code{object$dDim}.}
+
+\item{...}{ignored.}
 }
 \value{
 \code{update.param} returns an object of \code{class} \code{"param"}.

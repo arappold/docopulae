@@ -4,10 +4,12 @@
 \alias{update.design}
 \title{Update Design}
 \usage{
-\method{update}{design}(des)
+\method{update}{design}(object, ...)
 }
 \arguments{
-\item{des}{some design.}
+\item{object}{some design.}
+
+\item{...}{ignored.}
 }
 \value{
 \code{update.design} returns an object of \code{class} \code{"design"}.

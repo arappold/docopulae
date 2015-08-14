@@ -10,7 +10,7 @@
 #'
 #' See examples below.
 #'
-#' @example examples/seq1.R
+#' @example R/examples/seq1.R
 #'
 #' @seealso \code{\link[base]{seq}}
 #'
@@ -110,7 +110,7 @@ lproduct = function(x) {
 #'
 #' @seealso \code{\link[stats]{integrate}}
 #'
-#' @example examples/integrateA.R
+#' @example R/examples/integrateA.R
 #'
 #' @export
 integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$double.eps^0.25, abs.tol=rel.tol, stop.on.error=TRUE, keep.xy=FALSE, aux=NULL) {
@@ -171,7 +171,7 @@ clusterPeak = function(x, y, maxDist) {
 #'
 #' @seealso \code{\link[base]{order}}
 #'
-#' @example examples/roworder.R
+#' @example R/examples/roworder.R
 #'
 #' @export
 roworder = function(x, ...) {
@@ -196,7 +196,7 @@ roworder = function(x, ...) {
 #'
 #' @seealso \code{\link[base]{match}}
 #'
-#' @example examples/rowmatch.R
+#' @example R/examples/rowmatch.R
 #'
 #' @export
 rowmatch = function(x, table, nomatch=NA_integer_) {
