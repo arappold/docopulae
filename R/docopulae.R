@@ -4,6 +4,8 @@
 #'
 #' TODO
 #'
+#' @import graphics grDevices stats utils
+#'
 #' @docType package
 #' @name docopulae
 NULL
