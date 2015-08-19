@@ -1,6 +1,5 @@
-^.*\.Rproj$
-^\.Rproj\.user$
 ^\.git.*$
 ^cran-comments.md$
 ^NEWS.md$
-^lyx/.*$
+^misc/
+^lyx/

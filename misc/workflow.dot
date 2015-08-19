@@ -1,0 +1,87 @@
+digraph {
+    rankdir = LR;
+
+    subgraph cluster_buildPDF {
+        label = "PDF";
+        fontname = bold;
+        buildf -> expr2f [style=dashed];
+    }
+
+    subgraph cluster_deriv {
+        label = "Derivatives";
+        fontname = bold;
+        rank = same;
+        numDerivLogf;
+        numDeriv2Logf;
+        DerivLogf;
+        Deriv2Logf;
+    }
+
+    buildf -> numDerivLogf;
+    buildf -> numDeriv2Logf;
+    expr2f -> numDerivLogf;
+    expr2f -> numDeriv2Logf;
+    buildf -> DerivLogf [style=dashed];
+    buildf -> Deriv2Logf [style=dashed];
+
+    nint [shape=diamond];
+
+    subgraph cluster_model {
+        label = "Model";
+        fontname = bold;
+        fisherI -> param -> "update.param";
+    }
+
+    buildf -> fisherI;
+    expr2f -> fisherI;
+    numDerivLogf -> fisherI;
+    numDeriv2Logf -> fisherI;
+    DerivLogf -> fisherI;
+    Deriv2Logf -> fisherI;
+    nint -> fisherI;
+
+    Design [shape=box];
+
+    subgraph cluster_design {
+        label = "Design";
+        fontname = bold;
+        FedorovWynn;
+    }
+
+    "update.param" -> FedorovWynn;
+    FedorovWynn -> Design;
+
+    subgraph cluster_transform {
+        label = "Transform";
+        fontname = bold;
+        reduce;
+        "update.design";
+        update_reference;
+    }
+
+    Design -> {reduce; "update.design", update_reference};
+
+    subgraph cluster_visualize {
+        label = "Visualize";
+        fontname = bold;
+        "plot.design";
+    }
+
+    Design -> "plot.design";
+
+    subgraph cluster_compare {
+        label = "Compare";
+        fontname = bold;
+        Defficiency;
+    }
+
+    Design -> Defficiency;
+
+    //subgraph cluster_helper {
+        //integrateA;
+        //rowmatch;
+        //roworder;
+        //seq1;
+        //getM;
+    //}
+}

@@ -1,0 +1,40 @@
+digraph {
+    rankdir = LR;
+    Space [shape=box];
+
+    subgraph cluster_space {
+        label = "Space";
+        fontname = bold;
+        {scatDim; gridDim; intvDim; funcDim} -> space;
+    }
+
+    space -> Space;
+
+    subgraph cluster_space_misc {
+        label = "Misc.";
+        fontname = bold;
+        validateSpace;
+        expandSpace;
+    }
+
+    Space -> {validateSpace; expandSpace};
+
+    subgraph cluster_space_transform {
+        label = "Transform";
+        fontname = bold;
+        transform;
+    }
+
+    Space -> transform;
+
+    subgraph cluster_interface {
+        label = "Interface";
+        fontname = bold;
+        {integrateNCube_SparseGrid; integrateNCube_cubature; integrateNCube_integrate} -> integrateNCube;
+        integrateNFunc_recursive -> integrateNFunc;
+    }
+
+    integrate [style=filled; fillcolor=black; fontcolor=white, fontname=bold];
+    Space -> integrate;
+    {integrateNCube; integrateNFunc} -> integrate [style=dotted];
+}
