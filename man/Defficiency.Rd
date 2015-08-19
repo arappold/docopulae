@@ -35,6 +35,6 @@ where \eqn{M_{11}}{M11} is the submatrix corresponding to the parameters in \cod
 ## see examples for param
 }
 \seealso{
-\code{\link{FedorovWynn}}, \code{\link{update_reference}}, \code{\link{update.design}}
+\code{\link{FedorovWynn}}, \code{\link{update_reference}}, \code{\link{update.desigh}}
 }
 

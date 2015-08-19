@@ -24,6 +24,6 @@ The number of columns shall be equal to \code{object$dDim}.}
 ## see examples for param
 }
 \seealso{
-\code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}, \code{\link{getM}}
+\code{\link{param}}, \code{\link{update.desigh}}, \code{\link{update_reference}}, \code{\link{getM}}
 }
 

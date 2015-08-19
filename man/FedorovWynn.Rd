@@ -21,8 +21,8 @@ FedorovWynn(mod, sNames = NULL, names = NULL, tolAbs = Inf,
 \item{maxIter}{the maximum number of iterations.}
 }
 \value{
-\code{FedorovWynn} returns an object of \code{class} \code{"design"}.
-An object of class \code{"design"} is a list containing the following components:
+\code{FedorovWynn} returns an object of \code{class} \code{"desigh"}.
+An object of class \code{"desigh"} is a list containing the following components:
 \itemize{
 \item mod: argument
 \item x: a row matrix of design points, here identical to \code{mod$x}.
@@ -54,6 +54,6 @@ Wynn, Henry P. (1970) The Sequential Generation of D-Optimum Experimental Design
 \emph{The Annals of Mathematical Statistics}, 41(5):1655-1664.
 }
 \seealso{
-\code{\link{param}}, \code{\link{getM}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
+\code{\link{param}}, \code{\link{getM}}, \code{\link{reduce}}, \code{\link{plot.desigh}}, \code{\link{Defficiency}}, \code{\link{update.desigh}}
 }
 

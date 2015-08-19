@@ -41,7 +41,7 @@ param = function(fisherIf, dDim) {
 #'
 #' @return \code{update.param} returns an object of \code{class} \code{"param"}.
 #'
-#' @seealso \code{\link{param}}, \code{\link{update.design}}, \code{\link{update_reference}}, \code{\link{getM}}
+#' @seealso \code{\link{param}}, \code{\link{update.desigh}}, \code{\link{update_reference}}, \code{\link{getM}}
 #'
 #' @examples ## see examples for param
 #'
@@ -419,7 +419,7 @@ fisherI = function(ff, theta, names, yspace, ...) {
 
 design = function(mod, x, w, sens, args=list(), adds=list()) {
     r = list(model=mod, x=x, w=w, sens=sens, args=args, adds=adds)
-    class(r) = 'design'
+    class(r) = 'desigh'
     return(r)
 }
 
@@ -486,8 +486,8 @@ getA = function(sIdcs, idcs) {
 #' @param tolRel the relative tolerance regarding the sensitivities with respect to the theoretical limit.
 #' @param maxIter the maximum number of iterations.
 #'
-#' @return \code{FedorovWynn} returns an object of \code{class} \code{"design"}.
-#' An object of class \code{"design"} is a list containing the following components:
+#' @return \code{FedorovWynn} returns an object of \code{class} \code{"desigh"}.
+#' An object of class \code{"desigh"} is a list containing the following components:
 #' \itemize{
 #' \item mod: argument
 #' \item x: a row matrix of design points, here identical to \code{mod$x}.
@@ -503,7 +503,7 @@ getA = function(sIdcs, idcs) {
 #' Wynn, Henry P. (1970) The Sequential Generation of D-Optimum Experimental Designs.
 #' \emph{The Annals of Mathematical Statistics}, 41(5):1655-1664.
 #'
-#' @seealso \code{\link{param}}, \code{\link{getM}}, \code{\link{reduce}}, \code{\link{plot.design}}, \code{\link{Defficiency}}, \code{\link{update.design}}
+#' @seealso \code{\link{param}}, \code{\link{getM}}, \code{\link{reduce}}, \code{\link{plot.desigh}}, \code{\link{Defficiency}}, \code{\link{update.desigh}}
 #'
 #' @examples ## see examples for param
 #'
@@ -582,11 +582,11 @@ wPoint = function(x, w) {
 #' @param distMax maximum euclidean distance between points to be merged.
 #' @param wMin minimum weight a design point shall have to be considered significant.
 #'
-#' @return \code{reduce} returns an object of \code{class} \code{"design"}.
+#' @return \code{reduce} returns an object of \code{class} \code{"desigh"}.
 #' See \code{FedorovWynn} for its structural definition.
 #' The sensitivity is set to \code{NA} for all design points.
 #'
-#' @seealso \code{\link{FedorovWynn}}, \code{\link{update.design}}, \code{\link{plot.design}}
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{update.desigh}}, \code{\link{plot.desigh}}
 #'
 #' @examples ## see examples for param
 #'
@@ -623,20 +623,20 @@ getm = function(des, mod=NULL) {
         mod = des$model
     idcs = rowmatch(des$x, mod$x)
     if (anyNA(idcs))
-        stop('model shall contain Fisher information matrices for each point in the design. See update_reference, update.design and update.model')
+        stop('model shall contain Fisher information matrices for each point in the design. See update_reference, update.desigh and update.model')
     return(simplify2array(mod$fisherI[idcs]))
 }
 
 
 #' Update Design
 #'
-#' \code{update.design} updates the underlying model and the sensitivities.
+#' \code{update.desigh} updates the underlying model and the sensitivities.
 #' Usually this is necessary for custom or transformed (e.g. reduced) designs.
 #'
 #' @param object some design.
 #' @param ... ignored.
 #'
-#' @return \code{update.design} returns an object of \code{class} \code{"design"}.
+#' @return \code{update.desigh} returns an object of \code{class} \code{"desigh"}.
 #' See \code{FedorovWynn} for its structural definition.
 #'
 #' @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}, \code{\link{getM}}
@@ -644,7 +644,7 @@ getm = function(des, mod=NULL) {
 #' @examples ## see examples for param
 #'
 #' @export
-update.design = function(object, ...) {
+update.desigh = function(object, ...) {
     des = object # workaround for S3 requirement
 
     r = des
@@ -681,7 +681,7 @@ update.design = function(object, ...) {
 #' @param ref some design.
 #' @param other either a single design or a list structure of designs.
 #'
-#' @return \code{update_reference} returns an object of \code{class} \code{"design"}.
+#' @return \code{update_reference} returns an object of \code{class} \code{"desigh"}.
 #' See \code{FedorovWynn} for its structural definition.
 #'
 #' @seealso \code{\link{update.param}}, \code{\link{Defficiency}}
@@ -711,7 +711,7 @@ update_reference = function(ref, other) {
 #'
 #' @return \code{getM} returns a named matrix, the Fisher information.
 #'
-#' @seealso \code{\link{FedorovWynn}}, \code{\link{param}}, \code{\link{update.design}}, \code{\link{update.param}}
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{param}}, \code{\link{update.desigh}}, \code{\link{update.param}}
 #'
 #' @examples ## see examples for param
 #'
@@ -733,7 +733,7 @@ add.alpha <- function(col, alpha=1){
 
 #' Plot Design
 #'
-#' \code{plot.design} creates a one dimensional plot of sensitivities and weights.
+#' \code{plot.desigh} creates a one dimensional plot of sensitivities and weights.
 #' If the design space has additional dimensions, the design is projected on a specified margin.
 #'
 #' If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing values, then the latter are linearly interpolated from the sensitivities in \code{x}.
@@ -759,8 +759,8 @@ add.alpha <- function(col, alpha=1){
 #'
 #' @examples ## see examples for param
 #'
-#' @export plot.design
-plot.design = function(x, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
+#' @export
+plot.desigh = function(x, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
     des = x # workaround for S3 requirement
 
     if (is.null(margins))
@@ -873,7 +873,7 @@ plot.design = function(x, ..., margins=NULL, wDes=NULL, plus=T, circles=F, borde
 #'
 #' @return \code{Defficiency} returns a single numeric.
 #'
-#' @seealso \code{\link{FedorovWynn}}, \code{\link{update_reference}}, \code{\link{update.design}}
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{update_reference}}, \code{\link{update.desigh}}
 #'
 #' @examples ## see examples for param
 #'

@@ -22,6 +22,6 @@ Defaults to \code{des$model}.}
 ## see examples for param
 }
 \seealso{
-\code{\link{FedorovWynn}}, \code{\link{param}}, \code{\link{update.design}}, \code{\link{update.param}}
+\code{\link{FedorovWynn}}, \code{\link{param}}, \code{\link{update.desigh}}, \code{\link{update.param}}
 }
 

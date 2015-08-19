@@ -149,7 +149,7 @@ rd = reduce(d, 0.05)
 
 plot(d, wDes=rd)
 
-## update.design
+## update.desigh
 try(getM(rd))
 rd$sens
 rd = update(rd)

@@ -14,7 +14,7 @@ reduce(des, distMax, wMin = 1e-06)
 \item{wMin}{minimum weight a design point shall have to be considered significant.}
 }
 \value{
-\code{reduce} returns an object of \code{class} \code{"design"}.
+\code{reduce} returns an object of \code{class} \code{"desigh"}.
 See \code{FedorovWynn} for its structural definition.
 The sensitivity is set to \code{NA} for all design points.
 }
@@ -25,6 +25,6 @@ The sensitivity is set to \code{NA} for all design points.
 ## see examples for param
 }
 \seealso{
-\code{\link{FedorovWynn}}, \code{\link{update.design}}, \code{\link{plot.design}}
+\code{\link{FedorovWynn}}, \code{\link{update.desigh}}, \code{\link{plot.desigh}}
 }
 

@@ -12,7 +12,7 @@ update_reference(ref, other)
 \item{other}{either a single design or a list structure of designs.}
 }
 \value{
-\code{update_reference} returns an object of \code{class} \code{"design"}.
+\code{update_reference} returns an object of \code{class} \code{"desigh"}.
 See \code{FedorovWynn} for its structural definition.
 }
 \description{

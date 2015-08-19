@@ -55,19 +55,19 @@ digraph {
         label = "Transform";
         fontname = bold;
         reduce;
-        "update.design";
+        "update.desigh";
         update_reference;
     }
 
-    Design -> {reduce; "update.design", update_reference};
+    Design -> {reduce; "update.desigh", update_reference};
 
     subgraph cluster_visualize {
         label = "Visualize";
         fontname = bold;
-        "plot.design";
+        "plot.desigh";
     }
 
-    Design -> "plot.design";
+    Design -> "plot.desigh";
 
     subgraph cluster_compare {
         label = "Compare";
