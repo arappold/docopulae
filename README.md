@@ -19,11 +19,18 @@ See [./misc/workflow.dot.pdf](./misc/workflow.dot.pdf) and [./misc/nint.dot.pdf]
 
 ## Quick Start
 
-TODO. For the moment see and follow the example for function `param` on the corresponding help page. Have fun :)
+TODO.
+For the moment see and follow the example for function `param` on the corresponding help page.
+For it to work you need to have at least the packages `copula`, `SparseGrid` and either `numDeriv` or `Deriv` installed.
+Run `devtools::update_packages(c('copula', 'SparseGrid', 'numDeriv', 'Deriv'))` (or instead with `install.packages`) to install/update them.
+
+Run `devtools::update_packages(c('copula', 'numDeriv', 'Deriv', 'cubature', 'SparseGrid', 'mvtnorm', 'testthat'))` to install/update all suggested packages.
+
+Have fun :)
 
 ## Install
 
-* from CRAN (hopefully soon)
+* from CRAN
   * `install.packages('docopulae')`
 * from GitHub with devtools
   * `devtools::install_github('arappold/docopulae')`
