@@ -20,7 +20,7 @@ See [./misc/workflow.dot.pdf](./misc/workflow.dot.pdf) and [./misc/nint.dot.pdf]
 ## Quick Start
 
 TODO.
-For the moment see and follow the example for function `param` on the corresponding help page.
+For the moment see and follow the example for function `param` on the corresponding help page (`?param`).
 For it to work you need to have at least the packages `copula`, `SparseGrid` and either `numDeriv` or `Deriv` installed.
 Run `devtools::update_packages(c('copula', 'SparseGrid', 'numDeriv', 'Deriv'))` (or instead with `install.packages`) to install/update them.
 
