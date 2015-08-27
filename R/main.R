@@ -436,26 +436,47 @@ sensDs = function(m, Mi, A, ...) {
     return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1))
 }
 
-getIdcs = function(names, mod) {
-    if (is.numeric(names))
-        return( sort(unique(names)) )
+getIdcs = function(names, sNames, mod) {
+    needNames = is.character(names) || is.character(sNames)
+    needFi = needNames || is.null(names)
 
-    if (length(mod$fisherI) == 0)
-        stop('model shall contain at least one Fisher information matrix')
-    tt = mod$fisherI[[1]]
+    if (needFi) {
+        if (length(mod$fisherI) == 0)
+            stop('model shall contain at least one Fisher information matrix')
+        fi = mod$fisherI[[1]]
+    }
 
-    if (is.null(names))
-        return( seq1(1, nrow(tt)) )
-
-    nn = rownames(tt)
-    if (is.null(nn)) {
-        nn = colnames(tt)
-        if (is.null(nn)) {
-            stop('first Fisher information matrix shall contain row or column names')
+    if (needNames) {
+        fNames = rownames(fi)
+        if (is.null(fNames)) {
+            fNames = colnames(fi)
+            if (is.null(fNames)) {
+                stop('first Fisher information matrix shall contain row or column names')
+            }
         }
     }
 
-    return(sort( unique(match(names, nn)) ))
+    if (is.null(names)) {
+        idcs = seq1(1, nrow(fi))
+    } else {
+        if (is.character(names))
+            idcs = match(names, fNames)
+        else
+            idcs = names
+        idcs = sort(unique(idcs))
+    }
+
+    if (is.null(sNames)) {
+        sIdcs = idcs
+    } else {
+        if (is.character(sNames))
+            sIdcs = match(sNames, fNames)
+        else
+            sIdcs = sNames
+        sIdcs = sort(unique(sIdcs))
+    }
+
+    return(list(idcs=idcs, sIdcs=sIdcs))
 }
 
 getA = function(sIdcs, idcs) {
@@ -472,7 +493,8 @@ getA = function(sIdcs, idcs) {
 #'
 #' \code{FedorovWynn} finds a D- or Ds-optimal design using a Fedorov-Wynn-type algorithm.
 #'
-#' Both \code{sNames} and \code{names} default to the set of parameters for which the Fisher information is available.
+#' \code{names} defaults to the set of parameters for which the Fisher information is available.
+#' \code{sNames} in turn defaults to \code{names}.
 #'
 #' The algorithm starts from a uniform weight design.
 #' In each iteration weight is redistributed to the point which has the highest sensitivity.
@@ -514,8 +536,9 @@ FedorovWynn = function(mod, sNames=NULL, names=NULL, tolAbs=Inf, tolRel=1e-4, ma
     if (nrow(mod$x) == 0)
         return(design(mod, mod$x, numeric(0), numeric(0), args=args))
 
-    sIdcs = getIdcs(sNames, mod)
-    idcs = getIdcs(names, mod)
+    tt = getIdcs(names, sNames, mod)
+    idcs = tt$idcs
+    sIdcs = tt$sIdcs
     if (!all(sIdcs %in% idcs))
         stop('sNames shall be a subset of names (argument)')
 
@@ -652,8 +675,9 @@ update.desigh = function(object, ...) {
     mod = update(des$model, des$x)
     r$model = mod
 
-    sIdcs = getIdcs(des$args$FedorovWynn$sNames, mod)
-    idcs = getIdcs(des$args$FedorovWynn$names, mod)
+    tt = getIdcs(des$args$FedorovWynn$names, des$args$FedorovWynn$sNames, mod)
+    idcs = tt$idcs
+    sIdcs = tt$sIdcs
 
     m = getm(r)
     if (length(idcs) != dim(m)[1]) {
@@ -858,6 +882,7 @@ plot.desigh = function(x, ..., margins=NULL, wDes=NULL, plus=T, circles=F, borde
 #' \code{Defficiency} computes the D- or Ds-efficiency measure for some design with respect to some reference design.
 #'
 #' Both \code{sNames} and \code{names} default to the corresponding argument which was used to find the reference design.
+#' They are then treated as in \code{FedorovWynn}.
 #'
 #' D efficiency is defined as
 #' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( det(M(\xi, \theta))  /  det(M(\xi*, \theta)) )**(1/n)}
@@ -887,8 +912,9 @@ Defficiency = function(des, ref, sNames=NULL, names=NULL) {
         names = ref$args$FedorovWynn$names
     }
 
-    sIdcs = getIdcs(sNames, ref$model)
-    idcs = getIdcs(names, ref$model)
+    tt = getIdcs(names, sNames, ref$model)
+    idcs = tt$idcs
+    sIdcs = tt$sIdcs
     i = match(sIdcs, idcs)
     if (anyNA(i))
         stop('sNames shall be a subset of names (argument)')

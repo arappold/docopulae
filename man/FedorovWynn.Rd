@@ -36,7 +36,8 @@ An object of class \code{"desigh"} is a list containing the following components
 \code{FedorovWynn} finds a D- or Ds-optimal design using a Fedorov-Wynn-type algorithm.
 }
 \details{
-Both \code{sNames} and \code{names} default to the set of parameters for which the Fisher information is available.
+\code{names} defaults to the set of parameters for which the Fisher information is available.
+\code{sNames} in turn defaults to \code{names}.
 
 The algorithm starts from a uniform weight design.
 In each iteration weight is redistributed to the point which has the highest sensitivity.

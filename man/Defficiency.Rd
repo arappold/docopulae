@@ -23,6 +23,7 @@ Defficiency(des, ref, sNames = NULL, names = NULL)
 }
 \details{
 Both \code{sNames} and \code{names} default to the corresponding argument which was used to find the reference design.
+They are then treated as in \code{FedorovWynn}.
 
 D efficiency is defined as
 \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( det(M(\xi, \theta))  /  det(M(\xi*, \theta)) )**(1/n)}
