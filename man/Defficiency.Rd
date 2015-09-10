@@ -4,7 +4,7 @@
 \alias{Defficiency}
 \title{D Efficiency}
 \usage{
-Defficiency(des, ref, sNames = NULL, names = NULL)
+Defficiency(des, ref, mod, sNames = NULL, names = NULL)
 }
 \arguments{
 \item{des}{some design.}

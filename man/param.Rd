@@ -17,7 +17,6 @@ It shall evaluate to the Fisher information matrix.}
 An object of class \code{"param"} is a list containing the following components:
 \itemize{
 \item fisherIf: argument
-\item dDim: argument
 \item x: a row matrix of points where \code{fisherIf} has already been evaluated.
 \item fisherI: a list of Fisher information matrices, for each row in \code{x} respectively.
 }
@@ -27,7 +26,8 @@ An object of class \code{"param"} is a list containing the following components:
 Unlike other model statements this function does not perform any computation.
 }
 \examples{
-\donttest{
+#\donttest{
+library(docopulae)
 library(copula)
 
 
@@ -43,15 +43,15 @@ assign('nint_integrateNCube', ncube, envir=environment(nint_integrate))
 ## general settings
 numDeriv = FALSE
 
-## copula
+# copula
 copula = claytonCopula()
 alphas = list(alpha=iTau(copula, 0.5))
 
-## thetas
+# thetas
 thetas = c(names(alphas), c('beta1', 'beta2', 'beta3',
                             'beta4', 'beta5', 'beta6'))
 
-## eta
+# eta
 eta = function(theta)
     c(c(theta$beta1, theta$beta2, theta$beta3) \%*\% (theta$x ** c(0, 1, 2)),
       c(theta$beta4, theta$beta5, theta$beta6) \%*\% (theta$x ** c(1, 3, 4)))
@@ -139,37 +139,40 @@ theta = c(alphas, list(beta1=1, beta2=1, beta3=1,
 m = model(theta)
 
 ## update.param
-system.time(m <- update(m, matrix(seq(0, 1, length.out=101), ncol=1)))
+#system.time(m <- update(m, matrix(seq(0, 1, length.out=101), ncol=1)))
+#save(m, file='m')
+load(file='m')
 
-system.time(d <- FedorovWynn(m))
-d$adds
-getM(d)
+sensF = Dsensitivity(defaults=list(x=m$x, mod=m, desx=m$x))
+
+system.time(d <- FedorovWynn(sensF, tolAbs=0.01, tolRel=1e-6))
+d$tag$FedorovWynn$nIter
+getM(m, d)
 
 rd = reduce(d, 0.05)
 
 plot(d, wDes=rd)
 
 ## update.desigh
-try(getM(rd))
-rd$sens
-rd = update(rd)
-getM(rd)
-rd$sens
+try(getM(m, rd))
+m = update(m, rd)
+
+getM(m, rd)
+plot(sensF(mod=m, desx=rd$x, desw=rd$w), type='l')
 
 ## create custom design from previously obtained
 n = 4
 d2 = d
 d2$x = matrix(seq(0, 1, length.out=n), ncol=1)
 d2$w = rep(1/n, n)
-d2$sens = rep(NA, n)
 
-d2 = update(d2)
-d2$sens
+m = update(m, d2)
+plot(sensF(mod=m, desx=d2$x, desw=d2$w), type='l')
 
 plot(d, wDes=d2, ylim=c(0, max(d2$sens)))
 
-d = update_reference(d, list(d2))
-Defficiency(d2, d)
+#d = update_reference(d, list(d2))
+Defficiency(d2, d, m)
 }
 }
 \seealso{

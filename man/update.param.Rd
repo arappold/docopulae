@@ -10,7 +10,7 @@
 \item{object}{some model.}
 
 \item{x}{a row matrix of points.
-The number of columns shall be equal to \code{object$dDim}.}
+The number of columns shall be equal to \code{ncol(object$x)}.}
 
 \item{...}{ignored.}
 }

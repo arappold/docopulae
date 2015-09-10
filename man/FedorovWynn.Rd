@@ -4,21 +4,20 @@
 \alias{FedorovWynn}
 \title{Fedorov Wynn}
 \usage{
-FedorovWynn(mod, sNames = NULL, names = NULL, tolAbs = Inf,
-  tolRel = 1e-04, maxIter = 10000)
+FedorovWynn(sensF, tolAbs = Inf, tolRel = 1e-04, maxIter = 10000)
 }
 \arguments{
-\item{mod}{some model.}
-
-\item{sNames}{a vector of names or indices, the subset of parameters to optimize for.}
-
-\item{names}{a vector of names or indices, the set of parameters use.}
-
 \item{tolAbs}{the absolute tolerance regarding the sensitivities.}
 
 \item{tolRel}{the relative tolerance regarding the sensitivities with respect to the theoretical limit.}
 
 \item{maxIter}{the maximum number of iterations.}
+
+\item{mod}{some model.}
+
+\item{sNames}{a vector of names or indices, the subset of parameters to optimize for.}
+
+\item{names}{a vector of names or indices, the set of parameters use.}
 }
 \value{
 \code{FedorovWynn} returns an object of \code{class} \code{"desigh"}.

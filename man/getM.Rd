@@ -4,13 +4,13 @@
 \alias{getM}
 \title{Get Fisher Information}
 \usage{
-getM(des, mod = NULL)
+getM(mod, des)
 }
 \arguments{
-\item{des}{some design.}
-
 \item{mod}{some model to take Fisher informations from.
 Defaults to \code{des$model}.}
+
+\item{des}{some design.}
 }
 \value{
 \code{getM} returns a named matrix, the Fisher information.
