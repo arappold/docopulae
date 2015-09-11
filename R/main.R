@@ -13,6 +13,7 @@
 #' An object of class \code{"param"} is a list containing the following components:
 #' \itemize{
 #' \item fisherIf: argument
+#' \item dDim: argument
 #' \item x: a row matrix of points where \code{fisherIf} has already been evaluated.
 #' \item fisherI: a list of Fisher information matrices, for each row in \code{x} respectively.
 #' }
@@ -23,7 +24,7 @@
 #'
 #' @export
 param = function(fisherIf, dDim) {
-    r = list(fisherIf=fisherIf, x=matrix(nrow=0, ncol=dDim), fisherI=list())
+    r = list(fisherIf=fisherIf, dDim=dDim, x=matrix(nrow=0, ncol=dDim), fisherI=list())
     class(r) = 'param'
     return(r)
 }
@@ -35,7 +36,7 @@ param = function(fisherIf, dDim) {
 #'
 #' @param object some model.
 #' @param x a row matrix of points.
-#' The number of columns shall be equal to \code{ncol(object$x)}.
+#' The number of columns shall be equal to \code{object$dDim}.
 #' @param ... ignored.
 #'
 #' @return \code{update.param} returns an object of \code{class} \code{"param"}.
@@ -48,12 +49,8 @@ param = function(fisherIf, dDim) {
 update.param = function(object, x, ...) {
     mod = object # workaround for S3 requirement
 
-    x = flatten(x)
-    x = lapply(x, function(x) if (inherits(x, 'desigh')) x$x else x)
-    x = do.call(rbind, x)
-
-    if (ncol(x) != ncol(mod$x))
-        stop(paste('x shall have exactly', ncol(mod$x), 'columns'))
+    if (ncol(x) != mod$dDim)
+        stop(paste('x shall have exactly', mod$dDim, 'columns'))
 
     r = mod
     x = unique(rbind(mod$x, x)) # merge x
@@ -420,15 +417,26 @@ fisherI = function(ff, theta, names, yspace, ...) {
 }
 
 
-#' @export
-design = function(x, w, tag=list()) {
-    r = list(x=x, w=w, tag=tag)
+design = function(mod, x, w, sens, args=list(), adds=list()) {
+    r = list(model=mod, x=x, w=w, sens=sens, args=args, adds=adds)
     class(r) = 'desigh'
     return(r)
 }
 
+getM_ = function(m, w) {
+    return(apply(sweep(m, 3, w, '*'), c(1, 2), sum))
+}
 
-getDsPar = function(mod, sNames, names) {
+sensD = function(m, Mi, ...) {
+    return(apply(m, 3, function(m, Mi) sum(diag(Mi %*% m)), Mi))
+}
+
+sensDs = function(m, Mi, A, ...) {
+    t1 = Mi %*% A %*% solve(t(A) %*% Mi %*% A) %*% t(A) %*% Mi
+    return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1))
+}
+
+getIdcs = function(names, sNames, mod) {
     needNames = is.character(names) || is.character(sNames)
     needFi = needNames || is.null(names)
 
@@ -443,7 +451,7 @@ getDsPar = function(mod, sNames, names) {
         if (is.null(fNames)) {
             fNames = colnames(fi)
             if (is.null(fNames)) {
-                stop('first Fisher information matrix shall have row or column names')
+                stop('first Fisher information matrix shall contain row or column names')
             }
         }
     }
@@ -459,180 +467,27 @@ getDsPar = function(mod, sNames, names) {
     }
 
     if (is.null(sNames)) {
-        sIdcs = seq1(1, length(idcs))
+        sIdcs = idcs
     } else {
-        if (is.character(sNames)) {
-            sIdcs = match(sNames, fNames[idcs])
-        } else
+        if (is.character(sNames))
+            sIdcs = match(sNames, fNames)
+        else
             sIdcs = sNames
         sIdcs = sort(unique(sIdcs))
     }
 
-    if (anyNA(sIdcs))
-        stop('sNames shall be a subset of names (argument)')
-
-    if (length(sIdcs) != length(idcs)) {
-        s = length(sIdcs)
-        n = length(idcs)
-
-        A = matrix(0, nrow=n, ncol=s)
-        A[(seq1(1, s) - 1)*n + sIdcs] = 1
-    } else
-        A = NULL
-
-    return(list(idcs=idcs, sIdcs=sIdcs, A=A))
+    return(list(idcs=idcs, sIdcs=sIdcs))
 }
 
-getm = function(mod, x, idcs=NULL) {
-    if (nrow(x) == 0)
-        return(array(dim=c(length(idcs), length(idcs), 0)))
+getA = function(sIdcs, idcs) {
+    s = length(sIdcs)
+    n = length(idcs)
+    i = match(sIdcs, idcs)
 
-    xidcs = rowmatch(x, mod$x)
-    if (anyNA(xidcs))
-        stop('model shall contain Fisher information matrices for each point. See update_reference, update.desigh and update.model') # TODO
-
-    fi = mod$fisherI[[xidcs[1]]]
-    if (is.null(idcs) || nrow(fi) == length(idcs))
-        return(simplify2array(mod$fisherI[xidcs]))
-
-    return(vapply(xidcs, function(xidx) mod$fisherI[[xidx]][idcs, idcs], matrix(0, nrow=length(idcs), ncol=length(idcs))))
-}
-
-getM_ = function(m, w) {
-    return(apply(sweep(m, 3, w, '*'), c(1, 2), sum))
-}
-
-
-Dsensitivity_anyNAm = 'Fisher information matrices shall not contain missing values'
-
-#' D Sensitivity
-#'
-#' @export
-Dsensitivity = function(sNames=NULL, names=NULL, defaults=list(x=NULL, desw=NULL, desx=NULL, mod=NULL)) {
-    dmod = defaults$mod
-    ddesx = defaults$desx
-    ddesw = defaults$desw
-    dx = defaults$x
-
-    u1 = T; u2 = T # update
-
-    # mod, sNames, names -> idcs, A
-    if (u1 && !is.null(dmod)) {
-        tt = getDsPar(dmod, sNames, names)
-        didcs = tt$idcs
-        dA = tt$A
-    } else {
-        didcs = NULL
-        dA = NULL
-        u1 = F
-    }
-
-    # mod, idcs, desx -> desm
-    if (u1 && !is.null(ddesx)) {
-        ddesm = getm(dmod, ddesx, didcs)
-        if (anyNA(ddesm))
-            stop(Dsensitivity_anyNAm)
-    } else {
-        ddesm = NULL
-        u1 = F
-    }
-
-    # desm, desw -> t1
-    if (u1 && !is.null(ddesw)) {
-        ddesM = getM_(ddesm, ddesw)
-        ddesMi = solve(ddesM)
-        if (is.null(dA))
-            dt1 = ddesMi
-        else
-            dt1 = ddesMi %*% dA %*% solve(t(dA) %*% ddesMi %*% dA) %*% t(dA) %*% ddesMi
-    } else {
-        dt1 = NULL
-        u1 = F
-    }
-
-    # mod, idcs, x -> m
-    if (u1 && !is.null(dx)) {
-        dm = getm(dmod, dx, didcs)
-        if (anyNA(dm))
-            stop(Dsensitivity_anyNAm)
-    } else {
-        dm = NULL
-        u2 = F
-    }
-
-    r = function(x=NULL, desw=NULL, desx=NULL, mod=NULL) {
-        u1 = F #; u2 = F # update
-
-        if (is.null(mod))
-            mod = dmod
-        else
-            u1 = T
-
-        # mod, sNames, names -> idcs, A
-        if (u1) {
-            tt = getDsPar(mod, sNames, names)
-            idcs = tt$idcs
-            A = tt$A
-        } else {
-            idcs = didcs
-            A = dA
-        }
-
-        if (is.null(desx))
-            desx = ddesx
-        else
-            u1 = T
-
-        # mod, idcs, desx -> desm
-        if (u1) {
-            desm = getm(mod, desx, idcs)
-            if (anyNA(desm))
-                stop(Dsensitivity_anyNAm)
-        } else
-            desm = ddesm
-
-        if (is.null(desw))
-            desw = ddesw
-        else
-            u1 = T
-
-        # desm, desw -> t1
-        if (u1) {
-            desM = getM_(desm, desw)
-            desMi = solve(desM)
-            if (is.null(A))
-                t1 = desMi
-            else
-                t1 = desMi %*% A %*% solve(t(A) %*% desMi %*% A) %*% t(A) %*% desMi
-        } else
-            t1 = dt1
-
-        if (is.null(x))
-            x = dx
-        else
-            u1 = T # u2 would be more precise
-
-        # mod, idcs, x -> m
-        if (u1) {
-            m = getm(mod, x, idcs)
-            if (anyNA(m))
-                stop(Dsensitivity_anyNAm)
-        } else
-            m = dm
-
-
-        if (is.null(A))
-            target = length(idcs)
-        else
-            target = ncol(A)
-
-        return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1) - target)
-    }
-    attributes(r) = list(sNames=sNames, names=names, defaults=defaults)
-
+    r = matrix(0, nrow=n, ncol=s)
+    r[(seq1(1, s) - 1)*n + i] = 1
     return(r)
 }
-
 
 #' Fedorov Wynn
 #'
@@ -675,42 +530,63 @@ Dsensitivity = function(sNames=NULL, names=NULL, defaults=list(x=NULL, desw=NULL
 #' @examples ## see examples for param
 #'
 #' @export
-FedorovWynn = function(sensF, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
-    tag = list(FedorovWynn=list(sensF=sensF, tolAbs=tolAbs, tolRel=tolRel, maxIter=maxIter))
+FedorovWynn = function(mod, sNames=NULL, names=NULL, tolAbs=Inf, tolRel=1e-4, maxIter=1e4) {
+    args = list(FedorovWynn=list(sNames=sNames, names=names, tolAbs=tolAbs, tolRel=tolRel, maxIter=maxIter))
 
-    dx = attr(sensF, 'defaults')$desx
-    if (nrow(dx) == 0)
-        return(design(dx, numeric(0), tag=tag))
+    if (nrow(mod$x) == 0)
+        return(design(mod, mod$x, numeric(0), numeric(0), args=args))
 
-    n = nrow(dx)
+    tt = getIdcs(names, sNames, mod)
+    idcs = tt$idcs
+    sIdcs = tt$sIdcs
+    if (!all(sIdcs %in% idcs))
+        stop('sNames shall be a subset of names (argument)')
+
+    m = simplify2array(mod$fisherI)
+    if (length(idcs) != dim(m)[1]) {
+        m = m[idcs, idcs,]
+    }
+
+    if (anyNA(m))
+        stop('Fisher information matrices shall not contain missing values')
+
+    if ( identical(sIdcs, idcs) ) {
+        sensF = sensD
+        A = NULL
+        target = length(idcs)
+    } else {
+        sensF = sensDs
+        s = length(sIdcs)
+        A = getA(sIdcs, idcs)
+        target = s
+    }
+
+    tolAbs_ = min(tolAbs, tolRel * target)
+    n = dim(m)[3]
     w = rep(1/n, n)
-    prev = Inf
-    tolBreak = F
 
     for (iIter in seq1(1, maxIter)) {
-        sens = sensF(desw=w)
+        M = getM_(m, w)
+        Mi = solve(M)
+
+        sens = sensF(m, Mi, A)
 
         maxIdx = which(sens == max(sens))
         if (length(maxIdx) != 1)
             maxIdx = sample(maxIdx, 1)
+        d = sens[maxIdx] - target
+        if (d < tolAbs_)
+            break
 
         dw = 1 / (iIter + 1)
         w = w * (1 - dw)
         w[maxIdx] = 0
         w[maxIdx] = 1 - sum(w) # equal to 'w[maxIdx] + dw'
-
-        mSens = sens[maxIdx]
-        if (mSens <= tolAbs && (prev - mSens) <= tolRel) {
-            tolBreak = T
-            break
-        }
-        prev = mSens
     }
 
-    names(sens) = NULL
-    tag$FedorovWynn$tolBreak = tolBreak
-    tag$FedorovWynn$nIter = iIter
-    return(design(dx, w, tag=tag))
+    base::names(sens) = NULL
+    adds = list(FedorovWynn=list(tolBreak=d < tolAbs_, nIter=iIter))
+    return(design(mod, mod$x, w, sens, args=args, adds=adds))
 }
 
 
@@ -759,59 +635,94 @@ reduce = function(des, distMax, wMin=1e-6) {
     ord = roworder(rx)
     rx = rx[ord,, drop=F]
     rw = rw[ord]
-    rtag = des$tag
-    rtag$FedorovWynn$sensF = NULL
-    rtag$reduce = list(des=des, distMax=distMax, wMin=wMin)
-    return(design(rx, rw, tag=rtag))
+    rargs = des$args
+    rargs$reduce = list(des=des, distMax=distMax, wMin=wMin)
+    return(design(des$model, rx, rw, rep(NA, nrow(rx)), rargs, des$adds))
 }
 
 
+getm = function(des, mod=NULL) {
+    if (is.null(mod))
+        mod = des$model
+    idcs = rowmatch(des$x, mod$x)
+    if (anyNA(idcs))
+        stop('model shall contain Fisher information matrices for each point in the design. See update_reference, update.desigh and update.model')
+    return(simplify2array(mod$fisherI[idcs]))
+}
 
 
-### Update Design
-###
-### \code{update.desigh} updates the underlying model and the sensitivities.
-### Usually this is necessary for custom or transformed (e.g. reduced) designs.
-###
-### @param object some design.
-### @param ... ignored.
-###
-### @return \code{update.desigh} returns an object of \code{class} \code{"desigh"}.
-### See \code{FedorovWynn} for its structural definition.
-###
-### @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}, \code{\link{getM}}
-###
-### @examples ## see examples for param
-###
-### @export
-#update.desigh = function(object, ...) {
-    #des = object # workaround for S3 requirement
+#' Update Design
+#'
+#' \code{update.desigh} updates the underlying model and the sensitivities.
+#' Usually this is necessary for custom or transformed (e.g. reduced) designs.
+#'
+#' @param object some design.
+#' @param ... ignored.
+#'
+#' @return \code{update.desigh} returns an object of \code{class} \code{"desigh"}.
+#' See \code{FedorovWynn} for its structural definition.
+#'
+#' @seealso \code{\link{reduce}}, \code{\link{update.param}}, \code{\link{Defficiency}}, \code{\link{FedorovWynn}}, \code{\link{getM}}
+#'
+#' @examples ## see examples for param
+#'
+#' @export
+update.desigh = function(object, ...) {
+    des = object # workaround for S3 requirement
 
-    #r = des
+    r = des
 
-    #mod = update(des$model, des$x)
-    #r$model = mod
+    mod = update(des$model, des$x)
+    r$model = mod
 
-    #tt = getIdcs(des$args$FedorovWynn$names, des$args$FedorovWynn$sNames, mod)
-    #idcs = tt$idcs
-    #sIdcs = tt$sIdcs
+    tt = getIdcs(des$args$FedorovWynn$names, des$args$FedorovWynn$sNames, mod)
+    idcs = tt$idcs
+    sIdcs = tt$sIdcs
 
-    #m = getm(r)
-    #if (length(idcs) != dim(m)[1]) {
-        #m = m[idcs, idcs,]
-    #}
-    #Mi = solve(getM_(m, des$w))
+    m = getm(r)
+    if (length(idcs) != dim(m)[1]) {
+        m = m[idcs, idcs,]
+    }
+    Mi = solve(getM_(m, des$w))
 
-    #if (identical(sIdcs, idcs)) {
-        #sens = sensD(m, Mi)
-    #} else {
-        #A = getA(sIdcs, idcs)
-        #sens = sensDs(m, Mi, A)
-    #}
+    if (identical(sIdcs, idcs)) {
+        sens = sensD(m, Mi)
+    } else {
+        A = getA(sIdcs, idcs)
+        sens = sensDs(m, Mi, A)
+    }
 
-    #r$sens = sens
-    #return(r)
-#}
+    r$sens = sens
+    return(r)
+}
+
+
+#' Update Reference Design
+#'
+#' \code{update_reference} updates the underlying model of some reference design.
+#' The existence of Fisher information matrices for alien design points is a common requirement for comparative statistics.
+#'
+#' @param ref some design.
+#' @param other either a single design or a list structure of designs.
+#'
+#' @return \code{update_reference} returns an object of \code{class} \code{"desigh"}.
+#' See \code{FedorovWynn} for its structural definition.
+#'
+#' @seealso \code{\link{update.param}}, \code{\link{Defficiency}}
+#'
+#' @examples ## see examples for param
+#'
+#' @export
+update_reference = function(ref, other) {
+    other = flatten(other)
+    mod = ref$model
+    for (o in other) {
+        mod = update(mod, o$x)
+    }
+    r = ref
+    r$model = mod
+    return(r)
+}
 
 
 #' Get Fisher Information
@@ -829,40 +740,10 @@ reduce = function(des, distMax, wMin=1e-6) {
 #' @examples ## see examples for param
 #'
 #' @export
-getM = function(mod, des) {
-    m = getm(mod, des$x)
+getM = function(des, mod=NULL) {
+    m = getm(des, mod)
     return(getM_(m, des$w))
 }
-
-
-### Update Reference Design
-###
-### \code{update_reference} updates the underlying model of some reference design.
-### The existence of Fisher information matrices for alien design points is a common requirement for comparative statistics.
-###
-### @param ref some design.
-### @param other either a single design or a list structure of designs.
-###
-### @return \code{update_reference} returns an object of \code{class} \code{"desigh"}.
-### See \code{FedorovWynn} for its structural definition.
-###
-### @seealso \code{\link{update.param}}, \code{\link{Defficiency}}
-###
-### @examples ## see examples for param
-###
-### @export
-#update_reference = function(ref, other) {
-    #other = flatten(other)
-    #mod = ref$model
-    #for (o in other) {
-        #mod = update(mod, o$x)
-    #}
-    #r = ref
-    #r$model = mod
-    #return(r)
-#}
-
-
 
 
 ## from http://www.magesblog.com/2013/04/how-to-change-alpha-value-of-colours-in.html
@@ -874,78 +755,65 @@ add.alpha <- function(col, alpha=1){
 }
 
 
-## Plot Design
-##
-## \code{plot.desigh} creates a one dimensional plot of sensitivities and weights.
-## If the design space has additional dimensions, the design is projected on a specified margin.
-##
-## If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing values, then the latter are linearly interpolated from the sensitivities in \code{x}.
-##
-## If \code{circles=T}, the diameter of each circle is proportional to the corresponding weight.
-##
-## @param x some design.
-## @param ... other arguments passed to plot.
-## @param margins a vector of indices, the dimensions to project on.
-## Defaults to \code{1}.
-## @param wDes a design to take weights from.
-## Defaults to \code{x}.
-## See \code{reduce}.
-## @param plus add plus symbols to the sensitivity.
-## @param circles draw weights as circles instead of as bars.
-## @param border (if drawing circles) \code{c(bottom, left, top, right)}, the relative margins to add.
-## @param sensArgs a list of arguments to use for drawing the sensitivities.
-## @param wArgs a list of arguments to use for drawing the weights.
-##
-## @references uses add.alpha from \url{http://www.magesblog.com/2013/04/how-to-change-alpha-value-of-colours-in.html}
-##
-## @seealso \code{\link{FedorovWynn}}, \code{\link{reduce}}
-##
-## @examples ## see examples for param
-##
-## @export
-plot.desigh = function(x, sens=NULL, sensx=NULL, ..., margins=NULL, circles=F, border=c(0.1, 0.1, 0.1, 0.1), desSens=T, plus=T, sensArgs=list()) {
+#' Plot Design
+#'
+#' \code{plot.desigh} creates a one dimensional plot of sensitivities and weights.
+#' If the design space has additional dimensions, the design is projected on a specified margin.
+#'
+#' If \code{plus=T}, \code{wDes} is specified and its sensitivities contain missing values, then the latter are linearly interpolated from the sensitivities in \code{x}.
+#'
+#' If \code{circles=T}, the diameter of each circle is proportional to the corresponding weight.
+#'
+#' @param x some design.
+#' @param ... other arguments passed to plot.
+#' @param margins a vector of indices, the dimensions to project on.
+#' Defaults to \code{1}.
+#' @param wDes a design to take weights from.
+#' Defaults to \code{x}.
+#' See \code{reduce}.
+#' @param plus add plus symbols to the sensitivity.
+#' @param circles draw weights as circles instead of as bars.
+#' @param border (if drawing circles) \code{c(bottom, left, top, right)}, the relative margins to add.
+#' @param sensArgs a list of arguments to use for drawing the sensitivities.
+#' @param wArgs a list of arguments to use for drawing the weights.
+#'
+#' @references uses add.alpha from \url{http://www.magesblog.com/2013/04/how-to-change-alpha-value-of-colours-in.html}
+#'
+#' @seealso \code{\link{FedorovWynn}}, \code{\link{reduce}}
+#'
+#' @examples ## see examples for param
+#'
+#' @export
+plot.desigh = function(x, ..., margins=NULL, wDes=NULL, plus=T, circles=F, border=c(0.1, 0.1, 0, 0.1), sensArgs=list(), wArgs=list()) {
     des = x # workaround for S3 requirement
 
     if (is.null(margins))
         margins = 1
-        #margins = 1:(ncol(des$model$x))
+        #margins = 1:(des$model$dDim)
+    if (is.null(wDes))
+        wDes = des
+
     if (1 < length(margins))
         stop('not yet implemented')
 
-    ## marginal projection
+    ## marginal projections
     x = des$x
-    w = des$w
+    sens = des$sens
     idcs = split(seq1(1, nrow(x)), lapply(margins, function(margin) x[, margin]), drop=T)
-    x = x[sapply(idcs, function(a) a[1]), margins, drop=F]
-    w = sapply(idcs, function(idcs) sum(w[idcs]))
+    x = x[sapply(idcs, function(idcs) idcs[1]), margins, drop=F]
+    sens = sapply(idcs, function(idcs) max(sens[idcs]))
+
     ord = roworder(x)
     x = x[ord,, drop=F]
-    w = w[ord]
+    sens = sens[ord]
 
-    if (is.null(sens) && desSens)
-        sens = des$tag$FedorovWynn$sensF
-
-    if (!is.null(sens)) {
-        if (is.function(sens)) {
-            if (is.null(sensx)) {
-                sensx = attr(sens, 'defaults')$x
-                sens = sens()
-            } else
-                sens = sens(x=sensx)
-        }
-
-        ## marginal projection
-        idcs = split(seq1(1, nrow(sensx)), lapply(margins, function(margin) x[, margin]), drop=T)
-
-        sensx = sensx[sapply(idcs, function(idcs) idcs[1]),, drop=F]
-        ord = roworder(sensx)
-        sensx = sensx[ord,, drop=F]
-
-        sens = sapply(idcs, function(idcs) max(sens[idcs]))
-        sens = sens[ord]
-    } else if (!is.null(sensx)) {
-        # TODO
-    }
+    wx = wDes$x
+    ww = wDes$w
+    wsens = wDes$sens
+    idcs = split(seq1(1, nrow(wx)), lapply(margins, function(margin) wx[, margin]), drop=T)
+    wx = wx[sapply(idcs, function(idcs) idcs[1]), margins, drop=F]
+    ww = sapply(idcs, function(idcs) sum(ww[idcs]))
+    wsens = sapply(idcs, function(idcs) max(wsens[idcs]))
 
     args = list(...)
     if (length(margins) == 1) {
@@ -1005,9 +873,7 @@ plot.desigh = function(x, sens=NULL, sensx=NULL, ..., margins=NULL, circles=F, b
             do.call(axis, modifyList(list(4, col.axis=wArgs$col), wArgs))
             do.call(mtext, modifyList(list('weight', side=4, line=3), wArgs))
         }
-
     }
-
 }
 
 
@@ -1037,148 +903,42 @@ plot.desigh = function(x, sens=NULL, sensx=NULL, ..., margins=NULL, circles=F, b
 #' @examples ## see examples for param
 #'
 #' @export
-Defficiency = function(des, ref, mod, sNames=NULL, names=NULL) {
-    if (is.null(sNames))
-        sNames = attr(ref$tag$FedorovWynn$sensF, 'sNames')
+Defficiency = function(des, ref, sNames=NULL, names=NULL) {
+    if (is.null(sNames)) {
+        sNames = ref$args$FedorovWynn$sNames
+    }
 
-    if (is.null(names))
-        names = attr(ref$tag$FedorovWynn$sensF, 'names')
+    if (is.null(names)) {
+        names = ref$args$FedorovWynn$names
+    }
 
-    tt = getDsPar(mod, sNames, names)
+    tt = getIdcs(names, sNames, ref$model)
     idcs = tt$idcs
     sIdcs = tt$sIdcs
-    A = tt$A
+    i = match(sIdcs, idcs)
+    if (anyNA(i))
+        stop('sNames shall be a subset of names (argument)')
 
-    m = getm(mod, des$x, idcs)
+    m = getm(des, ref$model)
+    if (length(idcs) != dim(m)[1]) {
+        m = m[idcs, idcs,]
+    }
     M = getM_(m, des$w)
 
-    m = getm(mod, ref$x, idcs)
+    m = getm(ref)
+    if (length(idcs) != dim(m)[1]) {
+        m = m[idcs, idcs,]
+    }
     Mref = getM_(m, ref$w)
 
-    if (is.null(A))
+    if ( identical(sIdcs, idcs) ) {
         return((det(M) / det(Mref)) ** (1/length(idcs)))
-
-    M12 = M[sIdcs, -sIdcs, drop=F]
-    Mref12 = Mref[sIdcs, -sIdcs, drop=F]
-
-    return(( det(M[sIdcs, sIdcs, drop=F] - M12 %*% solve(M[-sIdcs, -sIdcs, drop=F]) %*% t(M12)) / det(Mref[sIdcs, sIdcs, drop=F] - Mref12 %*% solve(Mref[-sIdcs, -sIdcs, drop=F]) %*% t(Mref12)) ) ** (1/ncol(A)))
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-#' Plot Design
-#'
-#' @export
-plot.desigh = function(x, sensx=NULL, sens=NULL, ..., margins=NULL, desSens=T) {
-    des = x # workaround for S3 requirement
-
-    if (is.null(margins))
-        margins = 1
-        #margins = 1:(ncol(des$model$x))
-    if (1 < length(margins))
-        stop('not yet implemented')
-
-    if (dev.cur() == 1)
-        dev.new()
-
-    ## marginal projection
-    x = des$x
-    w = des$w
-    idcs = split(seq1(1, nrow(x)), lapply(margins, function(margin) x[, margin]), drop=T)
-    x = x[sapply(idcs, function(i) i[1]), margins, drop=F]
-    w = sapply(idcs, function(idcs) sum(w[idcs]))
-    ord = roworder(x)
-    x = x[ord,, drop=F]
-    w = w[ord]
-
-    ## lookup design sensF
-    if (is.null(sens) && desSens)
-        sens = des$tag$FedorovWynn$sensF
-
-    ## prepare sensitivity
-    if (!is.null(sens)) {
-        if (is.function(sens)) {
-            if (is.null(sensx)) {
-                sensx = attr(sens, 'defaults')$x
-                sens = sens(desw=des$w, desx=des$x)
-            } else
-                sens = sens(x=sensx, desw=des$w, desx=des$x)
-        }
-
-        ## marginal projection
-        idcs = split(seq1(1, nrow(sensx)), lapply(margins, function(margin) sensx[, margin]), drop=T)
-
-        sensx = sensx[sapply(idcs, function(i) i[1]), margins, drop=F]
-        sens = sapply(idcs, function(idcs) max(sens[idcs]))
-
-        ord = roworder(sensx)
-        sensx = sensx[ord,, drop=F]
-        sens = sens[ord]
-
-
-        mar = par('mar')
-        mar[4] = mar[2]
-        par(mar=mar)
-    } else {
-        mar = par('mar')
-        mar[4] = 2 + 0.1 # Warning, hard coded
-        par(mar=mar)
     }
 
-    if (length(margins) == 1) {
-        xlim = range(x)
-        ylim = c(0, 1)
-        plot(NA, xlim=xlim, ylim=ylim, ylab='weight')
+    s = length(sIdcs)
+    M12 = M[i, -i, drop=F]
+    Mref12 = Mref[i, -i, drop=F]
 
-        if (!is.null(sens)) {
-            par(new=T)
-            plot(sensx, sens, type='l', axes=F, xlab='', ylab='')
-            axis(4)
-            mtext('sensitivity', side=4, line=3)
-        }
-
-        par(new=T)
-        plot(x, w, type='h', xlim=xlim, ylim=ylim, axes=F, xlab='', ylab='')
-    }
+    return(( det(M[i, i, drop=F] - M12 %*% solve(M[-i, -i, drop=F]) %*% t(M12)) / det(Mref[i, i, drop=F] - Mref12 %*% solve(Mref[-i, -i, drop=F]) %*% t(Mref12)) ) ** (1/s))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
