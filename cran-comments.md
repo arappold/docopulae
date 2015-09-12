@@ -1,14 +1,7 @@
-## Resubmission
-
-This is a resubmission. In this version I have:
-
-* fixed the content of `LICENSE`
-* wrapped `nint` in `DESCRIPTION` in single quotes as recommended
-* renamed S3 class `design` to `desigh`, to avoid name conflicts with `graphics::plot.design`
-
 ## Test environments
 
 * local Linux Mint install, R 3.1.2
+* local Linux Mint install, R-devel 2015-09-11 r69363
 * win-builder (devel and release)
 
 ## R CMD check results

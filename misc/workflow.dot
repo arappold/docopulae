@@ -25,11 +25,12 @@ digraph {
     buildf -> Deriv2Logf [style=dashed];
 
     nint [shape=diamond];
+    Model [shape=box];
 
     subgraph cluster_model {
         label = "Model";
         fontname = bold;
-        fisherI -> param -> "update.param";
+        fisherI -> param;
     }
 
     buildf -> fisherI;
@@ -39,6 +40,16 @@ digraph {
     DerivLogf -> fisherI;
     Deriv2Logf -> fisherI;
     nint -> fisherI;
+    param -> Model;
+    Model -> "update.param" [dir=both];
+
+    subgraph cluster_sens {
+        label = "Sensitivity";
+        fontname = bold;
+        Dsensitivity;
+    }
+
+    Model -> Dsensitivity;
 
     Design [shape=box];
 
@@ -46,28 +57,12 @@ digraph {
         label = "Design";
         fontname = bold;
         FedorovWynn;
+        design;
     }
 
-    "update.param" -> FedorovWynn;
+    Dsensitivity -> FedorovWynn;
     FedorovWynn -> Design;
-
-    subgraph cluster_transform {
-        label = "Transform";
-        fontname = bold;
-        reduce;
-        "update.desigh";
-        update_reference;
-    }
-
-    Design -> {reduce; "update.desigh", update_reference};
-
-    subgraph cluster_visualize {
-        label = "Visualize";
-        fontname = bold;
-        "plot.desigh";
-    }
-
-    Design -> "plot.desigh";
+    design -> Design;
 
     subgraph cluster_compare {
         label = "Compare";
@@ -76,6 +71,27 @@ digraph {
     }
 
     Design -> Defficiency;
+    Model -> Defficiency;
+
+    subgraph cluster_transform {
+        label = "Transform";
+        fontname = bold;
+        reduce;
+    }
+
+    Design -> reduce [dir=both];
+
+    subgraph cluster_visualize {
+        label = "Visualize";
+        fontname = bold;
+        "plot.desigh";
+    }
+
+    Design -> "plot.desigh";
+    Dsensitivity -> "plot.desigh" [style=dotted];
+
+    Model -> getM;
+    Design -> getM;
 
     //subgraph cluster_helper {
         //integrateA;
