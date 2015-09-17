@@ -48,7 +48,7 @@ Deriv2f = function(f, names) {
 
     for (i in seq(names)) {
         a = names[[i]]
-        d = Deriv::Deriv(f, a)
+        d = Deriv::Deriv(f, a, cache.exp=F)
         for (j in i:length(names)) {
             b = names[[j]]
             d2 = Deriv::Deriv(d, b)
