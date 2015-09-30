@@ -454,7 +454,7 @@ fisherI = function(ff, theta, names, yspace, ...) {
 design = function(x, w, tag=list()) {
     if (length(w) != nrow(x))
         stop('length of w shall be equal to the number of rows in x')
-    if (sum(w) != 1)
+    if (!isTRUE(all.equal(sum(w), 1))) # R forced me to write this
         stop('weights shall sum to 1')
 
     r = list(x=x, w=w, tag=tag)

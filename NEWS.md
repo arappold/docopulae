@@ -1,3 +1,7 @@
+# docopulae 0.3.1
+
+* `buildf` is more general
+
 # docopulae 0.3.0
 
 * class `desigh` redefined, constructor `design` added

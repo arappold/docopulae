@@ -43,12 +43,16 @@ Deriv2f = function(f, names) {
     #temp = Deriv::drule[['[[']]
     #assign('[[', list(0), envir=Deriv::drule)
 
-    d = mapply(Deriv::Deriv, rep(list(f), length(names)), names, MoreArgs=list(cache.exp=F))
+    d = mapply(Deriv::Deriv, rep(list(f), length(names)), names)
     base::names(d) = names
 
     d2 = mapply(Deriv::Deriv, d, names)
 
-    r = list()
+    r = rep(list(NA), length(names))
+    base::names(r) = names
+    r = replicate(length(names), r, simplify=F)
+    base::names(r) = names
+
     for (i in seq1(1, length(names))) {
         n = names[[i]]
         r[[n]][[n]] = d2[[i]]
