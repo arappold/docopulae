@@ -1,3 +1,7 @@
+# docopulae 0.3.2
+
+* `numDerivLogf` and `numDeriv2Logf` now also take log likelihood functions
+
 # docopulae 0.3.1
 
 * `buildf` is more general

@@ -216,10 +216,11 @@ expr2f = function(x, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' @param f \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
 #' A joint probability density function.
+#' @param isLogf set to \code{TRUE} if \code{f} is already \code{log(f)}.
 #' @param logZero the value \code{log(f)} should return if \code{f} evaluates to \code{0}.
 #' @param logInf the value \code{log(f)} should return if \code{f} evaluates to \code{Inf}.
-#' @param method see \pkg{numDeriv}
-#' @param method.args see \pkg{numDeriv}
+#' @param method see \pkg{numDeriv}.
+#' @param method.args see \pkg{numDeriv}.
 #'
 #' @seealso \pkg{numDeriv}, \code{\link{buildf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 #'
@@ -233,9 +234,11 @@ NULL
 #' @return \code{numDerivLogf} returns \code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]}.
 #'
 #' @export
-numDerivLogf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double.xmax/2, method='Richardson', method.args=list(eps=1e-4, d=0.1, zero.tol=sqrt(.Machine$double.eps/7e-7), r=4, v=2, show.details=F)) {
+numDerivLogf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.Machine$double.xmax/2, method='Richardson', method.args=list()) {
     tt = list(f, logZero, logInf, method, method.args)
     f = as.function(f)
+    if (isLogf)
+        log = function(x) x
 
     logf = function(theta_i, y, theta, i, ...) {
         theta[i] = theta_i
@@ -259,9 +262,11 @@ numDerivLogf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double.
 #' @return \code{numDeriv2Logf} returns \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
 #'
 #' @export
-numDeriv2Logf = function(f, logZero=.Machine$double.xmin, logInf=.Machine$double.xmax/2, method='Richardson', method.args=list(eps=1e-4, d=0.1, zero.tol=sqrt(.Machine$double.eps/7e-7), r=4, v=2, show.details=F)) {
+numDeriv2Logf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.Machine$double.xmax/2, method='Richardson', method.args=list()) {
     tt = list(f, logZero, logInf, method, method.args)
     f = as.function(f)
+    if (isLogf)
+        log = function(x) x
 
     logf = function(theta_ij, y, theta, ij, ...) {
         theta[ij] = theta_ij
