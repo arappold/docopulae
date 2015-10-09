@@ -1,6 +1,7 @@
 # docopulae 0.3.2
 
 * `numDerivLogf` and `numDeriv2Logf` now also take log likelihood functions
+* sensitivity function is as a positive function now
 
 # docopulae 0.3.1
 
