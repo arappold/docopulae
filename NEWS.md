@@ -1,7 +1,10 @@
 # docopulae 0.3.2
 
-* `numDerivLogf` and `numDeriv2Logf` now also take log likelihood functions
-* sensitivity function is as a positive function now
+* `numDerivLogf` and `numDeriv2Logf` optionally take a log likelihood function
+* sensitivity function redefined to a positive function, concerns
+  * `Dsensitivity`
+  * argument `tol` to `FedorovWynn`
+  * new argument `sensTol` to `plot.desigh`
 
 # docopulae 0.3.1
 
