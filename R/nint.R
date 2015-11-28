@@ -593,11 +593,11 @@ nint_transform = function(f, space, dIdcs, trans, infZero=0) {
 NULL
 
 #' @details The function built by \code{nint_integrateNCube_integrate} calls \code{integrate} (argument) recursively.
-#' The number of function evaluations therefore increases exponentially with the number of dimensions (\code{(subdivisions * 21) ** D} if \code{stats::integrate}, the default, is used).
+#' The number of function evaluations therefore increases exponentially with the number of dimensions (\code{(subdivisions * 21) ** D} if \code{integrate}, the default, is used).
 #' At the moment it is the default method because no additional package is required.
 #' However, you most likely want to consider different solutions.
 #'
-#' @param integrate \code{function(f, lowerLimit, upperLimit, ...)} which calls \code{stats::integrate}.
+#' @param integrate \code{function(f, lowerLimit, upperLimit, ...)} which calls \code{integrate}.
 #'
 #' @return \code{nint_integrateNCube_integrate} returns a recursive implementation for \code{nint_integrateNCube} based on one dimensional integration.
 #'

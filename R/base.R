@@ -2,11 +2,11 @@
 
 #' Sequence Generation
 #'
-#' \code{seq1} is similar to \code{base::seq}, however \code{by} is strictly \code{1} by default and \code{integer(0)} is returned if range is empty.
+#' \code{seq1} is similar to \code{seq}, however \code{by} is strictly \code{1} by default and \code{integer(0)} is returned if the range is empty.
 #'
 #' @param from,to,by see \code{\link[base]{seq}}.
 #'
-#' @return \code{seq1} returns either \code{integer(0)} if range is empty or what an appropriate call to \code{base::seq} returns otherwise.
+#' @return \code{seq1} returns either \code{integer(0)} if range is empty or what an appropriate call to \code{seq} returns otherwise.
 #'
 #' See examples below.
 #'
@@ -112,7 +112,7 @@ lproduct = function(x) {
 
 #' Integrate Alternative
 #'
-#' \code{integrateA} is a tolerance wrapper for \code{stats::integrate}.
+#' \code{integrateA} is a tolerance wrapper for \code{integrate}.
 #' It allows \code{integrate} to reach the maximum number of subdivisions.
 #'
 #' See \code{\link[stats]{integrate}}.

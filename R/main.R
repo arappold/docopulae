@@ -39,7 +39,7 @@ param = function(fisherIf, dDim) {
 #' @param ... ignored.
 #'
 #' @return \code{update.param} returns an object of \code{class} \code{"param"}.
-#' See \code{param} for its structural definition.
+#' See \code{\link{param}} for its structural definition.
 #'
 #' @seealso \code{\link{param}}, \code{\link{design}}
 #'
@@ -219,10 +219,9 @@ expr2f = function(x, map=NULL, yMap=NULL, thetaMap=NULL) {
 #' @param isLogf set to \code{TRUE} if \code{f} is already \code{log(f)}.
 #' @param logZero the value \code{log(f)} should return if \code{f} evaluates to \code{0}.
 #' @param logInf the value \code{log(f)} should return if \code{f} evaluates to \code{Inf}.
-#' @param method see \pkg{numDeriv}.
-#' @param method.args see \pkg{numDeriv}.
+#' @param method,side,method.args see \code{\link[numDeriv]{grad}} and \code{\link[numDeriv]{hessian}} in package \pkg{numDeriv}.
 #'
-#' @seealso \pkg{numDeriv}, \code{\link{buildf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
+#' @seealso \code{\link[numDeriv]{grad}} and \code{\link[numDeriv]{hessian}} in package \pkg{numDeriv}, \code{\link{buildf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 #'
 #' @examples ## see examples for param
 #'
@@ -231,11 +230,13 @@ NULL
 
 #' @rdname numDerivLogf
 #'
+#' @details \code{numDerivLogf} passes \code{method}, \code{side} and \code{method.args} directly to \code{numDeriv::grad}.
+#'
 #' @return \code{numDerivLogf} returns \code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]}.
 #'
 #' @export
-numDerivLogf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.Machine$double.xmax/2, method='Richardson', method.args=list()) {
-    tt = list(f, logZero, logInf, method, method.args)
+numDerivLogf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.Machine$double.xmax/2, method='Richardson', side=NULL, method.args=list()) {
+    tt = list(f, logZero, logInf, method, side, method.args)
     f = as.function(f)
     if (isLogf)
         log = function(x) x
@@ -251,13 +252,16 @@ numDerivLogf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.M
         return(r)
     }
     r = function(y, theta, i, ...) {
-        return(numDeriv::grad(logf, theta[[i]], method, NULL, method.args, y, theta, i, ...))
+        return(numDeriv::grad(logf, theta[[i]], method, side, method.args, y, theta, i, ...))
     }
     return(r)
 }
 
 
 #' @rdname numDerivLogf
+#'
+#' @details \code{numDeriv2Logf} duplicates the internals of \code{numDeriv::hessian} to gain speed.
+#' The defaults for \code{method.args} are \code{list(eps=1e-4, d=0.1, zero.tol=sqrt(.Machine$double.eps/7e-7), r=4, v=2)}.
 #'
 #' @return \code{numDeriv2Logf} returns \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
 #'
@@ -267,6 +271,8 @@ numDeriv2Logf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.
     f = as.function(f)
     if (isLogf)
         log = function(x) x
+    method.args_ = list(eps=1e-4, d=0.1, zero.tol=sqrt(.Machine$double.eps/7e-7), r=4, v=2)
+    method.args_[names(method.args)] = method.args
 
     logf = function(theta_ij, y, theta, ij, ...) {
         theta[ij] = theta_ij
@@ -282,13 +288,13 @@ numDeriv2Logf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.
         r = function(y, theta, i, j, ...) {
             if (i == j) {
                 ## sole second derivative at D[2]
-                return( numDeriv::genD(logf, theta[[i]], method, method.args, y, theta, i, ...)$D[2] )
+                return( numDeriv::genD(logf, theta[[i]], method, method.args_, y, theta, i, ...)$D[2] )
             }
-            return( numDeriv::genD(logf, c(theta[[i]], theta[[j]]), method, method.args, y, theta, c(i, j), ...)$D[4] ) # sole mixed second derivative at D[4]
+            return( numDeriv::genD(logf, c(theta[[i]], theta[[j]]), method, method.args_, y, theta, c(i, j), ...)$D[4] ) # sole mixed second derivative at D[4]
         }
     } else if (method == 'complex') {
         r = function(y, theta, i, j, ...) {
-            r = numDeriv::hessian(logf, c(theta[[i]], theta[[j]]), method, method.args, y, theta, c(i, j), ...)
+            r = numDeriv::hessian(logf, c(theta[[i]], theta[[j]]), method, method.args_, y, theta, c(i, j), ...)
             if (i == j)
                 return(r[1])
             return(r[2])
@@ -304,11 +310,11 @@ numDeriv2Logf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.
 #'
 #' Builds a function that evaluates to the first/second derivative of \code{log(f)} with respect to a predefined set of variables/variable combinations.
 #'
-#' While \code{numDerivLogf} relies on \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \code{DerivLogf} utilizes \code{Deriv} to build sub functions for each variable in \code{names}.
+#' While \code{numDerivLogf} relies on the package \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \pkg{DerivLogf} utilizes the package \pkg{Deriv} to build sub functions for each variable in \code{names}.
 #' The same is true for \code{Deriv2Logf}.
 #'
-#' \code{Deriv} won't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} as variables (e.g. \code{theta[["beta1"]]}).
-#' Therefore it's necessary to specify mappings from \code{y} and \code{theta} to the variables in \code{f}.
+#' Up to version 3.6.0 of \pkg{Deriv}, \code{Deriv::Deriv} didn't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} as variables (e.g. \code{theta[["beta1"]]}).
+#' Therefore it is necessary to specify mappings from \code{y} and \code{theta} to the variables in \code{f}.
 #'
 #' @param f an expression, a joint probability density.
 #' @param names a character vector of variable names.
@@ -695,7 +701,7 @@ Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NUL
 #'
 #' \code{FedorovWynn} finds an optimal design using some sensitivity function and a Fedorov-Wynn-type algorithm.
 #'
-#' See \code{Dsensitivity} and it's return value for a reference implementation of a function complying with the requirements for \code{sensF}.
+#' See \code{\link{Dsensitivity}} and it's return value for a reference implementation of a function complying with the requirements for \code{sensF}.
 #'
 #' The algorithm starts from a uniform weight design.
 #' In each iteration weight is redistributed to the point which has the highest sensitivity.
@@ -708,7 +714,7 @@ Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NUL
 #' @param maxIter the maximum number of iterations.
 #'
 #' @return \code{FedorovWynn} returns an object of \code{class} \code{"desigh"}.
-#' See \code{design} for its structural definition.
+#' See \code{\link{design}} for its structural definition.
 #'
 #' @references Fedorov, V. V. (1971) The Design of Experiments in the Multiresponse Case.
 #' \emph{Theory of Probability and its Applications}, 16(2):323-332.
@@ -774,7 +780,7 @@ wPoint = function(x, w) {
 #' @param wMin minimum weight a point shall have to be considered significant.
 #'
 #' @return \code{reduce} returns an object of \code{class} \code{"desigh"}.
-#' See \code{design} for its structural definition.
+#' See \code{\link{design}} for its structural definition.
 #'
 #' @seealso \code{\link{design}}
 #'
@@ -844,7 +850,7 @@ add.alpha <- function(col, alpha=1){
 #' @param x some design.
 #' @param sensx (optional) a row matrix of points.
 #' @param sens (optional) either a vector of sensitivities or a sensitivity function.
-#' The latter shall rely on defaults, see \code{Dsensitivity} for details.
+#' The latter shall rely on defaults, see \code{\link{Dsensitivity}} for details.
 #' @param sensTol (optional) a single numeric.
 #' Adds a horizontal line at this sensitivity level.
 #' @param ... other arguments passed to plot.
@@ -862,6 +868,11 @@ add.alpha <- function(col, alpha=1){
 #'
 #' @export
 plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL, desSens=T, sensPch='+', sensArgs=list()) {
+    points = function(..., axes) graphics::points(...)
+    abline = function(..., axes) graphics::abline(...)
+    axis = function(..., axes) graphics::axis(...)
+    mtext = function(..., axes) graphics::mtext(...)
+
     des = x # workaround for S3 requirement
 
     args = list(...)
@@ -954,10 +965,12 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
                 do.call(abline, margs)
             }
 
-            margs = modifyList(list(4), sensArgs)
-            if (!is.null(margs$col) && is.null(margs$col.axis))
-                margs$col.axis = margs$col
-            do.call(axis, margs)
+            if (!isTRUE(sensArgs$axes == F)) {
+                margs = modifyList(list(4), sensArgs)
+                if (!is.null(margs$col) && is.null(margs$col.axis))
+                    margs$col.axis = margs$col
+                do.call(axis, margs)
+            }
 
             margs = modifyList(list(ylab, side=4, line=3), sensArgs)
             do.call(mtext, margs)

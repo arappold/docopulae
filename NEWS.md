@@ -1,3 +1,8 @@
+# docopulae 0.3.3
+
+* fixed defaults for `method.args` for `numDeriv2Logf`
+* `plot.desigh` won't draw second axis anymore if `sensArgs$axes == F`
+
 # docopulae 0.3.2
 
 * `numDerivLogf` and `numDeriv2Logf` optionally take a log likelihood function
