@@ -1,32 +1,152 @@
 library(docopulae)
 context('base functions')
 
+## seq1
+test_that('seq1', {
+    expect_equal(docopulae::seq1(1, 10),
+                 seq(1, 10))
+    expect_equal(docopulae::seq1(1, 2),
+                 seq(1, 2))
+    expect_equal(docopulae::seq1(1, 1),
+                 seq(1, 1))
+    expect_equal(docopulae::seq1(1, 0),
+                 integer(0))
+    expect_equal(docopulae::seq1(10, 1, -3),
+                 seq(10, 1, -3))
+    expect_equal(docopulae::seq1(4, 1, -3),
+                 seq(4, 1, -3))
+    expect_equal(docopulae::seq1(3, 1, -3),
+                 seq(3, 1, -3))
+    expect_equal(docopulae::seq1(1, 1, -3),
+                 seq(1, 1, -3))
+    expect_equal(docopulae::seq1(0, 1, -3),
+                 integer(0))
+})
+
+
+## Derivf, Deriv2f
+test_that('Derivf, Deriv2f', {
+    if (require(Deriv)) {
+        e = quote( ((x - mu)/sigma)^2 )
+        n = c('x', 'mu', 'sigma')
+        d = docopulae::Derivf(e, n)
+        expect_named(d,
+                     n)
+        env = list(x=2, mu=3, sigma=4)
+        expect_equivalent(lapply(d, eval, env),
+                          list(-0.125, 0.125, -0.03125))
+
+        d2 = docopulae::Deriv2f(e, n)
+        expect_named(d2,
+                     n)
+        for (s in d2)
+            expect_named(s,
+                         n)
+        env = list(x=2, mu=3, sigma=4)
+        expect_equivalent(lapply(d2, function(s) lapply(s, eval, env)),
+                          list(list(0.125, -0.125, 0.0625), list(-0.125, 0.125, -0.0625), list(0.0625, -0.0625, 0.0234375)))
+    }
+})
+
+
+## mirrorMatrix
+test_that('mirrorMatrix', {
+    n = 4
+    x = matrix(rnorm(n^2), nrow=n, ncol=n)
+    x = x * !lower.tri(x)
+    r = docopulae::mirrorMatrix(x)
+    # check sum of matrix
+    expect_equal(sum(r),
+                 2*sum(x * upper.tri(x)) + sum(diag(x)))
+    # check lower triangle
+    expect_equal(r * lower.tri(r, diag=T),
+                 t(x))
+    # check upper triangle
+    expect_equal(r * upper.tri(r, diag=T),
+                 x)
+})
+
+
+## is_flat, flatten
+test_that('is_flat, flatten', {
+    expect_true(docopulae::is_flat(list()))
+    expect_true(docopulae::is_flat(list(1:2, 2:3, 3:4)))
+    expect_false(docopulae::is_flat(list(list(1:2), 2:3, 3:4)))
+
+    expect_equal(docopulae::flatten(1:2),
+                 list(1:2))
+    expect_equal(docopulae::flatten(list()),
+                 list())
+    expect_equal(docopulae::flatten(list(1:2, 2:3, 3:4)),
+                 list(1:2, 2:3, 3:4))
+    expect_equal(docopulae::flatten(list(list(1:2), 2:3, 3:4)),
+                 list(1:2, 2:3, 3:4))
+    expect_equal(docopulae::flatten(list(1:2, list(2:3), list(3:4, list(4:5)), list( list(list(5:6)) , 6:7))),
+                 list(1:2, 2:3, 3:4, 4:5, 5:6, 6:7))
+})
+
+
+## zmin, zmax
+test_that('zmin, zmax', {
+    expect_equal(docopulae::zmin(numeric(0)), 0)
+    expect_equal(docopulae::zmin(1:3), 1)
+
+    expect_equal(docopulae::zmax(numeric(0)), 0)
+    expect_equal(docopulae::zmax(1:3), 3)
+})
+
 
 ## lproduct
 test_that('lproduct', {
     expect_equal(lproduct(list()),
                  list())
-    expect_equal(lproduct(list(list(1))),
-                 list(list(1)))
-    expect_equal(lproduct(list(list(1), list(2, 3))),
-                 list(list(1, 2), list(1, 3)))
-    expect_equal(lproduct(list(list(1, 2), list(3))),
-                 list(list(1, 3), list(2, 3)))
-    expect_equal(lproduct(list(list(list(1)))), # leave inner list(1) untouched
-                 list(list(list(1))))
+    expect_equal(lproduct(list(list(1:2))),
+                 list(list(1:2)))
+    expect_equal(lproduct(list(list(1:2), list(2:3, 3:4))),
+                 list(list(1:2, 2:3), list(1:2, 3:4)))
+    expect_equal(lproduct(list(list(1:2, 2:3), list(3:4))),
+                 list(list(1:2, 3:4), list(2:3, 3:4)))
+    expect_equal(lproduct(list(list(list(1:2)), list(2:3))), # leave inner list(1:2) untouched
+                 list(list(list(1:2), 2:3)))
+})
+
+
+## integrateA
+test_that('integrateA', {
+    f = function(x) 1/((x + 1)*sqrt(x))
+    r = docopulae::integrateA(f, 0, 2)
+    expect_equal(r$message, 'OK')
+    r = docopulae::integrateA(f, 0, 2, subdivisions=3)
+    expect_equal(r$message, 'maximum number of subdivisions reached')
+    expect_error(docopulae::integrateA(f, 0, 1e6))
 })
 
 
 ## clusterPeak
 test_that('clusterPeak handles distance correctly', {
-    expect_equal(clusterPeak(matrix(c(1, 2)), 2:1, 1),
+    expect_equal(docopulae::clusterPeak(matrix(c(1, 2)), 2:1, 1),
                  c(1, 1))
-    expect_equal(clusterPeak(matrix(c(1, 2 + 1e-15)), 2:1, 1),
+    expect_equal(docopulae::clusterPeak(matrix(c(1, 2 + 1e-15)), 2:1, 1),
                  c(1, 2))
 })
 
+test_that('clusterPeak works for a simple 1D random example', {
+    n = 100
+    x1 = matrix(runif(n))
+    x2 = matrix(runif(n)) + 1 + 1 + 1e-15
+    x = rbind(x1, x2)
+    ord = sample(1:nrow(x), nrow(x))
+    tcl = rep(1:2, each=n) # true class
+    x = x[ord,, drop=F]
+    tcl = tcl[ord]
 
-test_that('clusterPeak works for a simple random example', {
+    cl = docopulae::clusterPeak(x, nrow(x):1, 1)
+    # are groups consistent with true groups
+    expect_equivalent(apply(table(cl, tcl), 1, max),
+                      rep(n, 2))
+})
+
+test_that('clusterPeak works for a simple 2D random example', {
     n = 100
     x1 = matrix(runif(n*2), ncol=2)
     x2 = matrix(runif(n*2), ncol=2)
@@ -43,33 +163,46 @@ test_that('clusterPeak works for a simple random example', {
     tcl = tcl[ord]
     #plot(x[,1], x[,2], col=tcl)
 
-    expect_true({
-        cl = clusterPeak(x, nrow(x):1, sqrt(2))
-        clg = split(cl, tcl) # groups
-        all(sapply(clg, function(g) all(g == g[1]))) # are all groups consistent
-    })
+    cl = docopulae::clusterPeak(x, nrow(x):1, sqrt(2))
+    # are groups consistent with true groups
+    expect_equivalent(apply(table(cl, tcl), 1, max),
+                      rep(n, 4))
 })
 
 
 ## roworder
 test_that('roworder works in trivial cases', {
-    expect_equal(roworder(matrix(nrow=0, ncol=1)), integer(0))
-    expect_equal(roworder(data.frame(numeric(0))), integer(0))
-    expect_equal(roworder(matrix(c(1, 2), ncol=1)), c(1, 2))
-    expect_equal(roworder(data.frame(c(1, 2), ncol=1)), c(1, 2))
+    expect_equal(docopulae::roworder(matrix(nrow=0, ncol=1)),
+                 integer(0))
+    expect_equal(docopulae::roworder(data.frame(numeric(0))),
+                 integer(0))
+    expect_equal(docopulae::roworder(matrix(1, ncol=1)),
+                 1)
+    expect_equal(docopulae::roworder(data.frame(1)),
+                 1)
 })
-
 
 test_that('roworder works for expand.grid example', {
     x1 = 1:3
     x2 = 1:5
     x3 = 1:7
     x = as.matrix(expand.grid(x1, x2, x3))
-    dimnames(x) = list()
-    expect_equal(x[roworder(x),],
-                 cbind(rep(x1, each=length(x2)*length(x3)),
-                       rep(rep(x2, each=length(x3)), length(x1)),
-                       rep(x3, length(x1)*length(x2))))
+    expect_equivalent(x[docopulae::roworder(x),],
+                      cbind(rep(x1, each=length(x2)*length(x3)), rep(rep(x2, each=length(x3)), length(x1)), rep(x3, length(x1)*length(x2))))
+})
+
+test_that('roworder works for random examples', {
+    n = 100
+    k = 6
+    x = unique(matrix(sample(k, size=n*k, replace=T), nrow=n))
+    ord = docopulae::roworder(x)
+    x = x[ord,, drop=F]
+
+    for (n in 1:10) {
+        nord = sample(nrow(x))
+        expect_equal(docopulae::roworder(x[nord,, drop=F]),
+                     order(nord))
+    }
 })
 
 
@@ -77,38 +210,36 @@ test_that('roworder works for expand.grid example', {
 test_that('rowmatch works in trivial cases', {
     a = matrix(nrow=0, ncol=2)
     b = matrix(1:4, ncol=2)
-    expect_equal(rowmatch(a, b), integer(0))
-    expect_equal(rowmatch(b, a), as.integer(c(NA, NA)))
-    expect_equal(rowmatch(matrix(1), matrix(1)), 1)
-    expect_equal(rowmatch(matrix(1:2), matrix(2:1)), 2:1)
+    expect_equal(docopulae::rowmatch(a, b),
+                 integer(0))
+    expect_equal(docopulae::rowmatch(b, a),
+                 as.integer(c(NA, NA)))
+    expect_equal(docopulae::rowmatch(matrix(1), matrix(1)),
+                 1)
+    expect_equal(docopulae::rowmatch(matrix(1:2), matrix(2:1)),
+                 2:1)
 
     a = matrix(1:4, ncol=2, byrow=T)
-    b = matrix(-1:6, ncol=2, byrow=T)
-    expect_equal(rowmatch(a, b), 2:3)
-    expect_equal(rowmatch(b, a), as.integer(c(NA, 1, 2, NA)))
+    b = matrix((-1):6, ncol=2, byrow=T)
+    expect_equal(docopulae::rowmatch(a, b),
+                 2:3)
+    expect_equal(docopulae::rowmatch(b, a),
+                 as.integer(c(NA, 1, 2, NA)))
 })
-
 
 test_that('rowmatch works for a random example', {
-    ## subset
-    x1 = matrix(rnorm(100*4), ncol=4)
-    i = sample(1:nrow(x1), 50)
-    expect_equal(rowmatch(x1[i,], x1), i)
+    n = 100
+    k = 4
+    x = matrix(rnorm(n*k), nrow=n)
+    i = sample(1:nrow(x), sample(1:nrow(x), 1))
+    s = x[i,, drop=F]
+    expect_equal(docopulae::rowmatch(s, x), # s in x
+                 i)
 
-    ## no match
-    x2 = x1; x2[i,] = matrix(rnorm(50*4), ncol=4)
-    expect_equal(which(is.na(rowmatch(x2, x1))), sort(i))
-    expect_equal(c(na.omit(rowmatch(x2, x1))), (1:100)[-i])
+    r = docopulae::rowmatch(x, s) # x in s
+    expect_equal(which(is.na(r)), # NA's
+                 (1:n)[-i])
+    expect_equivalent(na.omit(r), # matches
+                      order(i))
 })
-    
-
-### roworder and rowmatch
-#test_that('rowmatch works using roworder and vice versa', {
-    #x = matrix(rnorm(100*4), ncol=4)
-    #i = sample(1:nrow(x), nrow(x) / 3)
-    #y = x[i,]
-
-
-#})
-
 
