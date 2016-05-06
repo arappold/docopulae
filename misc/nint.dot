@@ -17,7 +17,8 @@ digraph {
         expandSpace;
     }
 
-    Space -> {validateSpace; expandSpace};
+    Space -> validateSpace;
+    Space -> expandSpace [dir=both];
 
     subgraph cluster_space_transform {
         label = "Transform";
@@ -25,7 +26,7 @@ digraph {
         transform;
     }
 
-    Space -> transform;
+    Space -> transform [dir=both];
 
     subgraph cluster_interface {
         label = "Interface";
@@ -36,5 +37,6 @@ digraph {
 
     integrate [style=filled; fillcolor=black; fontcolor=white, fontname=bold];
     Space -> integrate;
+    transform -> integrate;
     {integrateNCube; integrateNFunc} -> integrate [style=dotted];
 }

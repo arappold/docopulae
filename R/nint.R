@@ -736,10 +736,10 @@ nint_integrateNFunc_recursive = function(integrate1) {
             d <<- d + 1
             n = funcs[[d]](x0)
             type = nint_dtype(n)
-            if (type == nint_TYPE_INTV_DIM)
-                r = integrate1(g, n[1], n[2], ...)
-            else
+            if (is.null(type) || type != nint_TYPE_INTV_DIM)
                 r = sum(vapply(n, g, 0, ...))
+            else
+                r = integrate1(g, n[1], n[2], ...)
             d <<- d - 1
             return(r)
         }, 'xx')
