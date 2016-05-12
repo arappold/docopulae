@@ -161,8 +161,8 @@ dev.new(); plot(rd, sensx=d$x, sens=D(x=d$x, desx=rd$x, desw=rd$w, mod=m2),
                 main='rd + sensitivity')
 
 ## find Ds-optimal design
-dsNames = c(names(alphas), 'beta1', 'beta2', 'beta3')
-Ds = Dsensitivity(dsNames, defaults=list(x=m$x, desx=m$x, mod=m))
+s = c(names(alphas), 'beta1', 'beta2', 'beta3')
+Ds = Dsensitivity(A=s, defaults=list(x=m$x, desx=m$x, mod=m))
 
 system.time(ds <- FedorovWynn(Ds, 4.0004, maxIter=1e3))
 ds$tag$FedorovWynn$tolBreak
@@ -179,7 +179,7 @@ dev.new(); plot(d2, sensx=d$x, sens=D(x=d$x, desx=d2$x, desw=d2$w, mod=m),
 
 ## compare designs
 Defficiency(ds, d, m)
-Defficiency(d, ds, m, dsNames=dsNames) # Ds-efficiency
+Defficiency(d, ds, m, A=s) # Ds-efficiency
 Defficiency(d2, d, m)
 Defficiency(d2, ds, m) # D-efficiency
 

@@ -4,14 +4,20 @@
 \alias{Dsensitivity}
 \title{D Sensitivity}
 \usage{
-Dsensitivity(dsNames = NULL, names = NULL, defaults = list(x = NULL, desw
-  = NULL, desx = NULL, mod = NULL))
+Dsensitivity(A = NULL, names = NULL, defaults = list(x = NULL, desw =
+  NULL, desx = NULL, mod = NULL))
 }
 \arguments{
-\item{dsNames}{a vector of names or indices, the subset of parameters to use.
-Defaults to the set of parameters in use.}
+\item{A}{for \itemize{
+\item D-optimality: \code{NULL}
+\item D_s-optimality: a vector of names or indices, the subset of parameters of interest.
+\item D_A-optimality: either \itemize{
+  \item directly: a matrix without row names.
+  \item indirectly: a matrix with row names corresponding to the parameters.
+  }
+}}
 
-\item{names}{a vector of names or indices, the set of parameters to use.
+\item{names}{a vector of names or indices, the subset of parameters to use.
 Defaults to the parameters for which the Fisher information is available.}
 
 \item{defaults}{a named list of default values.
@@ -22,10 +28,12 @@ The value \code{NULL} is equivalent to absence.}
 It's attributes contain this function's arguments.
 }
 \description{
-\code{Dsensitivity} builds a sensitivity function for the D- or Ds-optimality criterion which relies on defaults to speed up evaluation.
+\code{Dsensitivity} builds a sensitivity function for the D-, D_s or D_A-optimality criterion which relies on defaults to speed up evaluation.
 \code{FedorovWynn} for instance requires this behaviour/protocol.
 }
 \details{
+Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{names}.
+
 For efficiency reasons the returned function won't complain about \emph{missing arguments} immediately, leading to strange errors.
 Please make sure that all arguments are specified at all times.
 This behaviour might change in future releases.

@@ -475,59 +475,84 @@ design = function(x, w, tag=list()) {
 }
 
 
-getDsPar = function(mod, dsNames, names) {
-    needNames = is.character(names) || is.character(dsNames)
-    needFi = needNames || is.null(names)
+getDAPar = function(mod, A, names) {
+    # A = NULL || chr || int || row named mat || mat
+    # names = NULL || chr || int
 
-    if (needFi) {
-        if (length(mod$fisherI) == 0)
-            stop('model shall contain at least one Fisher information matrix')
-        fi = mod$fisherI[[1]]
-    }
+    # gather fI, fNames
+    fI = NULL
+    fNames = NULL
 
-    if (needNames) {
-        fNames = rownames(fi)
+    if (length(mod$fisherI) != 0) {
+        fI = mod$fisherI[[1]]
+
+        fNames = rownames(fI)
         if (is.null(fNames)) {
-            fNames = colnames(fi)
-            if (is.null(fNames)) {
-                stop('first Fisher information matrix shall have row or column names')
-            }
+            fNames = colnames(fI)
         }
     }
 
-    if (is.null(names)) {
-        idcs = seq1(1, nrow(fi))
+    # names
+    if (is.character(names)) {
+        if (!is.null(fNames)) {
+            names = match(names, fNames)
+
+            if (anyNA(names))
+                stop('names shall match to the Fisher information matrices')
+        }
+    }
+    # = NULL || chr || int
+
+    # A
+    if (is.null(A) || (is.matrix(A) && is.null(rownames(A)))) # D, raw D_A
+        return(list(names=names, A=A))
+
+    n = NULL
+    aIdcs = NULL
+    if (is.character(A)) {
+        n = A
+    } else if (is.vector(A)) {
+        aIdcs = A
     } else {
-        if (is.character(names))
-            idcs = match(names, fNames)
-        else
-            idcs = names
-        idcs = sort(unique(idcs))
+        n = rownames(A)
     }
 
-    if (is.null(dsNames)) {
-        sIdcs = seq1(1, length(idcs))
-    } else {
-        if (is.character(dsNames))
-            sIdcs = match(dsNames, fNames[idcs])
-        else
-            sIdcs = dsNames
-        sIdcs = sort(unique(sIdcs))
+    if (!is.null(n)) { # resolve names
+        if (is.character(names)) { # names = chr
+            n2 = names
+        } else { # names = NULL || int
+            if (is.null(fNames))
+                stop('first Fisher information matrix shall have row or column names')
+
+            if (is.null(names)) { # names = NULL
+                n2 = fNames
+            } else { # names = int
+                n2 = fNames[names]
+            }
+        }
+        aIdcs = match(n, n2)
     }
 
-    if (anyNA(sIdcs))
-        stop('dsNames shall be a subset of names (argument)')
+    if (is.null(names)) { # names = NULL
+        if (is.null(fI))
+            stop('model shall contain at least one Fisher information matrix')
 
-    if (length(sIdcs) != length(idcs)) {
-        s = length(sIdcs)
-        n = length(idcs)
+        k = nrow(fI)
+    } else { # names = chr || int
+        k = length(names)
+    }
 
-        A = matrix(0, nrow=n, ncol=s)
-        A[(seq1(1, s) - 1)*n + sIdcs] = 1
-    } else
-        A = NULL
+    if (is.character(A) || is.vector(A)) { # D_s
+        s = length(A)
+        A = matrix(0, nrow=k, ncol=s)
+        A[(seq1(1, s) - 1)*k + aIdcs] = 1
+        return(list(names=names, A=A))
+    }
 
-    return(list(idcs=idcs, sIdcs=sIdcs, A=A))
+    # named D_A
+    nA = matrix(0, nrow=k, ncol=ncol(A))
+    nA[aIdcs,] = A
+    return(list(names=names, A=nA))
 }
 
 getm = function(mod, x, idcs=NULL) {
@@ -554,16 +579,24 @@ Dsensitivity_anyNAm = 'Fisher information matrices shall not contain missing val
 
 #' D Sensitivity
 #'
-#' \code{Dsensitivity} builds a sensitivity function for the D- or Ds-optimality criterion which relies on defaults to speed up evaluation.
+#' \code{Dsensitivity} builds a sensitivity function for the D-, D_s or D_A-optimality criterion which relies on defaults to speed up evaluation.
 #' \code{FedorovWynn} for instance requires this behaviour/protocol.
+#'
+#' Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{names}.
 #'
 #' For efficiency reasons the returned function won't complain about \emph{missing arguments} immediately, leading to strange errors.
 #' Please make sure that all arguments are specified at all times.
 #' This behaviour might change in future releases.
 #'
-#' @param dsNames a vector of names or indices, the subset of parameters to use.
-#' Defaults to the set of parameters in use.
-#' @param names a vector of names or indices, the set of parameters to use.
+#' @param A for \itemize{
+#' \item D-optimality: \code{NULL}
+#' \item D_s-optimality: a vector of names or indices, the subset of parameters of interest.
+#' \item D_A-optimality: either \itemize{
+#'   \item directly: a matrix without row names.
+#'   \item indirectly: a matrix with row names corresponding to the parameters.
+#'   }
+#' }
+#' @param names a vector of names or indices, the subset of parameters to use.
 #' Defaults to the parameters for which the Fisher information is available.
 #' @param defaults a named list of default values.
 #' The value \code{NULL} is equivalent to absence.
@@ -576,7 +609,7 @@ Dsensitivity_anyNAm = 'Fisher information matrices shall not contain missing val
 #' @examples ## see examples for param
 #'
 #' @export
-Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NULL, desx=NULL, mod=NULL)) {
+Dsensitivity = function(A=NULL, names=NULL, defaults=list(x=NULL, desw=NULL, desx=NULL, mod=NULL)) {
     dmod = defaults$mod
     ddesx = defaults$desx
     ddesw = defaults$desw
@@ -584,20 +617,20 @@ Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NUL
 
     u1 = T; u2 = T # update
 
-    # mod, dsNames, names -> idcs, A
+    # mod, A, names -> names, A
     if (u1 && !is.null(dmod)) {
-        tt = getDsPar(dmod, dsNames, names)
-        didcs = tt$idcs
+        tt = getDAPar(dmod, A, names)
+        dnames = tt$names
         dA = tt$A
     } else {
-        didcs = NULL
+        dnames = NULL
         dA = NULL
         u1 = F
     }
 
-    # mod, idcs, desx -> desm
+    # mod, names, desx -> desm
     if (u1 && !is.null(ddesx)) {
-        ddesm = getm(dmod, ddesx, didcs)
+        ddesm = getm(dmod, ddesx, dnames)
         if (anyNA(ddesm))
             stop(Dsensitivity_anyNAm)
     } else {
@@ -618,9 +651,9 @@ Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NUL
         u1 = F
     }
 
-    # mod, idcs, x -> m
+    # mod, names, x -> m
     if (u1 && !is.null(dx)) {
-        dm = getm(dmod, dx, didcs)
+        dm = getm(dmod, dx, dnames)
         if (anyNA(dm))
             stop(Dsensitivity_anyNAm)
     } else {
@@ -636,13 +669,13 @@ Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NUL
         else
             u1 = T
 
-        # mod, dsNames, names -> idcs, A
+        # mod, A, names -> names, A
         if (u1) {
-            tt = getDsPar(mod, dsNames, names)
-            idcs = tt$idcs
+            tt = getDAPar(mod, A, names)
+            names = tt$names
             A = tt$A
         } else {
-            idcs = didcs
+            names = dnames
             A = dA
         }
 
@@ -651,9 +684,9 @@ Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NUL
         else
             u1 = T
 
-        # mod, idcs, desx -> desm
+        # mod, names, desx -> desm
         if (u1) {
-            desm = getm(mod, desx, idcs)
+            desm = getm(mod, desx, names)
             if (anyNA(desm))
                 stop(Dsensitivity_anyNAm)
         } else
@@ -680,9 +713,9 @@ Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NUL
         else
             u1 = T # u2 would be more precise
 
-        # mod, idcs, x -> m
+        # mod, names, x -> m
         if (u1) {
-            m = getm(mod, x, idcs)
+            m = getm(mod, x, names)
             if (anyNA(m))
                 stop(Dsensitivity_anyNAm)
         } else
@@ -691,7 +724,7 @@ Dsensitivity = function(dsNames=NULL, names=NULL, defaults=list(x=NULL, desw=NUL
 
         return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1))
     }
-    attributes(r) = list(dsNames=dsNames, names=names, defaults=defaults)
+    attributes(r) = list(A=A, names=names, defaults=defaults)
 
     return(r)
 }
@@ -997,21 +1030,27 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
 
 #' D Efficiency
 #'
-#' \code{Defficiency} computes the D- or Ds-efficiency measure for some design with respect to some reference design.
+#' \code{Defficiency} computes the D-, D_s or D_A-efficiency measure for some design with respect to some reference design.
+#'
+#' Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{names}.
 #'
 #' D efficiency is defined as
-#' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( det(M(\xi, \theta))  /  det(M(\xi*, \theta)) )**(1/n)}
-#' and Ds efficiency as
-#' \deqn{\left(\frac{\left|M_{11}(\xi,\bar{\theta})-M_{12}(\xi,\bar{\theta})M_{22}^{-1}(\xi,\bar{\theta})M_{12}^{T}(\xi,\bar{\theta})\right|}{\left|M_{11}(\xi^{*},\bar{\theta})-M_{12}(\xi^{*},\bar{\theta})M_{22}^{-1}(\xi^{*},\bar{\theta})M_{12}^{T}(\xi^{*},\bar{\theta})\right|}\right)^{1/s}}{( det(M11(\xi, \theta) - M12(\xi, \theta) \%*\% solve(M22(\xi, \theta)) \%*\% t(M12(\xi, \theta)))  /  det(M11(\xi*, \theta) - M12(\xi*, \theta) \%*\% solve(M22(\xi*, \theta)) \%*\% t(M12(\xi*, \theta))) )**(1/s)}
-#'
-#' where \eqn{M_{11}}{M11} is the submatrix corresponding to the parameters in \code{dsNames}, \eqn{M_{22}}{M22} is the submatrix corresponding to the parameters in \code{names} which are not in \code{dsNames}, and \eqn{M_{12}}{M12} is defined as the resulting off diagonal submatrix.
+#' \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( det(M(\xi, \theta)) / det(M(\xi*, \theta)) )**(1/n)}
+#' and D_A efficiency as
+#' \deqn{\left(\frac{\left|A^{T}M(\xi^{*},\bar{\boldsymbol{\theta}})^{-1}A\right|}{\left|A^{T}M(\xi,\bar{\boldsymbol{\theta}})^{-1}A\right|}\right)^{1/s}}{( det(t(A) \%*\% solve(M(\xi*, \theta)) \%*\% A) / det(t(A) \%*\% solve(M(\xi, \theta)) \%*\% A) )**(1/s)}
 #'
 #' @param des some design.
 #' @param ref some design, the reference.
 #' @param mod some model.
-#' @param dsNames a vector of names or indices, the subset of parameters to use.
-#' Defaults to the set of parameters in use.
-#' @param names a vector of names or indices, the set of parameters to use.
+#' @param A for \itemize{
+#' \item D-efficiency: \code{NULL}
+#' \item D_s-efficiency: a vector of names or indices, the subset of parameters of interest.
+#' \item D_A-efficiency: either \itemize{
+#'   \item directly: a matrix without row names.
+#'   \item indirectly: a matrix with row names corresponding to the parameters.
+#'   }
+#' }
+#' @param names a vector of names or indices, the subset of parameters to use.
 #' Defaults to the parameters for which the Fisher information is available.
 #'
 #' @return \code{Defficiency} returns a single numeric.
@@ -1021,24 +1060,20 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
 #' @examples ## see examples for param
 #'
 #' @export
-Defficiency = function(des, ref, mod, dsNames=NULL, names=NULL) {
-    tt = getDsPar(mod, dsNames, names)
-    idcs = tt$idcs
-    sIdcs = tt$sIdcs
+Defficiency = function(des, ref, mod, A=NULL, names=NULL) {
+    tt = getDAPar(mod, A, names)
+    names = tt$names
     A = tt$A
 
-    m = getm(mod, des$x, idcs)
+    m = getm(mod, des$x, names)
     M = getM_(m, des$w)
 
-    m = getm(mod, ref$x, idcs)
+    m = getm(mod, ref$x, names)
     Mref = getM_(m, ref$w)
 
     if (is.null(A))
-        return((det(M) / det(Mref)) ** (1/length(idcs)))
+        return( (det(M) / det(Mref))**(1/nrow(M)) )
 
-    M12 = M[sIdcs, -sIdcs, drop=F]
-    Mref12 = Mref[sIdcs, -sIdcs, drop=F]
-
-    return(( det(M[sIdcs, sIdcs, drop=F] - M12 %*% solve(M[-sIdcs, -sIdcs, drop=F]) %*% t(M12)) / det(Mref[sIdcs, sIdcs, drop=F] - Mref12 %*% solve(Mref[-sIdcs, -sIdcs, drop=F]) %*% t(Mref12)) ) ** (1/ncol(A)))
+    return( (det(t(A) %*% solve(Mref) %*% A) / det(t(A) %*% solve(M) %*% A) )**(1/ncol(A)) )
 }
 
