@@ -4,7 +4,7 @@
 \alias{buildf}
 \title{Build Density}
 \usage{
-buildf(margins, copula, names = NULL)
+buildf(margins, copula, parNames = NULL)
 }
 \arguments{
 \item{margins}{either \itemize{
@@ -18,7 +18,7 @@ It shall return a column matrix of two, the probability densities and cumulative
 \item a list of expressions then either a copula object from package \pkg{copula} which contains distribution expressions or an expression for the probability density.
 }}
 
-\item{names}{(if \code{margins} is a function and \code{copula} is a copula object) a vector of names or indices, the sequence of copula parameters in \code{theta}.
+\item{parNames}{(if \code{margins} is a function and \code{copula} is a copula object) a vector of names or indices, the sequence of copula parameters in \code{theta}.
 \code{0} or \code{""} identifies copula parameters to omit.}
 }
 \value{

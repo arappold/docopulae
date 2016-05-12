@@ -4,7 +4,7 @@
 \alias{Defficiency}
 \title{D Efficiency}
 \usage{
-Defficiency(des, ref, mod, A = NULL, names = NULL)
+Defficiency(des, ref, mod, A = NULL, parNames = NULL)
 }
 \arguments{
 \item{des}{some design.}
@@ -22,7 +22,7 @@ Defficiency(des, ref, mod, A = NULL, names = NULL)
   }
 }}
 
-\item{names}{a vector of names or indices, the subset of parameters to use.
+\item{parNames}{a vector of names or indices, the subset of parameters to use.
 Defaults to the parameters for which the Fisher information is available.}
 }
 \value{
@@ -32,7 +32,7 @@ Defaults to the parameters for which the Fisher information is available.}
 \code{Defficiency} computes the D-, D_s or D_A-efficiency measure for some design with respect to some reference design.
 }
 \details{
-Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{names}.
+Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
 
 D efficiency is defined as
 \deqn{\left(\frac{\left|M(\xi,\bar{\theta})\right|}{\left|M(\xi^{*},\bar{\theta})\right|}\right)^{1/n}}{( det(M(\xi, \theta)) / det(M(\xi*, \theta)) )**(1/n)}

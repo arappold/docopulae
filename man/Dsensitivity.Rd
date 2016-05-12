@@ -4,7 +4,7 @@
 \alias{Dsensitivity}
 \title{D Sensitivity}
 \usage{
-Dsensitivity(A = NULL, names = NULL, defaults = list(x = NULL, desw =
+Dsensitivity(A = NULL, parNames = NULL, defaults = list(x = NULL, desw =
   NULL, desx = NULL, mod = NULL))
 }
 \arguments{
@@ -17,7 +17,7 @@ Dsensitivity(A = NULL, names = NULL, defaults = list(x = NULL, desw =
   }
 }}
 
-\item{names}{a vector of names or indices, the subset of parameters to use.
+\item{parNames}{a vector of names or indices, the subset of parameters to use.
 Defaults to the parameters for which the Fisher information is available.}
 
 \item{defaults}{a named list of default values.
@@ -32,7 +32,7 @@ It's attributes contain this function's arguments.
 \code{FedorovWynn} for instance requires this behaviour/protocol.
 }
 \details{
-Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{names}.
+Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
 
 For efficiency reasons the returned function won't complain about \emph{missing arguments} immediately, leading to strange errors.
 Please make sure that all arguments are specified at all times.

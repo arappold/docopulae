@@ -5,14 +5,14 @@
 \alias{DerivLogf}
 \title{Build Derivative Function for Log f}
 \usage{
-DerivLogf(f, names, map = NULL, yMap = NULL, thetaMap = NULL)
+DerivLogf(f, varNames, map = NULL, yMap = NULL, thetaMap = NULL)
 
-Deriv2Logf(f, names, map = NULL, yMap = NULL, thetaMap = NULL)
+Deriv2Logf(f, varNames, map = NULL, yMap = NULL, thetaMap = NULL)
 }
 \arguments{
 \item{f}{an expression, a joint probability density.}
 
-\item{names}{a character vector of variable names.}
+\item{varNames}{a character vector of variable names.}
 
 \item{map}{a named list of character strings defining left assignments (\code{a="b"} => \code{a <- b}).}
 
@@ -33,7 +33,7 @@ Additionally the attribute \code{"d2"} contains the list of sub functions.
 Builds a function that evaluates to the first/second derivative of \code{log(f)} with respect to a predefined set of variables/variable combinations.
 }
 \details{
-While \code{numDerivLogf} relies on the package \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \pkg{DerivLogf} utilizes the package \pkg{Deriv} to build sub functions for each variable in \code{names}.
+While \code{numDerivLogf} relies on the package \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \pkg{DerivLogf} utilizes the package \pkg{Deriv} to build sub functions for each variable in \code{varNames}.
 The same is true for \code{Deriv2Logf}.
 
 Up to version 3.6.0 of \pkg{Deriv}, \code{Deriv::Deriv} didn't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} as variables (e.g. \code{theta[["beta1"]]}).
