@@ -29,10 +29,10 @@ It's attributes contain this function's arguments.
 }
 \description{
 \code{Dsensitivity} builds a sensitivity function for the D-, D_s or D_A-optimality criterion which relies on defaults to speed up evaluation.
-\code{FedorovWynn} for instance requires this behaviour/protocol.
+\code{Wynn} for instance requires this behaviour/protocol.
 }
 \details{
-Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
+Indices and rows of an unnamed matrix supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
 
 For efficiency reasons the returned function won't complain about \emph{missing arguments} immediately, leading to strange errors.
 Please make sure that all arguments are specified at all times.
@@ -43,6 +43,6 @@ This behaviour might change in future releases.
 
 }
 \seealso{
-\code{\link{param}}, \code{\link{FedorovWynn}}, \code{\link{plot.desigh}}
+\code{\link{param}}, \code{\link{Wynn}}, \code{\link{plot.desigh}}
 }
 

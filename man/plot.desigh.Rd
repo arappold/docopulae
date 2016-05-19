@@ -23,7 +23,7 @@ Adds a horizontal line at this sensitivity level.}
 \item{margins}{a vector of indices, the dimensions to project on.
 Defaults to \code{1}.}
 
-\item{desSens}{if \code{TRUE} and \code{sens} is not specified then the sensitivity function which potentially was used in \code{FedorovWynn} is taken as \code{sens}.}
+\item{desSens}{if \code{TRUE} and \code{sens} is not specified then the sensitivity function which potentially was used in \code{Wynn} is taken as \code{sens}.}
 
 \item{sensPch}{either a character vector of point 'characters' to add to the sensitivity curve or \code{NULL}.}
 

@@ -1,42 +1,44 @@
 digraph {
-    rankdir = LR;
-    Space [shape=box];
+    rankdir = LR
 
     subgraph cluster_space {
-        label = "Space";
-        fontname = bold;
-        {scatDim; gridDim; intvDim; funcDim} -> space;
+        label = "Space"
+        fontname = bold
+        {scatDim; gridDim; intvDim; funcDim} -> space
     }
 
-    space -> Space;
+    Space [shape=box]
+
+    space -> Space
 
     subgraph cluster_space_misc {
-        label = "Misc.";
-        fontname = bold;
-        validateSpace;
-        expandSpace;
+        label = "Misc."
+        fontname = bold
+        validateSpace
+        expandSpace
     }
 
-    Space -> validateSpace;
-    Space -> expandSpace [dir=both];
+    Space -> validateSpace
+    Space -> expandSpace [dir=both]
 
     subgraph cluster_space_transform {
-        label = "Transform";
-        fontname = bold;
-        transform;
+        label = "Transform"
+        fontname = bold
+        transform
     }
 
-    Space -> transform [dir=both];
+    Space -> transform [dir=both]
 
     subgraph cluster_interface {
-        label = "Interface";
-        fontname = bold;
-        {integrateNCube_SparseGrid; integrateNCube_cubature; integrateNCube_integrate} -> integrateNCube;
-        integrateNFunc_recursive -> integrateNFunc;
+        label = "Interface"
+        fontname = bold
+        {integrateNCube_SparseGrid; integrateNCube_cubature; integrateNCube_integrate} -> integrateNCube [style=dotted]
+        integrateNFunc_recursive -> integrateNFunc [style=dotted]
     }
 
-    integrate [style=filled; fillcolor=black; fontcolor=white, fontname=bold];
-    Space -> integrate;
-    transform -> integrate;
-    {integrateNCube; integrateNFunc} -> integrate [style=dotted];
+    integrate [style=filled; fillcolor=black; fontcolor=white, fontname=bold]
+
+    transform -> integrate
+    Space -> integrate
+    {integrateNCube; integrateNFunc} -> integrate [style=dotted]
 }

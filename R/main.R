@@ -23,7 +23,7 @@
 #'
 #' @export
 param = function(fisherIf, dDim) {
-    r = list(fisherIf=fisherIf, x=matrix(nrow=0, ncol=dDim), fisherI=list())
+    r = list(fisherIf=fisherIf, x=matrix(0, nrow=0, ncol=dDim), fisherI=list())
     class(r) = 'param'
     return(r)
 }
@@ -458,7 +458,7 @@ fisherI = function(ff, theta, parNames, yspace, ...) {
 #' @return \code{design} returns an object of \code{class} \code{"desigh"}.
 #' An object of class \code{"desigh"} is a list containing at least this function's arguments.
 #'
-#' @seealso \code{\link{FedorovWynn}}, \code{\link{reduce}}, \code{\link{getM}}, \code{\link{plot.desigh}}, \code{\link{Defficiency}}, \code{\link{update.param}}
+#' @seealso \code{\link{Wynn}}, \code{\link{reduce}}, \code{\link{getM}}, \code{\link{plot.desigh}}, \code{\link{Defficiency}}, \code{\link{update.param}}
 #'
 #' @examples ## see examples for param
 #'
@@ -583,9 +583,9 @@ Dsensitivity_anyNAm = 'Fisher information matrices shall not contain missing val
 #' D Sensitivity
 #'
 #' \code{Dsensitivity} builds a sensitivity function for the D-, D_s or D_A-optimality criterion which relies on defaults to speed up evaluation.
-#' \code{FedorovWynn} for instance requires this behaviour/protocol.
+#' \code{Wynn} for instance requires this behaviour/protocol.
 #'
-#' Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
+#' Indices and rows of an unnamed matrix supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
 #'
 #' For efficiency reasons the returned function won't complain about \emph{missing arguments} immediately, leading to strange errors.
 #' Please make sure that all arguments are specified at all times.
@@ -607,7 +607,7 @@ Dsensitivity_anyNAm = 'Fisher information matrices shall not contain missing val
 #' @return \code{Dsensitivity} returns \code{function(x=NULL, desw=NULL, desx=NULL, mod=NULL)}, the sensitivity function.
 #' It's attributes contain this function's arguments.
 #'
-#' @seealso \code{\link{param}}, \code{\link{FedorovWynn}}, \code{\link{plot.desigh}}
+#' @seealso \code{\link{param}}, \code{\link{Wynn}}, \code{\link{plot.desigh}}
 #'
 #' @examples ## see examples for param
 #'
@@ -724,7 +724,6 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
         } else
             m = dm
 
-
         return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1))
     }
     attributes(r) = list(A=A, parNames=parNames, defaults=defaults)
@@ -733,9 +732,9 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
 }
 
 
-#' Fedorov Wynn
+#' Wynn
 #'
-#' \code{FedorovWynn} finds an optimal design using some sensitivity function and a Fedorov-Wynn-type algorithm.
+#' \code{Wynn} finds an optimal design using some sensitivity function and a Wynn-algorithm.
 #'
 #' See \code{\link{Dsensitivity}} and it's return value for a reference implementation of a function complying with the requirements for \code{sensF}.
 #'
@@ -745,17 +744,14 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
 #' The algorithm stops when all sensitivities are below a specified tolerance level or the maximum number of iterations is reached.
 #'
 #' @param sensF \code{function(x=NULL, desw=NULL, desx=NULL, mod=NULL)}, a sensitivity function.
-#' It's attribute \code{"defaults"} shall contain \code{x} and \code{sensF(desw=w)} shall return sensitivities for each point in \code{x} respectively for some \code{w}.
+#' It's attribute \code{"defaults"} shall contain identical \code{x} and \code{desx}, and \code{sensF(desw=w)} shall return sensitivities corresponding to each point in \code{x}.
 #' @param tol the tolerance level regarding the sensitivities.
 #' @param maxIter the maximum number of iterations.
 #'
-#' @return \code{FedorovWynn} returns an object of \code{class} \code{"desigh"}.
+#' @return \code{Wynn} returns an object of \code{class} \code{"desigh"}.
 #' See \code{\link{design}} for its structural definition.
 #'
-#' @references Fedorov, V. V. (1971) The Design of Experiments in the Multiresponse Case.
-#' \emph{Theory of Probability and its Applications}, 16(2):323-332.
-#'
-#' Wynn, Henry P. (1970) The Sequential Generation of D-Optimum Experimental Designs.
+#' @references Wynn, Henry P. (1970) The Sequential Generation of D-Optimum Experimental Designs.
 #' \emph{The Annals of Mathematical Statistics}, 41(5):1655-1664.
 #'
 #' @seealso \code{\link{Dsensitivity}}, \code{\link{design}}
@@ -763,14 +759,18 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
 #' @examples ## see examples for param
 #'
 #' @export
-FedorovWynn = function(sensF, tol, maxIter=1e4) {
-    tag = list(FedorovWynn=list(sensF=sensF, tol=tol, maxIter=maxIter))
+Wynn = function(sensF, tol, maxIter=1e4) {
+    tag = list(Wynn=list(sensF=sensF, tol=tol, maxIter=maxIter))
 
-    dx = attr(sensF, 'defaults')$desx
-    if (nrow(dx) == 0)
-        return(design(dx, numeric(0), tag=tag))
+    defaults = attr(sensF, 'defaults')
+    x = defaults$x
+    if (!isTRUE(all.equal(x, defaults$desx)))
+        stop('sensitivity defaults for x and desx shall be equal')
 
-    n = nrow(dx)
+    if (nrow(x) == 0)
+        return(design(x, numeric(0), tag=tag))
+
+    n = nrow(x)
     w = rep(1/n, n)
     tolBreak = F
 
@@ -794,9 +794,9 @@ FedorovWynn = function(sensF, tol, maxIter=1e4) {
     }
 
     names(sens) = NULL
-    tag$FedorovWynn$tolBreak = tolBreak
-    tag$FedorovWynn$nIter = iIter
-    return(design(dx, w, tag=tag))
+    tag$Wynn$tolBreak = tolBreak
+    tag$Wynn$nIter = iIter
+    return(design(x, w, tag=tag))
 }
 
 
@@ -878,6 +878,15 @@ add.alpha <- function(col, alpha=1){
     apply(sapply(col, col2rgb)/255, 2, function(x) rgb(x[1], x[2], x[3], alpha=alpha))
 }
 
+getBaseDesign = function(des) {
+    tag = des$tag
+    if (!is.null(tag$Wynn))
+        return(des)
+    if (!is.null(tag$reduce))
+        return(getBaseDesign(tag$reduce$des))
+    return(NULL)
+}
+
 #' Plot Design
 #'
 #' \code{plot.desigh} creates a one-dimensional design plot, optionally together with a specified sensitivity curve.
@@ -892,7 +901,7 @@ add.alpha <- function(col, alpha=1){
 #' @param ... other arguments passed to plot.
 #' @param margins a vector of indices, the dimensions to project on.
 #' Defaults to \code{1}.
-#' @param desSens if \code{TRUE} and \code{sens} is not specified then the sensitivity function which potentially was used in \code{FedorovWynn} is taken as \code{sens}.
+#' @param desSens if \code{TRUE} and \code{sens} is not specified then the sensitivity function which potentially was used in \code{Wynn} is taken as \code{sens}.
 #' @param sensPch either a character vector of point 'characters' to add to the sensitivity curve or \code{NULL}.
 #' @param sensArgs a list of arguments passed to draw calls related to the sensitivity.
 #'
@@ -930,8 +939,14 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
     w = w[ord]
 
     ## lookup design sensF
-    if (is.null(sens) && desSens)
-        sens = des$tag$FedorovWynn$sensF
+    if (is.null(sens) && desSens) {
+        d = getBaseDesign(des)
+        sens = d$tag$Wynn$sensF
+        if (is.null(sensx) && !is.null(sens)) {
+            sensx = attr(sens, 'defaults')$x
+            sens = sens(desw=d$w)
+        }
+    }
 
     ## prepare sensitivity
     if (!is.null(sens)) {
@@ -990,7 +1005,8 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
             else if (isTRUE(dylim[2] < sensTol))
                 dylim = c(dylim[1], sensTol)
 
-            margs = modifyList(list(sensx, sens, type='l', ylim=dylim, ylab='sensitvity'), sensArgs)
+            defaultYlab = ifelse(ncol(des$x) == 1, 'sensitivity', 'maximum sensitivity')
+            margs = modifyList(list(sensx, sens, type='l', ylim=dylim, ylab=defaultYlab), sensArgs)
             ylab = margs$ylab
             margs = modifyList(margs, list(xlim=xlim, axes=F, xlab='', ylab=''))
             do.call(plot, margs)

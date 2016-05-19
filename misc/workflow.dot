@@ -1,103 +1,104 @@
 digraph {
-    rankdir = LR;
+    rankdir = LR
 
     subgraph cluster_buildPDF {
-        label = "PDF";
-        fontname = bold;
-        buildf -> expr2f [style=dashed];
+        label = "PDF"
+        fontname = bold
+        buildf -> expr2f [style=dashed]
     }
 
     subgraph cluster_deriv {
-        label = "Derivatives";
-        fontname = bold;
-        rank = same;
-        numDerivLogf;
-        numDeriv2Logf;
-        DerivLogf;
-        Deriv2Logf;
+        label = "Derivatives"
+        fontname = bold
+        numDerivLogf
+        numDeriv2Logf
+        DerivLogf
+        Deriv2Logf
     }
 
-    buildf -> numDerivLogf;
-    buildf -> numDeriv2Logf;
-    expr2f -> numDerivLogf;
-    expr2f -> numDeriv2Logf;
-    buildf -> DerivLogf [style=dashed];
-    buildf -> Deriv2Logf [style=dashed];
+    buildf -> numDerivLogf
+    buildf -> numDeriv2Logf
+    expr2f -> numDerivLogf
+    expr2f -> numDeriv2Logf
+    buildf -> DerivLogf [style=dashed]
+    buildf -> Deriv2Logf [style=dashed]
 
-    nint [shape=diamond];
-    Model [shape=box];
+    nint [shape=diamond]
+    Model [shape=box]
 
     subgraph cluster_model {
-        label = "Model";
-        fontname = bold;
-        fisherI -> param;
+        label = "Model"
+        fontname = bold
+        fisherI
+        { rank=same param "update.param" }
+        fisherI -> param
     }
 
-    buildf -> fisherI;
-    expr2f -> fisherI;
-    numDerivLogf -> fisherI;
-    numDeriv2Logf -> fisherI;
-    DerivLogf -> fisherI;
-    Deriv2Logf -> fisherI;
-    nint -> fisherI;
-    param -> Model;
-    Model -> "update.param" [dir=both];
+    buildf -> fisherI
+    expr2f -> fisherI [style=dashed]
+    numDerivLogf -> fisherI
+    numDeriv2Logf -> fisherI
+    DerivLogf -> fisherI [style=dashed]
+    Deriv2Logf -> fisherI [style=dashed]
+    nint -> fisherI
+    param -> Model
+    "update.param" -> Model [dir=both]
 
     subgraph cluster_sens {
-        label = "Sensitivity";
-        fontname = bold;
-        Dsensitivity;
+        label = "Sensitivity"
+        fontname = bold
+        Dsensitivity
     }
 
-    Model -> Dsensitivity;
+    Model -> Dsensitivity
 
-    Design [shape=box];
+    Design [shape=box]
 
     subgraph cluster_design {
-        label = "Design";
-        fontname = bold;
-        FedorovWynn;
-        design;
+        label = "Design"
+        fontname = bold
+        Wynn
+        design
     }
 
-    Dsensitivity -> FedorovWynn;
-    FedorovWynn -> Design;
-    design -> Design;
+    Dsensitivity -> Wynn
+    Wynn -> Design
+    design -> Design
 
     subgraph cluster_compare {
-        label = "Compare";
-        fontname = bold;
-        Defficiency;
+        label = "Compare"
+        fontname = bold
+        Defficiency
     }
 
-    Design -> Defficiency;
-    Model -> Defficiency;
+    Design -> Defficiency
+    Model -> Defficiency
 
     subgraph cluster_transform {
-        label = "Transform";
-        fontname = bold;
-        reduce;
+        label = "Transform"
+        fontname = bold
+        reduce
     }
 
-    Design -> reduce [dir=both];
+    Design -> reduce [dir=both]
 
     subgraph cluster_visualize {
-        label = "Visualize";
-        fontname = bold;
-        "plot.desigh";
+        label = "Visualize"
+        fontname = bold
+        "plot.desigh"
     }
 
-    Design -> "plot.desigh";
-    Dsensitivity -> "plot.desigh" [style=dotted];
+    Design -> "plot.desigh"
+    Dsensitivity -> "plot.desigh" [style=dotted]
 
-    Model -> getM;
-    Design -> getM;
+    Model -> getM
+    Design -> getM
 
     //subgraph cluster_helper {
-        //integrateA;
-        //rowmatch;
-        //roworder;
-        //seq1;
-        //getM;
+        //integrateA
+        //rowmatch
+        //roworder
+        //seq1
+        //getM
     //}
 }

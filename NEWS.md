@@ -2,6 +2,13 @@
 
 * fixed defaults for `method.args` for `numDeriv2Logf`
 * `plot.desigh` won't draw second axis anymore if `sensArgs$axes == F`
+* fixed handling of `nint_funcDim` in `nint_integrateNFunc`
+* refocus on D_A-optimality, arguments changed for `Dsensitivity` and `Defficiency`
+* renamed argument `names` for `buildf`, `DerivLogf`, `Deriv2Logf`, `fisherI`, `Dsensitivity`, `Defficiency`
+* renamed `FedorovWynn` to `Wynn`
+* `Wynn` asserts equal `x` and `desx` in `sensF`'s defaults
+* `plot.desigh` recursively finds base design
+* fixed typo and redefined default sensitivity label for `plot.desigh`
 
 # docopulae 0.3.2
 
