@@ -9,6 +9,7 @@
 * `Wynn` asserts equal `x` and `desx` in `sensF`'s defaults
 * `plot.desigh` recursively finds base design
 * fixed typo and redefined default sensitivity label for `plot.desigh`
+* increased performance for `Dsensitivity`
 
 # docopulae 0.3.2
 

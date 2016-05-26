@@ -613,118 +613,137 @@ Dsensitivity_anyNAm = 'Fisher information matrices shall not contain missing val
 #'
 #' @export
 Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, desx=NULL, mod=NULL)) {
-    dmod = defaults$mod
-    ddesx = defaults$desx
-    ddesw = defaults$desw
+    # tr(M^-1 A (A^T M^-1 A)^-1 A^T M^-1 m)  = M, A, m
+    # 3 M = sum(desw*desm)
+    # 2   desm = (mod, desx, parNames)
+    # 1     parNames = (A, parNames)
+    # 1 A = (A, parNames)
+    # 2 m = (mod, x, parNames)
+    # 1   parNames = (A, parNames)
     dx = defaults$x
+    ddesw = defaults$desw
+    ddesx = defaults$desx
+    dmod = defaults$mod
 
-    u1 = T; u2 = T # update
-
-    # mod, A, parNames -> parNames, A
-    if (u1 && !is.null(dmod)) {
-        tt = getDAPar(dmod, A, parNames)
-        dnames = tt$parNames
-        dA = tt$A
-    } else {
-        dnames = NULL
-        dA = NULL
-        u1 = F
+    # 1
+    d1 = F
+    if (!is.null(dmod)) {
+        tt = try(getDAPar(dmod, A, parNames), silent=T)
+        if (class(tt) != 'try-error') {
+            d1 = T
+            dparNames = tt$parNames
+            dA = tt$A
+        } else
+            warning(tt)
     }
 
-    # mod, parNames, desx -> desm
-    if (u1 && !is.null(ddesx)) {
-        ddesm = getm(dmod, ddesx, dnames)
-        if (anyNA(ddesm))
-            stop(Dsensitivity_anyNAm)
-    } else {
-        ddesm = NULL
-        u1 = F
+    # 2
+    d2_1 = F
+    d2_2 = F
+    if (d1) {
+        if (!is.null(ddesx)) {
+            d2_1 = T
+            ddesm = getm(dmod, ddesx, dparNames)
+            if (anyNA(ddesm))
+                stop(Dsensitivity_anyNAm)
+        }
+
+        if (!is.null(dx)) {
+            d2_2 = T
+            dm = getm(dmod, dx, dparNames)
+            if (anyNA(dm))
+                stop(Dsensitivity_anyNAm)
+        }
     }
 
-    # desm, desw -> t1
-    if (u1 && !is.null(ddesw)) {
-        ddesM = getM_(ddesm, ddesw)
-        ddesMi = solve(ddesM)
+    # 3
+    d3 = F
+    if (d2_1 && !is.null(ddesw)) {
+        d3 = T
+        dM = getM_(ddesm, ddesw)
+        dMi = solve(dM)
         if (is.null(dA))
-            dt1 = ddesMi
+            dt1 = dMi
         else
-            dt1 = ddesMi %*% dA %*% solve(t(dA) %*% ddesMi %*% dA) %*% t(dA) %*% ddesMi
-    } else {
-        dt1 = NULL
-        u1 = F
+            dt1 = dMi %*% dA %*% solve(t(dA) %*% dMi %*% dA) %*% t(dA) %*% dMi
     }
 
-    # mod, parNames, x -> m
-    if (u1 && !is.null(dx)) {
-        dm = getm(dmod, dx, dnames)
-        if (anyNA(dm))
-            stop(Dsensitivity_anyNAm)
-    } else {
-        dm = NULL
-        u2 = F
-    }
+    # 4
+    if (d3 && d2_2)
+        dr = apply(dm, 3, function(m) sum(diag(dt1 %*% m)))
 
     r = function(x=NULL, desw=NULL, desx=NULL, mod=NULL) {
-        u1 = F #; u2 = F # update
-
+        # 1
+        u1 = F
         if (is.null(mod))
             mod = dmod
         else
             u1 = T
 
-        # mod, A, parNames -> parNames, A
         if (u1) {
+            u1 = T
             tt = getDAPar(mod, A, parNames)
             parNames = tt$parNames
             A = tt$A
         } else {
-            parNames = dnames
+            parNames = dparNames
             A = dA
         }
 
+        # 2
+        u2_1 = F
         if (is.null(desx))
             desx = ddesx
         else
-            u1 = T
+            u2_1 = T
 
-        # mod, parNames, desx -> desm
-        if (u1) {
+        if (u1 || u2_1) {
+            u2_1 = T
             desm = getm(mod, desx, parNames)
             if (anyNA(desm))
                 stop(Dsensitivity_anyNAm)
         } else
             desm = ddesm
 
-        if (is.null(desw))
-            desw = ddesw
-        else
-            u1 = T
-
-        # desm, desw -> t1
-        if (u1) {
-            desM = getM_(desm, desw)
-            desMi = solve(desM)
-            if (is.null(A))
-                t1 = desMi
-            else
-                t1 = desMi %*% A %*% solve(t(A) %*% desMi %*% A) %*% t(A) %*% desMi
-        } else
-            t1 = dt1
-
+        u2_2 = F
         if (is.null(x))
             x = dx
         else
-            u1 = T # u2 would be more precise
+            u2_2 = T
 
-        # mod, parNames, x -> m
-        if (u1) {
+        if (u1 || u2_2) {
+            u2_2 = T
             m = getm(mod, x, parNames)
             if (anyNA(m))
                 stop(Dsensitivity_anyNAm)
         } else
             m = dm
 
-        return(apply(m, 3, function(m, t1) sum(diag(t1 %*% m)), t1))
+        # 3
+        u3 = F
+        if (is.null(desw))
+            desw = ddesw
+        else
+            u3 = T
+
+        if (u2_1 || u3) {
+            u3 = T
+            M = getM_(desm, desw)
+            Mi = solve(M)
+            if (is.null(A))
+                t1 = Mi
+            else
+                t1 = Mi %*% A %*% solve(t(A) %*% Mi %*% A) %*% t(A) %*% Mi
+        } else
+            t1 = dt1
+
+        # 4
+        if (u3 || u2_2)
+            r = apply(m, 3, function(m) sum(diag(t1 %*% m)))
+        else
+            r = dr
+
+        return(r)
     }
     attributes(r) = list(A=A, parNames=parNames, defaults=defaults)
 
