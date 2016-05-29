@@ -208,19 +208,19 @@ test_that('roworder works for random examples', {
 
 ## rowmatch
 test_that('rowmatch works in trivial cases', {
-    a = matrix(nrow=0, ncol=2)
-    b = matrix(1:4, ncol=2)
+    a = matrix(0.0, nrow=0, ncol=2)
+    b = matrix(as.double(1:4), ncol=2)
     expect_equal(docopulae::rowmatch(a, b),
                  integer(0))
     expect_equal(docopulae::rowmatch(b, a),
                  as.integer(c(NA, NA)))
     expect_equal(docopulae::rowmatch(matrix(1), matrix(1)),
                  1)
-    expect_equal(docopulae::rowmatch(matrix(1:2), matrix(2:1)),
+    expect_equal(docopulae::rowmatch(matrix(as.double(1:2)), matrix(as.double(2:1))),
                  2:1)
 
-    a = matrix(1:4, ncol=2, byrow=T)
-    b = matrix((-1):6, ncol=2, byrow=T)
+    a = matrix(as.double(1:4), ncol=2, byrow=T)
+    b = matrix(as.double((-1):6), ncol=2, byrow=T)
     expect_equal(docopulae::rowmatch(a, b),
                  2:3)
     expect_equal(docopulae::rowmatch(b, a),

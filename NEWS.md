@@ -11,6 +11,8 @@
 * fixed typo and redefined default sensitivity label for `plot.desigh`
 * increased performance for `Dsensitivity`
 * replaced limit by bound in `nint_intvDim`
+* increased performance for `Defficiency`
+* `rowmatch` uses C-code and requires matrices of doubles
 
 # docopulae 0.3.2
 

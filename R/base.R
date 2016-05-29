@@ -194,10 +194,10 @@ roworder = function(x, ...) {
 #'
 #' \code{rowmatch} returns a vector of the positions of (first) matches of the rows of its first argument in the rows of its second.
 #'
-#' \code{rowmatch} requires unique rows in \code{x} and \code{table}.
+#' \code{rowmatch} uses compiled C-code.
 #'
-#' @param x a row matrix or data.frame, the rows to be matched.
-#' @param table a row matrix or data.frame, the rows to be matched against.
+#' @param x a row matrix of doubles, the rows to be matched.
+#' @param table a row matrix of doubles, the rows to be matched against.
 #' @param nomatch the value to be returned in the case when no match is found.
 #' Note that it is coerced to \code{integer}.
 #'
@@ -208,24 +208,26 @@ roworder = function(x, ...) {
 #' @example R/examples/rowmatch.R
 #'
 #' @export
+#' @useDynLib docopulae rowmatch_double
 rowmatch = function(x, table, nomatch=NA_integer_) {
+    if (!(is.double(x) && is.matrix(x) && is.double(table) && is.matrix(table)))
+        stop('x and table shall be matrices of doubles')
+
+    if (ncol(x) != ncol(table))
+        stop('x and table shall have the same number of columns')
+
     nomatch = as.integer(nomatch)
 
     ordx = roworder(x)
     ordt = roworder(table)
     sx = x[ordx,, drop=F]
     st = table[ordt,, drop=F]
-    isx = which(duplicated(rbind(st, sx))) - nrow(st) # idcs of sorted table in sorted x
-    ist = which(duplicated(rbind(sx, st))) - nrow(sx) # idcs of sorted x in sorted table
 
-    if (any(isx < 0) || any(ist < 0))
-        stop('rows in x and table shall be unique')
+    i = integer(nrow(x))
+    i = .C('rowmatch_double', sx, as.integer(nrow(sx)), as.integer(ncol(sx)), st, as.integer(nrow(st)), i, DUP=F, PACKAGE='docopulae')[[6]] + 1
 
-    ix = ordx[isx] # idcs of sorted table in x
-    it = ordt[ist] # idcs of sorted x in table
-
-    r = rep(nomatch[1], nrow(x))
-    r[ix] = it
+    r = ordt[i][order(ordx)]
+    r[is.na(r)] = nomatch
     return(r)
 }
 
