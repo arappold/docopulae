@@ -86,10 +86,10 @@ nint_gridDim = function(x) {
 #' Interval Dimension
 #'
 #' \code{nint_intvDim} defines a fixed interval.
-#' The limits may be (negative) \code{Inf}.
+#' The bounds may be (negative) \code{Inf}.
 #'
-#' @param x either a single numeric, the lower limit, or a vector of length 2, the lower and upper limit.
-#' @param b the upper limit if \code{x} is the lower limit.
+#' @param x either a single numeric, the lower bound, or a vector of length 2, the lower and upper bound.
+#' @param b the upper bound if \code{x} is the lower bound.
 #'
 #' @return \code{nint_intvDim} returns a vector of length 2 with the dimension type attribute set to \code{nint_TYPE_INTV_DIM}.
 #'
@@ -101,7 +101,7 @@ nint_intvDim = function(x, b=NULL) {
         x = as.vector(x)
     else
         x = c(x, b)
-    if (length(x) != 2) stop('exactly two values shall be specified as limits')
+    if (length(x) != 2) stop('exactly two values shall be specified as bounds')
     attr(x, 'nint_dtype') = nint_TYPE_INTV_DIM
     return(x)
 }
@@ -347,7 +347,7 @@ nint_ispace = function(x) {
     ##   - function (f)
     ## - bind scattered dimensions by column
     ## - expand grid dimensions to grid
-    ## - bind interval limits by row
+    ## - bind interval bounds by row
     ## - create function list
     ##
     ## - result := list(type=list(i=idcs, g=data))

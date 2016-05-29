@@ -574,7 +574,17 @@ getm = function(mod, x, idcs=NULL) {
 }
 
 getM_ = function(m, w) {
-    return(apply(sweep(m, 3, w, '*'), c(1, 2), sum))
+    # fastest solution by now
+    d = dim(m)
+    nrow = d[1]
+    ncol = d[2]
+    r = matrix(0.0, nrow=nrow, ncol=ncol)
+    jj = 1:ncol
+    for (i in 1:nrow) {
+        for (j in jj)
+            r[i, j] = sum(m[i, j,]*w)
+    }
+    return(r)
 }
 
 
@@ -653,6 +663,7 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
             dm = getm(dmod, dx, dparNames)
             if (anyNA(dm))
                 stop(Dsensitivity_anyNAm)
+            dm = matrix(dm, nrow=prod(dim(dm)[1:2])) # prepare I
         }
     }
 
@@ -666,11 +677,12 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
             dt1 = dMi
         else
             dt1 = dMi %*% dA %*% solve(t(dA) %*% dMi %*% dA) %*% t(dA) %*% dMi
+        dt1 = c(t(dt1)) # prepare I
     }
 
     # 4
     if (d3 && d2_2)
-        dr = apply(dm, 3, function(m) sum(diag(dt1 %*% m)))
+        dr = c(dt1 %*% dm) # I: tr(dt1 %*% dm[,,i])
 
     r = function(x=NULL, desw=NULL, desx=NULL, mod=NULL) {
         # 1
@@ -716,6 +728,7 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
             m = getm(mod, x, parNames)
             if (anyNA(m))
                 stop(Dsensitivity_anyNAm)
+            m = matrix(m, nrow=prod(dim(m)[1:2])) # prepare I
         } else
             m = dm
 
@@ -734,12 +747,13 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
                 t1 = Mi
             else
                 t1 = Mi %*% A %*% solve(t(A) %*% Mi %*% A) %*% t(A) %*% Mi
+            t1 = c(t(t1)) # prepare I
         } else
             t1 = dt1
 
         # 4
         if (u3 || u2_2)
-            r = apply(m, 3, function(m) sum(diag(t1 %*% m)))
+            r = c(t1 %*% m) # I: tr(dt1 %*% dm[,,i])
         else
             r = dr
 

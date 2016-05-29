@@ -10,6 +10,7 @@
 * `plot.desigh` recursively finds base design
 * fixed typo and redefined default sensitivity label for `plot.desigh`
 * increased performance for `Dsensitivity`
+* replaced limit by bound in `nint_intvDim`
 
 # docopulae 0.3.2
 
