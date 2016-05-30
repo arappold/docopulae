@@ -3,6 +3,10 @@
 #include <stdbool.h>
 
 
+#define DLESS(d) (d <= -DOUBLE_EPS)
+#define DGREATER(d) (DOUBLE_EPS <= d)
+
+
 void rowmatch_double(double* x, int* _xrn, int* _xcn,
                      double* tab, int* _tabrn,
                      int* r) {
@@ -15,7 +19,7 @@ void rowmatch_double(double* x, int* _xrn, int* _xcn,
     int xcn = *_xcn;
     int tabrn = *_tabrn;
     int i1, i2, j, j1, j2;
-    double a, b;
+    double d;
     bool nextX = FALSE;
     bool nextTab = FALSE;
 
@@ -26,13 +30,12 @@ void rowmatch_double(double* x, int* _xrn, int* _xcn,
             j1 = i1;
             j2 = i2;
             for (j = 0; j < xcn; j++) { // for each column
-                a = x[j1];
-                b = tab[j2];
+                d = x[j1] - tab[j2];
 
-                if (a < b) {
+                if (DLESS(d)) {
                     nextX = TRUE;
                     break;
-                } else if (b < a) {
+                } else if (DGREATER(d)) {
                     nextTab = TRUE;
                     break;
                 }
