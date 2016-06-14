@@ -42,61 +42,42 @@ assign('nint_integrateNCube', ncube, envir=environment(nint_integrate))
 ## general settings
 numDeriv = FALSE
 
-## copula
+
+## build pdf, derivatives
+etas = function(theta) with(theta, {
+    xx = x^(0:4)
+    c(c(beta1, beta2, beta3) \%*\% xx[c(1, 2, 3)], # x^c(0, 1, 2)
+      c(beta4, beta5, beta6) \%*\% xx[c(2, 4, 5)]) # x^c(1, 3, 4)
+})
+
 copula = claytonCopula()
-alphas = list(alpha=iTau(copula, 0.5))
+alphas = c('alpha')
 
-## thetas
-thetas = c(names(alphas), c('beta1', 'beta2', 'beta3',
-                            'beta4', 'beta5', 'beta6'))
-
-## eta
-eta = function(theta)
-    c(c(theta$beta1, theta$beta2, theta$beta3) \%*\% (theta$x ** c(0, 1, 2)),
-      c(theta$beta4, theta$beta5, theta$beta6) \%*\% (theta$x ** c(1, 3, 4)))
-
+parNames = c(paste('beta', 1:6, sep=''), alphas)
 
 if (numDeriv) {
-    ## margins
     margins = function(y, theta, ...) {
-        e = eta(theta)
-        cbind(dnorm(y, e), pnorm(y, e))
+        e = etas(theta)
+        cbind(dnorm(y, mean=e, sd=1), pnorm(y, mean=e, sd=1))
     }
+    f = buildf(margins, copula, parNames=alphas)
 
-    ## f
-    f = buildf(margins, copula, parNames=names(alphas))
-
-    ## 2nd derivatives
     d2logf = numDeriv2Logf(f)
 
 } else {
-    ## margins
-    eta1 = quote(beta1   + beta2*x    + beta3*x**2)
-    eta2 = quote(beta4*x + beta5*x**3 + beta6*x**4)
+    es = list(
+        eta1=quote(theta$beta1 + theta$beta2*theta$x + theta$beta3*theta$x^2),
+        eta2=quote(theta$beta4*theta$x + theta$beta5*theta$x^3 + theta$beta6*theta$x^4))
 
-    margins = list(list(pdf=substitute(dnorm(y1, e, 1), list(e=eta1)),
-                        cdf=substitute(pnorm(y1, e, 1), list(e=eta1))),
-                   list(pdf=substitute(dnorm(y2, e, 1), list(e=eta2)),
-                        cdf=substitute(pnorm(y2, e, 1), list(e=eta2))))
+    margins = list(list(pdf=substitute(dnorm(y[1], mean=eta1, sd=1), es),
+                        cdf=substitute(pnorm(y[1], mean=eta1, sd=1), es)),
+                   list(pdf=substitute(dnorm(y[2], mean=eta2, sd=1), es),
+                        cdf=substitute(pnorm(y[2], mean=eta2, sd=1), es)))
+    pn = as.list(alphas); names(pn) = alphas # map parameter to variable
+    f = buildf(margins, copula, parNames=pn)
 
-    ## mappings
-    yMap = list(y1=1, y2=2)
-
-    alphaMap = as.list(names(alphas))
-    names(alphaMap) = names(alphas)
-    thetaMap = c(alphaMap,
-                 list(beta1='beta1', beta2='beta2', beta3='beta3',
-                      beta4='beta4', beta5='beta5', beta6='beta6',
-                      x='x'))
-
-    ## f
-    ff = buildf(margins, copula)
-    f = expr2f(ff, yMap=yMap, thetaMap=thetaMap)
-
-    ## 2nd derivatives
     cat('building derivatives ...')
-    tt = system.time(d2logf <- Deriv2Logf(ff, thetas,
-                                          yMap=yMap, thetaMap=thetaMap))
+    tt = system.time(d2logf <- Deriv2Logf(f, parNames))
     cat('\\n')
     print(tt)
 }
@@ -117,25 +98,25 @@ model = function(theta) {
         theta$x = x
 
         ## probability integral transform
-        e = eta(theta)
+        e = etas(theta)
 
         tt = nint_transform(integrand, yspace, 1:2, list(
-            g=function(x) pnorm(x, e),
-            gij=function(y) {
-                t1 = qnorm(y, e)
-                cbind(t1, 1/dnorm(t1, e))
+            g=function(y) pnorm(y, mean=e, sd=1),
+            gij=function(z) {
+                t1 = qnorm(z, mean=e, sd=1)
+                cbind(t1, 1/dnorm(t1, mean=e, sd=1))
             }
         ))
 
-        fisherI(tt$f, theta, thetas, tt$space)
+        fisherI(tt$f, theta, parNames, tt$space)
     }
 
     return(param(fisherIf, 1))
 }
 
-theta = c(alphas, list(beta1=1, beta2=1, beta3=1,
-                       beta4=1, beta5=1, beta6=1,
-                       x=0))
+theta = list(beta1=1, beta2=1, beta3=1,
+             beta4=1, beta5=1, beta6=1,
+             alpha=iTau(copula, 0.5), x=0)
 m = model(theta)
 
 ## update.param
@@ -144,7 +125,7 @@ system.time(m <- update(m, matrix(seq(0, 1, length.out=101), ncol=1)))
 ## find D-optimal design
 D = Dsensitivity(defaults=list(x=m$x, desx=m$x, mod=m))
 
-system.time(d <- Wynn(D, 7.0007, maxIter=1e3))
+d <- Wynn(D, 7.0007, maxIter=1e4)
 d$tag$Wynn$tolBreak
 
 dev.new(); plot(d, sensTol=7, main='d')
@@ -152,6 +133,7 @@ dev.new(); plot(d, sensTol=7, main='d')
 getM(m, d)
 
 rd = reduce(d, 0.05)
+cbind(x=rd$x, w=rd$w)
 
 dev.new(); plot(rd, main='rd')
 
@@ -160,10 +142,10 @@ m2 = update(m, rd)
 getM(m2, rd)
 
 ## find Ds-optimal design
-s = c(names(alphas), 'beta1', 'beta2', 'beta3')
+s = c(alphas, 'beta1', 'beta2', 'beta3')
 Ds = Dsensitivity(A=s, defaults=list(x=m$x, desx=m$x, mod=m))
 
-system.time(ds <- Wynn(Ds, 4.0004, maxIter=1e3))
+ds <- Wynn(Ds, 4.0004, maxIter=1e4)
 ds$tag$Wynn$tolBreak
 
 dev.new(); plot(reduce(ds, 0.05), sensTol=4, main='ds')

@@ -75,40 +75,51 @@ update.param = function(object, x, ...) {
 
 #' Build Density
 #'
-#' \code{buildf} builds the joint probabilty density given the marginal distributions and some copula.
+#' \code{buildf} builds a joint probabilty density function from marginal distributions and a copula.
 #'
 #' Please note that expressions are not validated.
 #'
 #' @param margins either \itemize{
 #' \item \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
 #' It shall return a column matrix of two, the probability densities and cumulative distributions.
-#' \item list of pairs of expressions, named \code{"pdf"} and \code{"cdf"}, the probability density and cumulative distribution.
+#' \item a list of pairs of expressions, each named \code{"pdf"} and \code{"cdf"}, the probability density and cumulative distribution.
 #' }
 #' @param copula if \code{margins} is \itemize{
 #' \item a function then either a copula object from package \pkg{copula} or \code{function(u, theta, ...)}, a probability density function.
-#' \item a list of expressions then either a copula object from package \pkg{copula} which contains distribution expressions or an expression for the probability density.
+#' \item a list then either a copula object from package \pkg{copula} which contains distribution expressions or an expression for the probability density which uses \code{u1},\code{u2},...
 #' }
-#' @param parNames (if \code{margins} is a function and \code{copula} is a copula object) a vector of names or indices, the sequence of copula parameters in \code{theta}.
-#' \code{0} or \code{""} identifies copula parameters to omit.
-#'
-#' @return \code{buildf} returns either \itemize{
-#' \item \code{function(y, theta, ...)}, the joint probability density function, if \code{margins} is a function.
-#' \item the joint probabilty density as an expression, otherwise.
+#' @param parNames if \itemize{
+#' \item (optional) \code{margins} is a function and \code{copula} is a copula object then a vector of names or indices, the sequence of copula parameters in \code{theta}.
+#' \code{0} or \code{""} identifies copula parameters to skip.
+#' \item \code{margins} is a list and \code{copula} is a copula object then a named list of names or indices, mapping parameters in \code{theta} to copula parameter variables.
+#' See \code{copula@exprdist}.
 #' }
+#' @param simplifyAndCache (if \code{margins} is a list) simplify and cache the result using \code{\link[Deriv]{Simplify}} and \code{\link[Deriv]{Cache}} from package \pkg{Deriv} if available.
 #'
-#' @seealso \pkg{copula}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
+#' @return \code{buildf} returns \code{function(y, theta, ...)}, the joint probability density function.
+#'
+#' @seealso \pkg{copula}, \code{\link[Deriv]{Simplify}}, \code{\link[Deriv]{Cache}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
 #'
 #' @example R/examples/buildf.R
 #'
 #' @export
-buildf = function(margins, copula, parNames=NULL) {
+buildf = function(margins, copula, parNames=NULL, simplifyAndCache=T) {
     tt = list(margins, copula, parNames)
 
-    if (is.list(margins)) {
-        if (inherits(copula, 'copula')) {
+    if (is.list(margins)) { # symbolic
+        if (inherits(copula, 'copula')) { # copula object
             att = attr(copula, 'exprdist')
-            if (!is.null(att))
-                copula = att$pdf
+            if (!is.null(att)) {
+                expr = att$pdf
+                if (length(copula@parameters) != 0) {
+                    if (is.null(parNames))
+                        stop('parNames shall be specified in this use case')
+                    gets = lapply(parNames, function(n) substitute(theta[[n]], list(n=n)))
+                    names(gets) = names(parNames)
+                    expr = substituteDirect(expr, gets)
+                }
+                copula = expr
+            } # else: next stop
         }
 
         if (!is.language(copula) && !identical(copula, 1)) # special case for indepCopula
@@ -125,14 +136,18 @@ buildf = function(margins, copula, parNames=NULL) {
             substitute((a), list(a=margin$pdf)))
         names(pdfs) = ui
 
-        return(substitute((a)*b,
-           list(a=substituteDirect(copula, cdfs),
-                b=substituteDirect(uProd, pdfs)))
-        )
+        f = substitute((a)*b, list(a=substituteDirect(copula, cdfs),
+                                   b=substituteDirect(uProd, pdfs)))
+
+        if (simplifyAndCache)
+            if (requireNamespace('Deriv', quietly=T))
+                f = Deriv::Cache(Deriv::Simplify(Deriv::deCache(f)))
+
+        return(as.function(c(alist(y=, theta=, ...=), list(f))))
     }
 
     if (!is.function(margins))
-        stop('margins shall be a function in this use case')
+        stop('margins shall either be a list or a function')
 
     if (inherits(copula, 'copula')) {
         C = copula
@@ -159,58 +174,9 @@ buildf = function(margins, copula, parNames=NULL) {
 }
 
 
-joinLanguage = function(...) {
-    x = list(...)
-    x = lapply(x, function(x) if (x[[1]] == '{') as.list(x)[seq1(2, length(x))] else x)
-    x = unlist(x, recursive=F, use.names=F)
-    varNames = paste('x', seq1(1, length(x)), sep='')
-    names(x) = varNames
-    return(substituteDirect(parse(text=paste('{', paste(varNames, collapse=';'), '}', sep=''))[[1]], x))
-}
-
-withQuotes = function(x) {
-    if (is.character(x))
-        return(paste('\'', x, '\'', sep=''))
-    return(as.character(x))
-}
-
-#' Expression To Function
-#'
-#' \code{expr2f} turns an expression into \code{function(y, theta, ...)}.
-#'
-#' @param x an expression.
-#' @param map a named list of character strings defining left assignments (\code{a="b"} => \code{a <- b}).
-#' @param yMap like \code{map} with \code{a=b} resolving to \code{a <- y[b]}.
-#' @param thetaMap like \code{map} with \code{a=b} resolving to \code{a <- theta[[b]]}.
-#'
-#' @return \code{expr2f} returns \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
-#' It evaluates expression \code{x}.
-#'
-#' @seealso \code{\link{buildf}}, \code{\link{fisherI}}
-#'
-#' @examples ## see examples for param
-#'
-#' @export
-expr2f = function(x, map=NULL, yMap=NULL, thetaMap=NULL) {
-    if (is.null(map))
-        map = list()
-    if (!is.null(yMap)) {
-        yMap[] = paste('y[', lapply(yMap, withQuotes), ']', sep='')
-        map = modifyList(map, yMap)
-    }
-    if (!is.null(thetaMap)) {
-        thetaMap[] = paste('theta[[', lapply(thetaMap, withQuotes), ']]', sep='')
-        map = modifyList(map, thetaMap)
-    }
-
-    map = parse(text=paste('{', paste(names(map), map, sep='=', collapse=';'), '}'))[[1]]
-    return(as.function(c(alist(y=, theta=, ...=), list(joinLanguage(map, x)) )) )
-}
-
-
 #' Build Derivative Function for Log f
 #'
-#' Builds a function that evaluates to the first/second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
+#' \code{numDerivLogf}/\code{numDeriv2Logf} builds a function that evaluates to the first/second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
 #'
 #' \pkg{numDeriv} produces \code{NaN}s if the log evaluates to (negative) \code{Inf} so you may want to specify \code{logZero} and \code{logInf}.
 #'
@@ -308,21 +274,17 @@ numDeriv2Logf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.
 
 #' Build Derivative Function for Log f
 #'
-#' Builds a function that evaluates to the first/second derivative of \code{log(f)} with respect to a predefined set of variables/variable combinations.
+#' \code{DerivLogf}/\code{Deriv2Logf} builds a function that evaluates to the first/second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]}/\code{theta[[i]]} and \code{theta[[j]]}.
 #'
-#' While \code{numDerivLogf} relies on the package \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \pkg{DerivLogf} utilizes the package \pkg{Deriv} to build sub functions for each variable in \code{varNames}.
+#' While \code{numDerivLogf} relies on the package \pkg{numDeriv} and therefore uses finite differences to evaluate the derivatives, \code{DerivLogf} utilizes the package \pkg{Deriv} to build sub functions for each parameter in \code{parNames}.
 #' The same is true for \code{Deriv2Logf}.
 #'
-#' Up to version 3.6.0 of \pkg{Deriv}, \code{Deriv::Deriv} didn't recognize components or parameters accessed by \code{[}, \code{[[} or \code{$} as variables (e.g. \code{theta[["beta1"]]}).
-#' Therefore it is necessary to specify mappings from \code{y} and \code{theta} to the variables in \code{f}.
+#' @param f \code{function(y, theta, ...)}, where \code{theta} is a list of parameters.
+#' @param parNames a vector of names or indices, the subset of parameters to use.
+#' @param preSimplify simplify the body of \code{f} using functions from package \pkg{Deriv}.
+#' @param ... other arguments passed to \code{\link[Deriv]{Deriv}} from package \pkg{Deriv}.
 #'
-#' @param f an expression, a joint probability density.
-#' @param varNames a character vector of variable names.
-#' @param map a named list of character strings defining left assignments (\code{a="b"} => \code{a <- b}).
-#' @param yMap like \code{map} with \code{a=b} resolving to \code{a <- y[b]}.
-#' @param thetaMap like \code{map} with \code{a=b} resolving to \code{a <- theta[[b]]}.
-#'
-#' @seealso \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}
+#' @seealso \pkg{Deriv}, \code{\link[Deriv]{Deriv}} in package \pkg{Deriv}, \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{fisherI}}
 #'
 #' @examples ## see examples for param
 #' ## mind the gain regarding runtime compared to numDeriv
@@ -330,17 +292,31 @@ numDeriv2Logf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.
 #' @name DerivLogf
 NULL
 
+prepareDeriv = function(f, parNames, preSimplify) {
+    f = body(f)
+    logf = substitute(log(f), list(f=f))
+    if (preSimplify)
+        logf = Deriv::Cache(Deriv::Simplify(Deriv::deCache(logf)))
+
+    x = parNames
+    names(x) = rep('theta', length(x))
+
+    return(list(logf=logf, x=x))
+}
+
 #' @rdname DerivLogf
 #'
-#' @return \code{DerivLogf} returns \code{function(y, theta, i, ...)} where \code{theta} is a list of parameters.
-#' It evaluates to the first derivative of \code{log(f)} with respect to variable \code{i}.
-#' Additionally the attribute \code{"d"} contains the list of sub functions.
+#' @return \code{DerivLogf} returns \code{function(y, theta, i, ...)} which evaluates to the first derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]}.
+#' The attribute \code{"d"} contains the list of sub functions.
 #'
 #' @export
-DerivLogf = function(f, varNames, map=NULL, yMap=NULL, thetaMap=NULL) {
-    logf = substitute(log((f)), list(f=f))
-    d = Derivf(logf, varNames)
-    d = lapply(d, expr2f, map, yMap, thetaMap)
+DerivLogf = function(f, parNames, preSimplify=T, ...) {
+    prep = prepareDeriv(f, parNames, preSimplify)
+
+    expr = Derivf(prep$logf, prep$x, ...)
+    d = lapply(expr, function(expr)
+        as.function(c(alist(y=, theta=, ...=), list(expr))))
+    names(d) = names(expr)
 
     r = function(y, theta, i, ...) {
         return(d[[i]](y, theta, ...))
@@ -351,15 +327,21 @@ DerivLogf = function(f, varNames, map=NULL, yMap=NULL, thetaMap=NULL) {
 
 #' @rdname DerivLogf
 #'
-#' @return \code{Deriv2Logf} returns \code{function(y, theta, i, j, ...)} where \code{theta} is a list of parameters.
-#' It evaluates to the second derivative of \code{log(f)} with respect to the variables \code{i} and \code{j}.
-#' Additionally the attribute \code{"d2"} contains the list of sub functions.
+#' @return \code{Deriv2Logf} returns \code{function(y, theta, i, j, ...)} which evaluates to the second derivative of \code{log(f(y, theta, ...))} with respect to \code{theta[[i]]} and \code{theta[[j]]}.
+#' The attribute \code{"d2"} contains the list of sub functions.
 #'
 #' @export
-Deriv2Logf = function(f, varNames, map=NULL, yMap=NULL, thetaMap=NULL) {
-    logf = substitute(log((f)), list(f=f))
-    d2 = Deriv2f(logf, varNames)
-    d2 = lapply(d2, function(d2) lapply(d2, expr2f, map, yMap, thetaMap))
+Deriv2Logf = function(f, parNames, preSimplify=T, ...) {
+    prep = prepareDeriv(f, parNames, preSimplify)
+
+    expr = Deriv2f(prep$logf, prep$x, ...)
+    d2 = lapply(expr, function(expr) {
+        r = lapply(expr, function(expr)
+            as.function(c(alist(y=, theta=, ...=), list(expr))))
+        names(r) = names(expr)
+        return(r)
+    })
+    names(d2) = names(expr)
 
     r = function(y, theta, i, j, ...) {
         return(d2[[i]][[j]](y, theta, ...))
@@ -388,7 +370,7 @@ Deriv2Logf = function(f, varNames, map=NULL, yMap=NULL, thetaMap=NULL) {
 #'
 #' @return \code{fisherI} returns a named matrix, the Fisher information.
 #'
-#' @seealso \code{\link{buildf}}, \code{\link{expr2f}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}, \code{\link{param}}
+#' @seealso \code{\link{buildf}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{nint_space}}, \code{\link{nint_transform}}, \code{\link{nint_integrate}}, \code{\link{param}}
 #'
 #' @examples ## see examples for param
 #'
@@ -402,7 +384,7 @@ fisherI = function(ff, theta, parNames, yspace, ...) {
         dlogf = ff[['dlogf']]
         d2logf = ff[['d2logf']]
         if ((is.null(dlogf) && is.null(d2logf)) || (!is.null(dlogf) && !is.null(d2logf)))
-            stop('either dlogf xor d2logf shall be given')
+            stop('either dlogf xor d2logf shall be specified')
 
         f = ff[['f']]
         if (!is.null(dlogf)) {
@@ -430,16 +412,12 @@ fisherI = function(ff, theta, parNames, yspace, ...) {
         j = combs[2, k]
 
         r[i, j] = nint_integrate(g, yspace, ...)
-        #print(j / ncol(combs))
-        #print(rr)
     }
 
     ## do diagonal
     for (i in parNames) {
         j = i # necessary
         r[i, i] = nint_integrate(gd, yspace, ...)
-        #print(j / ncol(combs))
-        #print(rr)
     }
 
     return(mirrorMatrix(r))

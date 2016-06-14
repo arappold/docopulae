@@ -21,7 +21,7 @@ Imports:
 Suggests:
     copula,
     numDeriv,
-    Deriv,
+    Deriv (>= 3.6.1),
     cubature,
     SparseGrid,
     mvtnorm,
@@ -30,4 +30,4 @@ URL: https://github.com/arappold/docopulae
 BugReports: https://github.com/arappold/docopulae/issues
 License: MIT + file LICENSE
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 5.0.1.9000

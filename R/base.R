@@ -24,40 +24,41 @@ seq1 = function(from, to, by=1) {
 }
 
 
-Derivf = function(f, names) {
-    ## applies Deriv
-    ## ignores [[
-    #temp = Deriv::drule[['[[']]
-    #assign('[[', list(0), envir=Deriv::drule)
+Derivf = function(f, x, ...) {
+    ## x = named unique vector
+    xx = mapply(function(n, v) { # split x into list of named values
+        names(v) = n
+        return(v)
+    }, names(x), x, SIMPLIFY=F)
 
-    r = mapply(Deriv::Deriv, list(f), names)
-    base::names(r) = names
-
-    #assign('[[', temp, envir=Deriv::drule)
+    r = mapply(Deriv::Deriv, list(f), xx, MoreArgs=..., SIMPLIFY=F)
+    names(r) = x
     return(r)
 }
 
-Deriv2f = function(f, names) {
-    ## applies Deriv twice
-    ## ignores [[
-    #temp = Deriv::drule[['[[']]
-    #assign('[[', list(0), envir=Deriv::drule)
+Deriv2f = function(f, x, ...) {
+    ## x = named unique vector
+    d = Derivf(f, x, ...)
 
-    d = Derivf(f, names)
+    xx = mapply(function(n, v) { # split x into list of named values
+        names(v) = n
+        return(v)
+    }, names(x), x, SIMPLIFY=F)
+    names(xx) = x
 
-    d2 = mapply(Deriv::Deriv, d, base::names(d))
-    base::names(d2) = base::names(d)
+    d2 = mapply(Deriv::Deriv, d, xx, MoreArgs=...)
+    names(d2) = x
 
-    r = rep(list(NA), length(names))
-    base::names(r) = names
-    r = replicate(length(names), r, simplify=F)
-    base::names(r) = names
+    r = rep(list(NA), length(x))
+    names(r) = x
+    r = replicate(length(x), r, simplify=F)
+    names(r) = x
 
-    for (n in names)
+    for (n in x)
         r[[n]][[n]] = d2[[n]]
 
-    combs = combn(names, 2)
-    d2 = mapply(Deriv::Deriv, d[combs[1,]], combs[2,])
+    combs = combn(as.character(x), 2)
+    d2 = mapply(Deriv::Deriv, d[combs[1,]], xx[combs[2,]], MoreArgs=...)
 
     for (i in seq1(1, ncol(combs))) {
         a = combs[1, i]
@@ -66,7 +67,6 @@ Deriv2f = function(f, names) {
         r[[b]][[a]] = d2[[i]]
     }
 
-    #assign('[[', temp, envir=Deriv::drule)
     return(r)
 }
 
@@ -224,7 +224,7 @@ rowmatch = function(x, table, nomatch=NA_integer_) {
     st = table[ordt,, drop=F]
 
     i = integer(nrow(x))
-    i = .C('rowmatch_double', sx, as.integer(nrow(sx)), as.integer(ncol(sx)), st, as.integer(nrow(st)), i, DUP=F, PACKAGE='docopulae')[[6]] + 1
+    i = .C('rowmatch_double', sx, as.integer(nrow(sx)), as.integer(ncol(sx)), st, as.integer(nrow(st)), i, PACKAGE='docopulae')[[6]] + 1
 
     r = ordt[i][order(ordx)]
     r[is.na(r)] = nomatch

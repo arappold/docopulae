@@ -13,6 +13,10 @@
 * replaced limit by bound in `nint_intvDim`
 * increased performance for `Defficiency`
 * `rowmatch` uses C-code and requires matrices of doubles
+* `expr2f` removed in favor of package `Deriv`
+  * `buildf` returns a function in every use case
+  * changed arguments for `DerivLogf` and `Deriv2Logf`
+  * `buildf`, `DerivLogf` and `Deriv2Logf` use package `Deriv` to simplify and cache
 
 # docopulae 0.3.2
 
