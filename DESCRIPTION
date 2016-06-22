@@ -1,6 +1,7 @@
 Package: docopulae
 Title: Optimal Designs for Copula Models
 Version: 0.3.3
+Date: 2016-06-22
 Authors@R: person("Andreas", "Rappold", email = "arappold@gmx.at", role = c("aut", "cre"))
 Author: Andreas Rappold [aut, cre]
 Maintainer: Andreas Rappold <arappold@gmx.at>
@@ -26,8 +27,12 @@ Suggests:
     SparseGrid,
     mvtnorm,
     testthat
-URL: https://github.com/arappold/docopulae
+URL:
+    http://www.tandfonline.com/doi/full/10.1080/02331888.2015.1111892
+    https://github.com/arappold/docopulae
 BugReports: https://github.com/arappold/docopulae/issues
 License: MIT + file LICENSE
 LazyData: true
+NeedsCompilation: yes
+Encoding: UTF-8
 RoxygenNote: 5.0.1.9000

@@ -595,10 +595,13 @@ Dsensitivity_anyNAm = 'Fisher information matrices shall not contain missing val
 #' @return \code{Dsensitivity} returns \code{function(x=NULL, desw=NULL, desx=NULL, mod=NULL)}, the sensitivity function.
 #' It's attributes contain this function's arguments.
 #'
-#' @seealso \code{\link{param}}, \code{\link{Wynn}}, \code{\link{plot.desigh}}
+#' @references E. Perrone & W.G. Müller (2016) Optimal designs for copula models, Statistics, 50:4, 917-929, DOI: 10.1080/02331888.2015.1111892
+#'
+#' @seealso \code{\link{docopulae}}, \code{\link{param}}, \code{\link{Wynn}}, \code{\link{plot.desigh}}
 #'
 #' @examples ## see examples for param
 #'
+#' @encoding UTF-8
 #' @export
 Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, desx=NULL, mod=NULL)) {
     # tr(M^-1 A (A^T M^-1 A)^-1 A^T M^-1 m)  = M, A, m

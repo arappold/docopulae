@@ -149,15 +149,22 @@ test_that('integrateA', {
 })
 
 
-## clusterPeak
-test_that('clusterPeak handles distance correctly', {
-    expect_equal(clusterPeak(matrix(c(1, 2)), 2:1, 1),
+## clusterDist, clusterPeak
+test_that('clusterDist, clusterPeak handle distance correctly', {
+    m = matrix(c(1, 2))
+    expect_equal(clusterDist(as.matrix(dist(m)), 1),
                  c(1, 1))
-    expect_equal(clusterPeak(matrix(c(1, 2 + 1e-15)), 2:1, 1),
+    expect_equal(clusterPeak(m, 2:1, 1),
+                 c(1, 1))
+
+    m = matrix(c(1, 2 + 1e-15))
+    expect_equal(clusterDist(as.matrix(dist(m)), 1),
+                 c(1, 2))
+    expect_equal(clusterPeak(m, 2:1, 1),
                  c(1, 2))
 })
 
-test_that('clusterPeak works for a simple 1D random example', {
+test_that('clusterDist, clusterPeak work for a simple 1D random example', {
     n = 100
     x1 = matrix(runif(n))
     x2 = matrix(runif(n)) + 1 + 1 + 1e-15
@@ -167,13 +174,16 @@ test_that('clusterPeak works for a simple 1D random example', {
     x = x[ord,, drop=F]
     tcl = tcl[ord]
 
-    cl = clusterPeak(x, nrow(x):1, 1)
+    cld = clusterDist(as.matrix(dist(x)), 1)
+    clp = clusterPeak(x, nrow(x):1, 1)
+    expect_equal(cld,
+                 clp)
     # are groups consistent with true groups
-    expect_equivalent(apply(table(cl, tcl), 1, max),
+    expect_equivalent(apply(table(cld, tcl), 1, max),
                       rep(n, 2))
 })
 
-test_that('clusterPeak works for a simple 2D random example', {
+test_that('clusterDist, clusterPeak work for a simple 2D random example', {
     n = 100
     x1 = matrix(runif(n*2), ncol=2)
     x2 = matrix(runif(n*2), ncol=2)
@@ -190,9 +200,12 @@ test_that('clusterPeak works for a simple 2D random example', {
     tcl = tcl[ord]
     #plot(x[,1], x[,2], col=tcl)
 
-    cl = clusterPeak(x, nrow(x):1, sqrt(2))
+    cld = clusterDist(as.matrix(dist(x)), sqrt(2))
+    clp = clusterPeak(x, nrow(x):1, sqrt(2))
+    expect_equal(cld,
+                 clp)
     # are groups consistent with true groups
-    expect_equivalent(apply(table(cl, tcl), 1, max),
+    expect_equivalent(apply(table(cld, tcl), 1, max),
                       rep(n, 4))
 })
 

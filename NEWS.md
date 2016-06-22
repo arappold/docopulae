@@ -1,28 +1,25 @@
 # docopulae 0.3.3
 
-* fixed defaults for `method.args` for `numDeriv2Logf`
-* `plot.desigh` won't draw second axis anymore if `sensArgs$axes == F`
-* fixed handling of `nint_funcDim` in `nint_integrateNFunc`
-* refocus on D_A-optimality, arguments changed for `Dsensitivity` and `Defficiency`
-* renamed argument `names` for `buildf`, `DerivLogf`, `Deriv2Logf`, `fisherI`, `Dsensitivity`, `Defficiency`
-* renamed `FedorovWynn` to `Wynn`
-* `Wynn` asserts equal `x` and `desx` in `sensF`'s defaults
-* `plot.desigh` recursively finds base design
-* fixed typo and redefined default sensitivity label for `plot.desigh`
-* increased performance for `Dsensitivity`
-* replaced limit by bound in `nint_intvDim`
-* increased performance for `Defficiency`
-* `rowmatch` uses C-code and requires matrices of doubles
 * `expr2f` removed in favor of package `Deriv`
   * `buildf` returns a function in every use case
-  * changed arguments for `DerivLogf` and `Deriv2Logf`
+  * arguments changed for `DerivLogf` and `Deriv2Logf`
   * `buildf`, `DerivLogf` and `Deriv2Logf` use package `Deriv` to simplify and cache
-* rewritten `nint_transform`
+* `nint_transform` completely rewritten
   * takes a list of transformations
   * transforms interval and function dimensions
   * handles function dimensions correctly
   * implements transformation of function dimensions to interval dimensions
-* replaced builtin transformations by `nint_tanTransform`
+  * builtin transformations replaced by `nint_tanTransform`
+* refocus on D_A-optimality, arguments changed for `Dsensitivity` and `Defficiency`
+* argument `names` renamed for `buildf`, `DerivLogf`, `Deriv2Logf`, `fisherI`, `Dsensitivity`, `Defficiency`
+* `FedorovWynn` renamed to `Wynn`
+* defaults for `method.args` for `numDeriv2Logf` fixed
+* handling of `nint_funcDim` in `nint_integrateNFunc` fixed
+* performance increased for `Dsensitivity` and `Defficiency`
+* `rowmatch` uses C-code and requires matrices of doubles
+* `plot.desigh` recursively finds base design
+* `plot.desigh` won't draw second axis anymore if `sensArgs$axes == F`
+* typo fixed and default sensitivity label redefined for `plot.desigh`
 
 # docopulae 0.3.2
 

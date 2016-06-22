@@ -149,38 +149,50 @@ integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$
 }
 
 
+clusterDist = function(distMat, maxDist) {
+    ## distMat = square matrix of pairwise distances between objects
+    ## maxDist = maximum distance within a cluster
+    ##
+    ## in ascending order of rows/columns
+    ## iteratively assigns objects to the nearest cluster
+    ##
+    ## returns a vector of cluster ids
+
+    r = integer(nrow(distMat))
+    if (length(r) == 0)
+        return(r)
+
+    r[1] = 1
+    rr = 2
+
+    for (i in seq1(2, ncol(distMat))) {
+        ds = distMat[1:(i - 1), i] # distances to other objects
+        j = which.min(ds)
+        if (ds[j] <= maxDist)
+            r[i] = r[j]
+        else {
+            r[i] = rr
+            rr = rr + 1
+        }
+    }
+
+    return(r)
+}
+
 clusterPeak = function(x, y, maxDist) {
     ## x = row matrix of points
     ## y = corresponding vector of values (of length nrow(x))
     ##
+    ## in descending order of magnitude of y
     ## iteratively assigns points to the nearest cluster
-    ## in reverse order of magnitude of y
+    ##
+    ## returns a vector of cluster ids
 
-    r = rep(0, length(y))
-
+    ord = order(y, decreasing=T)
+    x = x[ord,, drop=F]
     dists = as.matrix(dist(x))
-    idcs = seq1(1, length(y))
-
-    rr = 1
-
-    while (length(idcs) != 0) {
-        i = which.max(y[idcs])
-        idx = idcs[i] # idx of max y
-        ds = dists[,idx] # distances to all other points
-
-        cIdcs = which(ds <= maxDist) # candidates
-        cIdcs = cIdcs[order(ds[cIdcs])] # sort by distance
-        cSub = match(T, r[cIdcs] != 0) # first already matched
-        if (is.na(cSub)) { # none matched
-            r[idx] = rr
-            rr = rr + 1
-            next
-        }
-
-        r[idx] = r[cIdcs[cSub]] # match
-        idcs = idcs[-i]
-    }
-
+    r = clusterDist(dists, maxDist)
+    r = r[order(ord)]
     return(r)
 }
 
