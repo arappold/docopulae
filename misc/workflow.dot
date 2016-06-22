@@ -1,15 +1,10 @@
 digraph {
     rankdir = LR
 
-    subgraph cluster_buildPDF {
-        label = "PDF"
+    subgraph cluster_PDFDeriv {
+        label = "PDF & Derivatives"
         fontname = bold
-        buildf -> expr2f [style=dashed]
-    }
-
-    subgraph cluster_deriv {
-        label = "Derivatives"
-        fontname = bold
+        buildf
         numDerivLogf
         numDeriv2Logf
         DerivLogf
@@ -18,8 +13,6 @@ digraph {
 
     buildf -> numDerivLogf
     buildf -> numDeriv2Logf
-    expr2f -> numDerivLogf
-    expr2f -> numDeriv2Logf
     buildf -> DerivLogf [style=dashed]
     buildf -> Deriv2Logf [style=dashed]
 
@@ -35,7 +28,6 @@ digraph {
     }
 
     buildf -> fisherI
-    expr2f -> fisherI [style=dashed]
     numDerivLogf -> fisherI
     numDeriv2Logf -> fisherI
     DerivLogf -> fisherI [style=dashed]

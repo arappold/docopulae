@@ -877,7 +877,9 @@ reduce = function(des, distMax, wMin=1e-6) {
 #' @export
 getM = function(mod, des) {
     m = getm(mod, des$x)
-    return(getM_(m, des$w))
+    r = getM_(m, des$w)
+    dimnames(r) = dimnames(mod$fisherI[[1]])
+    return(r)
 }
 
 

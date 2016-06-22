@@ -11,6 +11,14 @@ digraph {
 
     space -> Space
 
+    subgraph cluster_space_transform {
+        label = "Transform"
+        fontname = bold
+        tanTransform -> transform
+    }
+
+    Space -> transform [dir=both]
+
     subgraph cluster_space_misc {
         label = "Misc."
         fontname = bold
@@ -20,14 +28,6 @@ digraph {
 
     Space -> validateSpace
     Space -> expandSpace [dir=both]
-
-    subgraph cluster_space_transform {
-        label = "Transform"
-        fontname = bold
-        transform
-    }
-
-    Space -> transform [dir=both]
 
     subgraph cluster_interface {
         label = "Interface"
