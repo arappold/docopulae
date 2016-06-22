@@ -7,7 +7,7 @@
 \method{update}{param}(object, x, ...)
 }
 \arguments{
-\item{object}{some model.}
+\item{object}{a model.}
 
 \item{x}{either a row matrix of points or a design, or a list structure of matrices or designs.
 The number of columns/the dimensionality of the design space shall be equal to \code{ncol(object$x)}.}

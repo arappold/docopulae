@@ -7,7 +7,7 @@
 reduce(des, distMax, wMin = 1e-06)
 }
 \arguments{
-\item{des}{some design.}
+\item{des}{a design.}
 
 \item{distMax}{maximum euclidean distance between points to be merged.}
 

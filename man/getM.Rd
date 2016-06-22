@@ -7,15 +7,15 @@
 getM(mod, des)
 }
 \arguments{
-\item{mod}{some model.}
+\item{mod}{a model.}
 
-\item{des}{some design.}
+\item{des}{a design.}
 }
 \value{
 \code{getM} returns a named matrix, the Fisher information.
 }
 \description{
-\code{getM} returns the Fisher information corresponding to some model and some design.
+\code{getM} returns the Fisher information corresponding to a model and a design.
 }
 \examples{
 ## see examples for param

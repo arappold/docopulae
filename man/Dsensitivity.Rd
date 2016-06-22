@@ -35,7 +35,7 @@ It's attributes contain this function's arguments.
 Indices and rows of an unnamed matrix supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
 
 For efficiency reasons the returned function won't complain about \emph{missing arguments} immediately, leading to strange errors.
-Please make sure that all arguments are specified at all times.
+Please ensure that all arguments are specified at all times.
 This behaviour might change in future releases.
 }
 \examples{

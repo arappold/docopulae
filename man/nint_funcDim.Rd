@@ -20,7 +20,7 @@ It shall depend solely on the previous dimensions.
 \details{
 Obviously if \code{x} returns an object of type \code{nint_intvDim} the dimension is continuous, and discrete otherwise.
 
-As the argument to \code{x} is only partially defined the user has to make sure that the function solely depends on values up to the current dimension.
+As the argument to \code{x} is only partially defined the user has to ensure that the function solely depends on values up to the current dimension.
 }
 \seealso{
 \code{\link{nint_TYPE}}, \code{\link{nint_space}}

@@ -7,7 +7,7 @@
 \method{print}{nint_space}(x, ...)
 }
 \arguments{
-\item{x}{some space.}
+\item{x}{a space.}
 
 \item{...}{ignored.}
 }

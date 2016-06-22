@@ -7,11 +7,11 @@
 Defficiency(des, ref, mod, A = NULL, parNames = NULL)
 }
 \arguments{
-\item{des}{some design.}
+\item{des}{a design.}
 
-\item{ref}{some design, the reference.}
+\item{ref}{a design, the reference.}
 
-\item{mod}{some model.}
+\item{mod}{a model.}
 
 \item{A}{for \itemize{
 \item D-efficiency: \code{NULL}
@@ -29,7 +29,7 @@ Defaults to the parameters for which the Fisher information is available.}
 \code{Defficiency} returns a single numeric.
 }
 \description{
-\code{Defficiency} computes the D-, D_s or D_A-efficiency measure for some design with respect to some reference design.
+\code{Defficiency} computes the D-, D_s or D_A-efficiency measure for a design with respect to a reference design.
 }
 \details{
 Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.

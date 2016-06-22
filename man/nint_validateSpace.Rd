@@ -7,14 +7,14 @@
 nint_validateSpace(x)
 }
 \arguments{
-\item{x}{some space.}
+\item{x}{a space or list structure of spaces.}
 }
 \value{
 \code{nint_validateSpace} returns 0 if everything is fine, or an error code.
 See \code{\link{nint_ERROR}}.
 }
 \description{
-\code{nint_validateSpace} performs a couple of checks on some space to make sure it is properly defined.
+\code{nint_validateSpace} performs a couple of checks on a space or list structure of spaces to ensure it is properly defined.
 }
 \examples{
 ## valid

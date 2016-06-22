@@ -8,7 +8,7 @@
   margins = NULL, desSens = T, sensPch = "+", sensArgs = list())
 }
 \arguments{
-\item{x}{some design.}
+\item{x}{a design.}
 
 \item{sensx}{(optional) a row matrix of points.}
 

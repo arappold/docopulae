@@ -17,6 +17,12 @@
   * `buildf` returns a function in every use case
   * changed arguments for `DerivLogf` and `Deriv2Logf`
   * `buildf`, `DerivLogf` and `Deriv2Logf` use package `Deriv` to simplify and cache
+* rewritten `nint_transform`
+  * takes a list of transformations
+  * transforms interval and function dimensions
+  * handles function dimensions correctly
+  * implements transformation of function dimensions to interval dimensions
+* replaced builtin transformations by `nint_tanTransform`
 
 # docopulae 0.3.2
 

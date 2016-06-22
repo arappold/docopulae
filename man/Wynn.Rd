@@ -19,7 +19,7 @@ It's attribute \code{"defaults"} shall contain identical \code{x} and \code{desx
 See \code{\link{design}} for its structural definition.
 }
 \description{
-\code{Wynn} finds an optimal design using some sensitivity function and a Wynn-algorithm.
+\code{Wynn} finds an optimal design using a sensitivity function and a Wynn-algorithm.
 }
 \details{
 See \code{\link{Dsensitivity}} and it's return value for a reference implementation of a function complying with the requirements for \code{sensF}.

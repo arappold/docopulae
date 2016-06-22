@@ -33,7 +33,7 @@ param = function(fisherIf, dDim) {
 #'
 #' \code{update.param} evaluates the Fisher information at uncharted points and returns an updated model object.
 #'
-#' @param object some model.
+#' @param object a model.
 #' @param x either a row matrix of points or a design, or a list structure of matrices or designs.
 #' The number of columns/the dimensionality of the design space shall be equal to \code{ncol(object$x)}.
 #' @param ... ignored.
@@ -56,20 +56,20 @@ update.param = function(object, x, ...) {
     if (ncol(x) != ncol(mod$x))
         stop(paste('x shall have exactly', ncol(mod$x), 'columns'))
 
-    r = mod
     x = unique(rbind(mod$x, x)) # merge x
     idcs = seq1(nrow(mod$x) + 1, nrow(x))
+    r = mod
 
     if (length(idcs) != 0) {
         xx = x[idcs,, drop=F]
-        r = lapply(split(xx, seq_len(nrow(xx))), mod$fisherIf)
-        fisherI = c(mod$fisherI, r)
+        fisherI = lapply(split(xx, seq_len(nrow(xx))), mod$fisherIf)
+        fisherI = c(mod$fisherI, fisherI)
         names(fisherI) = NULL
-        mod$fisherI = fisherI
+        r$fisherI = fisherI
+        r$x = x
     }
 
-    mod$x = x
-    return(mod)
+    return(r)
 }
 
 
@@ -129,11 +129,11 @@ buildf = function(margins, copula, parNames=NULL, simplifyAndCache=T) {
         uProd = parse(text=paste(ui, collapse='*'))[[1]]
 
         cdfs = lapply(margins, function(margin)
-            substitute((a), list(a=margin$cdf)))
+            substitute((a), list(a=margin[['cdf']])))
         names(cdfs) = ui
 
         pdfs = lapply(margins, function(margin)
-            substitute((a), list(a=margin$pdf)))
+            substitute((a), list(a=margin[['pdf']])))
         names(pdfs) = ui
 
         f = substitute((a)*b, list(a=substituteDirect(copula, cdfs),
@@ -252,11 +252,9 @@ numDeriv2Logf = function(f, isLogf=FALSE, logZero=.Machine$double.xmin, logInf=.
     }
     if (method == 'Richardson') {
         r = function(y, theta, i, j, ...) {
-            if (i == j) {
-                ## sole second derivative at D[2]
-                return( numDeriv::genD(logf, theta[[i]], method, method.args_, y, theta, i, ...)$D[2] )
-            }
-            return( numDeriv::genD(logf, c(theta[[i]], theta[[j]]), method, method.args_, y, theta, c(i, j), ...)$D[4] ) # sole mixed second derivative at D[4]
+            if (i == j)
+                return( numDeriv::genD(logf, theta[[i]], method, method.args_, y, theta, i, ...)[['D']][2] ) # sole second derivative at D[2]
+            return( numDeriv::genD(logf, c(theta[[i]], theta[[j]]), method, method.args_, y, theta, c(i, j), ...)[['D']][4] ) # sole mixed second derivative at D[4]
         }
     } else if (method == 'complex') {
         r = function(y, theta, i, j, ...) {
@@ -536,19 +534,21 @@ getDAPar = function(mod, A, parNames) {
     return(list(parNames=parNames, A=nA))
 }
 
-getm = function(mod, x, idcs=NULL) {
+getm = function(mod, x, parNames=NULL) {
     if (nrow(x) == 0)
-        return(array(dim=c(length(idcs), length(idcs), 0)))
+        return(array(dim=c(length(parNames), length(parNames), 0)))
 
     xidcs = rowmatch(x, mod$x)
     if (anyNA(xidcs))
         stop('model shall contain Fisher information matrices for each point. See update.param')
 
     fi = mod$fisherI[[xidcs[1]]]
-    if (is.null(idcs) || nrow(fi) == length(idcs))
+    if (is.null(parNames) ||
+        isTRUE(all.equal(parNames, rownames(fi))) || isTRUE(all.equal(parNames, colnames(fi))) ||
+        isTRUE(all.equal(parNames, seq1(1, nrow(fi)))))
         return(simplify2array(mod$fisherI[xidcs]))
 
-    return(vapply(xidcs, function(xidx) mod$fisherI[[xidx]][idcs, idcs], matrix(0, nrow=length(idcs), ncol=length(idcs))))
+    return(vapply(xidcs, function(xidx) mod$fisherI[[xidx]][parNames, parNames], matrix(0, nrow=length(parNames), ncol=length(parNames))))
 }
 
 getM_ = function(m, w) {
@@ -576,7 +576,7 @@ Dsensitivity_anyNAm = 'Fisher information matrices shall not contain missing val
 #' Indices and rows of an unnamed matrix supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
 #'
 #' For efficiency reasons the returned function won't complain about \emph{missing arguments} immediately, leading to strange errors.
-#' Please make sure that all arguments are specified at all times.
+#' Please ensure that all arguments are specified at all times.
 #' This behaviour might change in future releases.
 #'
 #' @param A for \itemize{
@@ -608,10 +608,10 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
     # 1 A = (A, parNames)
     # 2 m = (mod, x, parNames)
     # 1   parNames = (A, parNames)
-    dx = defaults$x
-    ddesw = defaults$desw
-    ddesx = defaults$desx
-    dmod = defaults$mod
+    dx = defaults[['x']]
+    ddesw = defaults[['desw']]
+    ddesx = defaults[['desx']]
+    dmod = defaults[['mod']]
 
     # 1
     d1 = F
@@ -745,7 +745,7 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
 
 #' Wynn
 #'
-#' \code{Wynn} finds an optimal design using some sensitivity function and a Wynn-algorithm.
+#' \code{Wynn} finds an optimal design using a sensitivity function and a Wynn-algorithm.
 #'
 #' See \code{\link{Dsensitivity}} and it's return value for a reference implementation of a function complying with the requirements for \code{sensF}.
 #'
@@ -774,8 +774,8 @@ Wynn = function(sensF, tol, maxIter=1e4) {
     tag = list(Wynn=list(sensF=sensF, tol=tol, maxIter=maxIter))
 
     defaults = attr(sensF, 'defaults')
-    x = defaults$x
-    if (!isTRUE(all.equal(x, defaults$desx)))
+    x = defaults[['x']]
+    if (!isTRUE(all.equal(x, defaults[['desx']])))
         stop('sensitivity defaults for x and desx shall be equal')
 
     if (nrow(x) == 0)
@@ -822,7 +822,7 @@ wPoint = function(x, w) {
 #'
 #' \code{reduce} drops insignificant points and merges points in a certain neighbourhood.
 #'
-#' @param des some design.
+#' @param des a design.
 #' @param distMax maximum euclidean distance between points to be merged.
 #' @param wMin minimum weight a point shall have to be considered significant.
 #'
@@ -863,10 +863,10 @@ reduce = function(des, distMax, wMin=1e-6) {
 
 #' Get Fisher Information
 #'
-#' \code{getM} returns the Fisher information corresponding to some model and some design.
+#' \code{getM} returns the Fisher information corresponding to a model and a design.
 #'
-#' @param mod some model.
-#' @param des some design.
+#' @param mod a model.
+#' @param des a design.
 #'
 #' @return \code{getM} returns a named matrix, the Fisher information.
 #'
@@ -891,9 +891,9 @@ add.alpha <- function(col, alpha=1){
 
 getBaseDesign = function(des) {
     tag = des$tag
-    if (!is.null(tag$Wynn))
+    if (!is.null(tag[['Wynn']]))
         return(des)
-    if (!is.null(tag$reduce))
+    if (!is.null(tag[['reduce']]))
         return(getBaseDesign(tag$reduce$des))
     return(NULL)
 }
@@ -903,7 +903,7 @@ getBaseDesign = function(des) {
 #' \code{plot.desigh} creates a one-dimensional design plot, optionally together with a specified sensitivity curve.
 #' If the design space has additional dimensions, the design is projected on a specified margin.
 #'
-#' @param x some design.
+#' @param x a design.
 #' @param sensx (optional) a row matrix of points.
 #' @param sens (optional) either a vector of sensitivities or a sensitivity function.
 #' The latter shall rely on defaults, see \code{\link{Dsensitivity}} for details.
@@ -952,9 +952,9 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
     ## lookup design sensF
     if (is.null(sens) && desSens) {
         d = getBaseDesign(des)
-        sens = d$tag$Wynn$sensF
+        sens = d$tag[['Wynn']]$sensF
         if (is.null(sensx) && !is.null(sens)) {
-            sensx = attr(sens, 'defaults')$x
+            sensx = attr(sens, 'defaults')[['x']]
             sens = sens(desw=d$w)
         }
     }
@@ -963,7 +963,7 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
     if (!is.null(sens)) {
         if (is.function(sens)) {
             if (is.null(sensx)) {
-                sensx = attr(sens, 'defaults')$x
+                sensx = attr(sens, 'defaults')[['x']]
                 sens = sens(desw=des$w, desx=des$x)
             } else
                 sens = sens(x=sensx, desw=des$w, desx=des$x)
@@ -1028,9 +1028,9 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
                 do.call(abline, margs)
             }
 
-            if (!isTRUE(sensArgs$axes == F)) {
+            if (!isTRUE(sensArgs[['axes']] == F)) {
                 margs = modifyList(list(4), sensArgs)
-                if (!is.null(margs$col) && is.null(margs$col.axis))
+                if (!is.null(margs[['col']]) && is.null(margs[['col.axis']]))
                     margs$col.axis = margs$col
                 do.call(axis, margs)
             }
@@ -1060,7 +1060,7 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
 
 #' D Efficiency
 #'
-#' \code{Defficiency} computes the D-, D_s or D_A-efficiency measure for some design with respect to some reference design.
+#' \code{Defficiency} computes the D-, D_s or D_A-efficiency measure for a design with respect to a reference design.
 #'
 #' Indices supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.
 #'
@@ -1069,9 +1069,9 @@ plot.desigh = function(x, sensx=NULL, sens=NULL, sensTol=NULL, ..., margins=NULL
 #' and D_A efficiency as
 #' \deqn{\left(\frac{\left|A^{T}M(\xi^{*},\bar{\boldsymbol{\theta}})^{-1}A\right|}{\left|A^{T}M(\xi,\bar{\boldsymbol{\theta}})^{-1}A\right|}\right)^{1/s}}{( det(t(A) \%*\% solve(M(\xi*, \theta)) \%*\% A) / det(t(A) \%*\% solve(M(\xi, \theta)) \%*\% A) )**(1/s)}
 #'
-#' @param des some design.
-#' @param ref some design, the reference.
-#' @param mod some model.
+#' @param des a design.
+#' @param ref a design, the reference.
+#' @param mod a model.
 #' @param A for \itemize{
 #' \item D-efficiency: \code{NULL}
 #' \item D_s-efficiency: a vector of names or indices, the subset of parameters of interest.

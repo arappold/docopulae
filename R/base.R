@@ -87,7 +87,15 @@ flatten = function(x) {
         return(list(x))
     if (is_flat(x))
         return(x)
-    return(do.call(c, lapply(x, flatten) ))
+    return(do.call(c, lapply(x, flatten)))
+}
+
+rlapply = function(X, FUN, ...) {
+    isList = vapply(X, inherits, T, 'list')
+    r = rep(list(NULL), length(X))
+    r[isList] = lapply(X[isList], rlapply, FUN, ...)
+    r[!isList] = lapply(X[!isList], FUN, ...)
+    return(r)
 }
 
 
@@ -99,11 +107,19 @@ lproduct = function(x) {
     ## product expands a list of lists
     if (length(x) == 0)
         return(list())
-    idcs = lapply(x, seq)
-    idcs = do.call(expand.grid, idcs)
-    colnames(idcs) = names(x[[1]])
-    r = apply(idcs, 1, function(idcs)
-        mapply(function(idx, i) x[[i]][[idx]], idcs, 1:length(x), SIMPLIFY=F))
+    idcs = as.matrix(do.call(expand.grid, lapply(x, seq))) # row matrix of idx combinations
+    m = suppressWarnings(do.call(cbind, x)) # matrix of objects
+    names = suppressWarnings(do.call(cbind, lapply(x, base::names))) # matrix of names
+    off = (0:(ncol(m) - 1)) * nrow(m) # column offsets
+    if (is.null(names))
+        r = apply(idcs, 1, function(idcs) m[idcs + off])
+    else
+        r = apply(idcs, 1, function(idcs) {
+            idcs = idcs + off
+            r = m[idcs]
+            base::names(r) = names[idcs]
+            return(r)
+        })
     return(r)
 }
 
@@ -124,7 +140,7 @@ lproduct = function(x) {
 #' @export
 integrateA = function(f, lower, upper, ..., subdivisions=100L, rel.tol=.Machine$double.eps^0.25, abs.tol=rel.tol, stop.on.error=TRUE, keep.xy=FALSE, aux=NULL) {
     r = stats::integrate(f, lower, upper, ..., subdivisions=subdivisions, rel.tol=rel.tol, abs.tol=abs.tol, stop.on.error=F, keep.xy=keep.xy, aux=aux)
-    if ( !(r$message %in% c('OK', 'maximum number of subdivisions reached')) ) {
+    if ( !(r[['message']] %in% c('OK', 'maximum number of subdivisions reached')) ) {
         if (stop.on.error) {
             stop(r$message)
         }

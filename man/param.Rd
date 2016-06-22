@@ -30,6 +30,8 @@ Unlike other model statements this function does not perform any computation.
 library(copula)
 
 
+dfltNCube = nint_integrateNCube
+
 ## prepare for SparseGrid integration
 ncube = function(dimension) {
     SparseGrid::createIntegrationGrid('GQU', dimension, 3)
@@ -100,13 +102,14 @@ model = function(theta) {
         ## probability integral transform
         e = etas(theta)
 
-        tt = nint_transform(integrand, yspace, 1:2, list(
+        tt = nint_transform(integrand, yspace, list(list(
+            dIdcs=1:2,
             g=function(y) pnorm(y, mean=e, sd=1),
-            gij=function(z) {
+            giDg=function(z) {
                 t1 = qnorm(z, mean=e, sd=1)
-                cbind(t1, 1/dnorm(t1, mean=e, sd=1))
+                list(t1, dnorm(t1, mean=e, sd=1))
             }
-        ))
+        )))
 
         fisherI(tt$f, theta, parNames, tt$space)
     }
@@ -166,6 +169,9 @@ Defficiency(d2, ds, m) # D-efficiency
 
 ## end with nice plot
 dev.new(); plot(rd, main='rd')
+
+
+assign('nint_integrateNCube', dfltNCube, envir=environment(nint_integrate))
 }
 }
 \seealso{
