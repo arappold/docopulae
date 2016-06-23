@@ -37,6 +37,7 @@ See \code{copula@exprdist}.
 Please note that expressions are not validated.
 }
 \examples{
+\donttest{
 ## for an actual use case see examples for param
 
 library(copula)
@@ -127,6 +128,7 @@ f7
 vv = lapply(list(f3, f4, f5, f6, f7), function(f)
     outer(y1, y2, function(z1, z2) apply(cbind(z1, z2), 1, f, theta)))
 sapply(vv, all.equal, v2)
+}
 }
 \seealso{
 \pkg{copula}, \code{\link[Deriv]{Simplify}}, \code{\link[Deriv]{Cache}}, \code{\link{numDerivLogf}}, \code{\link{DerivLogf}}, \code{\link{fisherI}}
