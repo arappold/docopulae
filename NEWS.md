@@ -1,3 +1,7 @@
+# docopulae 0.3.4
+
+* `buildf` takes an additional argument `continuous` to build joint probability mass functions
+
 # docopulae 0.3.3
 
 * `expr2f` removed in favor of package `Deriv`

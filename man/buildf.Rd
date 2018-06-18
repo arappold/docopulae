@@ -33,7 +33,7 @@ See \code{copula@exprdist}.
 \code{buildf} returns \code{function(y, theta, ...)}, the joint probability density or mass function.
 }
 \description{
-\code{buildf} builds a joint probabilty density or mass function from marginal distributions and a copula.
+\code{buildf} builds a joint probability density or mass function from marginal distributions and a copula.
 }
 \details{
 Please note that expressions are not validated.

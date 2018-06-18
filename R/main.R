@@ -75,7 +75,7 @@ update.param = function(object, x, ...) {
 
 #' Build probability density or mass Function
 #'
-#' \code{buildf} builds a joint probabilty density or mass function from marginal distributions and a copula.
+#' \code{buildf} builds a joint probability density or mass function from marginal distributions and a copula.
 #'
 #' Please note that expressions are not validated.
 #'
