@@ -21,6 +21,9 @@ See \code{\link{param}} for its structural definition.
 \description{
 \code{update.param} evaluates the Fisher information at uncharted points and returns an updated model object.
 }
+\details{
+When the user interrupts execution, the function returns a partially updated model object.
+}
 \examples{
 ## see examples for param
 

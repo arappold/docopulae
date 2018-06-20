@@ -4,7 +4,7 @@
 \alias{plot.desigh}
 \title{Plot Design}
 \usage{
-\method{plot}{desigh}(x, sensx = NULL, sens = NULL, sensTol = NULL, ...,
+plot.desigh(x, sensx = NULL, sens = NULL, sensTol = NULL, ...,
   margins = NULL, desSens = T, sensPch = "+", sensArgs = list())
 }
 \arguments{
