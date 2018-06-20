@@ -1,3 +1,10 @@
+# docopulae 0.3.5
+
+* `DerivLogf`, `Deriv2Logf` and `update.param` print their progress
+* new function `grow.grid`
+* `update.param` handles interrupts by user and returns partially updated model object
+* minor bug in C code fixed
+
 # docopulae 0.3.4
 
 * `buildf` takes an additional argument `continuous` to build joint probability mass functions
