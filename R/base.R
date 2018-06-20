@@ -273,13 +273,14 @@ rowmatch = function(x, table, nomatch=NA_integer_) {
 #' The order of rows is adjusted to represent a growing grid with respect to resolution.
 #'
 #' @param x a list of vectors.
+#' @param random \code{TRUE} if order of rows within each level of resolution should be random.
 #'
 #' @return \code{grow.grid} returns a data frame like \code{expand.grid}.
 #'
 #' @seealso \code{\link{update.param}}
 #'
 #' @export
-grow.grid = function(x) {
+grow.grid = function(x, random=T) {
     if (length(x) == 0) {
         return(data.frame())
     }
@@ -290,6 +291,9 @@ grow.grid = function(x) {
     #
     grids = do.call(function(...) mapply(expand.grid, ..., SIMPLIFY=F), stages)
     grids = lapply(grids, as.data.frame) # ensure data frames
+    if (random) {
+        grids = lapply(grids, function(grid) grid[sample.int(nrow(grid)),, drop=F])
+    }
     r = unique(do.call(rbind, grids))
     rownames(r) = NULL
     return(r)

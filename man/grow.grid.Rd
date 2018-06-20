@@ -4,10 +4,12 @@
 \alias{grow.grid}
 \title{Grow Grid}
 \usage{
-grow.grid(x)
+grow.grid(x, random = T)
 }
 \arguments{
 \item{x}{a list of vectors.}
+
+\item{random}{\code{TRUE} if order of rows within each level of resolution should be random.}
 }
 \value{
 \code{grow.grid} returns a data frame like \code{expand.grid}.
