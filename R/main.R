@@ -43,7 +43,7 @@ param = function(fisherIf, dDim) {
 #' @return \code{update.param} returns an object of \code{class} \code{"param"}.
 #' See \code{\link{param}} for its structural definition.
 #'
-#' @seealso \code{\link{param}}, \code{\link{design}}
+#' @seealso \code{\link{param}}, \code{\link{grow.grid}}, \code{\link{design}}
 #'
 #' @examples ## see examples for param
 #'

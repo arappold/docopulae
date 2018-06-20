@@ -29,5 +29,5 @@ When the user interrupts execution, the function returns a partially updated mod
 
 }
 \seealso{
-\code{\link{param}}, \code{\link{design}}
+\code{\link{param}}, \code{\link{grow.grid}}, \code{\link{design}}
 }
