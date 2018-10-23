@@ -35,4 +35,4 @@ License: MIT + file LICENSE
 LazyData: true
 NeedsCompilation: yes
 Encoding: UTF-8
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

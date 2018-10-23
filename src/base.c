@@ -3,8 +3,8 @@
 #include <stdbool.h>
 
 
-#define DLESS(d) (d <= -DOUBLE_EPS)
-#define DGREATER(d) (DOUBLE_EPS <= d)
+#define DLESS(d) (d < ((double)0))
+#define DZERO(d) (d == ((double)0))
 
 
 void rowmatch_double(double* x, int* _xrn, int* _xcn,
@@ -35,7 +35,7 @@ void rowmatch_double(double* x, int* _xrn, int* _xcn,
                 if (DLESS(d)) {
                     nextX = TRUE;
                     break;
-                } else if (DGREATER(d)) {
+                } else if (!DZERO(d)) {
                     nextTab = TRUE;
                     break;
                 }
