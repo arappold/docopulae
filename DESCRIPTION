@@ -1,6 +1,6 @@
 Package: docopulae
 Title: Optimal Designs for Copula Models
-Version: 0.4
+Version: 0.4.0
 Date: 2018-10-26
 Authors@R: person("Andreas", "Rappold", email = "arappold@gmx.at", role = c("aut", "cre"))
 Author: Andreas Rappold [aut, cre]

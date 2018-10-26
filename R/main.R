@@ -846,7 +846,7 @@ Dsensitivity = function(A=NULL, parNames=NULL, defaults=list(x=NULL, desw=NULL, 
 
 #' Weighted D Sensitivity
 #'
-#' \code{wDsensitivity} builds a sensitivity function for the weighted D-, D_s or D_A-optimality criteron which relies on defaults to speed up evaluation.
+#' \code{wDsensitivity} builds a sensitivity function for the weighted D-, D_s or D_A-optimality criterion which relies on defaults to speed up evaluation.
 #' \code{Wynn} for instance requires this behaviour/protocol.
 #'
 #' Indices and rows of an unnamed matrix supplied to argument \code{A} correspond to the subset of parameters defined by argument \code{parNames}.

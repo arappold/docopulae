@@ -1,5 +1,4 @@
 ^\.git.*$
 ^cran-comments.md$
-^NEWS.md$
 ^misc/
 ^lyx/

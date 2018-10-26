@@ -29,7 +29,7 @@ The value \code{NULL} is equivalent to absence.}
 It's attributes contain this function's arguments.
 }
 \description{
-\code{wDsensitivity} builds a sensitivity function for the weighted D-, D_s or D_A-optimality criteron which relies on defaults to speed up evaluation.
+\code{wDsensitivity} builds a sensitivity function for the weighted D-, D_s or D_A-optimality criterion which relies on defaults to speed up evaluation.
 \code{Wynn} for instance requires this behaviour/protocol.
 }
 \details{
