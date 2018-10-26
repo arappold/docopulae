@@ -58,7 +58,8 @@ update.param = function(object, x, ...) {
     if (ncol(x) != ncol(mod$x))
         stop(paste('x shall have exactly', ncol(mod$x), 'columns'))
 
-    x = unique(rbind(mod$x, x)) # merge x
+    x = rbind(mod$x, x)
+    x = x[!rowsduplicated(x),, drop=F]  # merge x
     idcs = seq1(nrow(mod$x) + 1, nrow(x))
     r = mod
 
@@ -1308,6 +1309,7 @@ Defficiency = function(des, ref, mod, A=NULL, parNames=NULL) {
 #'
 #' @export
 wDefficiency = function(des, ref, mods, modw, A=NULL, parNames=NULL) {
+    mod = mods[[1]]
     tt = getDAPar(mod, A, parNames)
     parNames = tt$parNames
     A = tt$A

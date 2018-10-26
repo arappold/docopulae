@@ -1,7 +1,7 @@
 ## Test environments
 
-* local Linux Mint install, R 3.5.0
-* local Linux Mint install, R-devel 2018-06-15 r74904
+* local Linux Mint install, R 3.5.1
+* local Linux Mint install, R-devel 2018-10-25 r75499
 * win-builder (devel and release)
 
 ## R CMD check results

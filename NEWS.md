@@ -1,3 +1,10 @@
+# docopulae 0.4
+
+* new function `wDsensitivity`
+* new function `wDefficiency`
+* inconsistencies due to odd implementation of `duplicated` fixed
+* new function `rowsduplicated`
+
 # docopulae 0.3.5
 
 * `DerivLogf`, `Deriv2Logf` and `update.param` print their progress
